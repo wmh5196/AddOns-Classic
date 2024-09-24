@@ -1,6 +1,6 @@
 # Classic Calendar
 
-## [v0.5.9beta](https://github.com/birkholz/ClassicCalendar/tree/v0.5.9beta) (2024-07-02)
-[Full Changelog](https://github.com/birkholz/ClassicCalendar/compare/v0.5.8beta...v0.5.9beta) [Previous Releases](https://github.com/birkholz/ClassicCalendar/releases)
+## [v0.6.3beta](https://github.com/birkholz/ClassicCalendar/tree/v0.6.3beta) (2024-09-17)
+[Full Changelog](https://github.com/birkholz/ClassicCalendar/compare/v0.6.2beta...v0.6.3beta) [Previous Releases](https://github.com/birkholz/ClassicCalendar/releases)
 
-- Add missing ZIndex to Era AV weekend  
+- Add Phase 5 SoD release/raid schedules  
