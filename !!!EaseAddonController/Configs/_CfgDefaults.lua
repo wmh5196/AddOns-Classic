@@ -76,8 +76,7 @@ D["Accountant_Classic"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("個人會計")
-			InterfaceOptionsFrame_OpenToCategory("個人會計")
+			Settings.OpenToCategory("個人會計")
 		end,
     },
 	{
@@ -243,9 +242,7 @@ D["Auctionator"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("拍賣")
-			InterfaceOptionsFrame_OpenToCategory("拍賣")
-			InterfaceOptionsFrame_OpenToCategory("基本設定")
+			Settings.OpenToCategory("拍賣")
 		end,
     },
 	{
@@ -311,7 +308,7 @@ D["AutoPotion"] = {
 	},
 };
 D["Baganator"] = {
-	defaultEnable = 0,
+	defaultEnable = 1,
 	tags = { "ITEM" },
 	title = "多角色背包",
 	desc = "可以選擇要使用不分類合併背包，也可以是分類背包。隨時隨地都能查看銀行，還可以查看分身的背包/銀行。``|cffFF2D2D需要打開過一次銀行才能離線查看銀行，其他角色需要登入過一次並且打開過背包和銀行，才能隨時查看。|r``若要換回原本預設的魔獸風格外觀主題，只要將 '多角色背包外觀-簡單黑' 插件取消載入即可。`",
@@ -383,7 +380,7 @@ D["BiaoGe"] = {
     },
 };
 D["BetterBags"] = {
-	defaultEnable = 1,
+	defaultEnable = 0,
 	tags = { "ITEM" },
 	title = "掰特包",
 	desc = "Adi 背包的進化版，效能好、bug 少、東西不亂跑，分類清楚好好找。``也可以變成不分類的合併背包，或是清單背包。背包大小、分類都可以自行調整，還有有多種分類外掛模組可供選用。``|cffFF2D2D特別注意: 各種外掛模組的分類預設都不開啟，第一次使用時請點背包視窗左上角的背包圖示，或是在設定選項中勾選，要額外顯示哪些分類。|r`",
@@ -408,13 +405,28 @@ D["BigDebuffs"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("PvP 控場圖示")
-			InterfaceOptionsFrame_OpenToCategory("PvP 控場圖示")
+			Settings.OpenToCategory("PvP 控場圖示")
 		end,
     },
 	{
 		type = "text",
         text = "|cffFF2D2D啟用插件後需要重新載入介面。|r",       
+	},
+};
+D["BlizzMove"] = {
+	defaultEnable = 1,
+	tags = { "ENHANCEMENT" }, 
+	title = "移動暴雪視窗",
+	desc = "允許自由拖曳移動和縮放遊戲內建的各種視窗，可選擇是否要永久保存位置，還是登出/重載後要還原。``如果怕不小心移動到，可以在設定選項中勾選需要按住輔助按鍵，才能移動/縮放。`",
+	modifier = "彩虹ui",
+	img = true,
+	{
+        text = "設定選項",
+        callback = function() SlashCmdList["ACECONSOLE_BLIZZMOVE"]("config") end,
+    },
+	{
+		type = "text",
+		text = "移動視窗: 按住左鍵拖曳視窗標題，或拖曳視窗內沒有功能的地方來移動位置。\n\n縮放視窗: 按住 Ctrl 在視窗標題列上滾動滑鼠滾輪。\n\n重置位置: 按住 Shift 在視窗標題列上點右鍵。\n\n重置縮放: 按住 Ctrl 在視窗標題列上點右鍵。\n",
 	},
 };
 D["BlockMessageTeamGuard"] = {
@@ -435,8 +447,7 @@ D["Breakables"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("專業-分解")
-			InterfaceOptionsFrame_OpenToCategory("專業-分解")
+			Settings.OpenToCategory("專業-分解")
 		end,
     },
 	{
@@ -470,9 +481,12 @@ D["ButtonForge"] = {
 	img = true,
 	{
         text = "設定選項",
-        callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("快捷列-更多")
-			InterfaceOptionsFrame_OpenToCategory("快捷列-更多")
+        callback = function()
+			if (BFConfigureLayer:IsShown()) then
+				BFConfigureLayer:Hide();
+			else
+				BFConfigureLayer:Show();
+			end
 		end,
     },
 	{
@@ -624,8 +638,7 @@ D["ChatWheel"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("聊天-快速發話")
-			InterfaceOptionsFrame_OpenToCategory("聊天-快速發話")
+			Settings.OpenToCategory("聊天-快速發話")
 		end,
     },
 	{
@@ -727,8 +740,7 @@ D["CopyAnything"] = {
 	{
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("複製文字")
-			InterfaceOptionsFrame_OpenToCategory("複製文字")
+			Settings.OpenToCategory("複製文字")
 		end,
     },
 	{
@@ -931,17 +943,15 @@ D["Dominos"] = {
 D["Dominos_Cast"] = { defaultEnable = 0, };
 D["Dominos_Roll"] = { defaultEnable = 0, };
 D["Drift"] = {
-	defaultEnable = 1,
+	defaultEnable = 0,
 	tags = { "ENHANCEMENT" }, 
-	title = "移動和縮放視窗",
+	title = "(請刪除) 移動和縮放視窗",
 	desc = "允許自由拖曳移動和縮放遊戲內建的各種視窗，並且會保存位置，就算登出登入後位置也不會跑掉。``如果怕不小心移動到，可以在設定選項中勾選鎖定移動和鎖定縮放，並且設定需要按住的按鍵，才能拖曳/縮放。`",
 	modifier = "彩虹ui",
 	{
         text = "設定選項",
 		callback = function(cfg, v, loading)
-			InterfaceOptionsFrame_OpenToCategory("移動視窗")
-			InterfaceOptionsFrame_OpenToCategory("移動視窗")
-			InterfaceOptionsFrame_OpenToCategory("選項")
+			Settings.OpenToCategory("移動視窗")
 		end,
     },
 	{
@@ -1113,8 +1123,7 @@ D["FriendListColors"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("好友名單")
-			InterfaceOptionsFrame_OpenToCategory("好友名單")
+			Settings.OpenToCategory("好友名單")
 		end,
     },
 	{
@@ -1144,8 +1153,7 @@ D["FocusInterruptSounds"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("斷法")
-			InterfaceOptionsFrame_OpenToCategory("斷法")
+			Settings.OpenToCategory("斷法")
 		end,
     },
 	{
@@ -1576,8 +1584,7 @@ D["MissingRaidBuffs"] = {
     {
         text = "設定選項",
 		callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("增益缺失監看")
-			InterfaceOptionsFrame_OpenToCategory("增益缺失監看")
+			Settings.OpenToCategory("增益缺失監看")
 		end,
 	},
 };
@@ -1940,10 +1947,7 @@ D["Quartz"] = {
     {
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("施法條")
-			InterfaceOptionsFrame_OpenToCategory("施法條")
-			InterfaceOptionsFrame_OpenToCategory("揮擊")
-			InterfaceOptionsFrame_OpenToCategory("施法條")
+			Settings.OpenToCategory("施法條")
 		end,
     },
 };
@@ -2007,8 +2011,7 @@ D["RaidLedger"] = {
 	{
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("金團賬本")
-			InterfaceOptionsFrame_OpenToCategory("金團賬本")
+			Settings.OpenToCategory("金團賬本")
 		end,
     },
     {
@@ -2578,8 +2581,7 @@ D["tullaRange"] = {
         text = "設定選項",
         callback = function(cfg, v, loading) 
 			InterfaceOptionsFrame:Show()
-			InterfaceOptionsFrame_OpenToCategory("快捷列-著色")
-			InterfaceOptionsFrame_OpenToCategory("快捷列-著色")
+			Settings.OpenToCategory("快捷列-著色")
 		end,
     },
 };
@@ -2777,8 +2779,7 @@ D["zz_itemsdb"] = {
 	{
         text = "設定選項",
         callback = function(cfg, v, loading) 
-			InterfaceOptionsFrame_OpenToCategory("背包-物品數量")
-			InterfaceOptionsFrame_OpenToCategory("背包-物品數量")
+			Settings.OpenToCategory("背包-物品數量")
 		end,
     },
 };
