@@ -34,6 +34,5 @@ function SlashCmdList.FSR(msg, editbox)
     if cmd == "" or cmd == "help" then
         -- FiveSecondRule:PrintHelp()  
         Settings.OpenToCategory("5 秒回魔監控")
-        -- InterfaceOptionsFrame_OpenToCategory(FiveSecondRule.OptionsPanelFrame)
     end
 end

@@ -89,49 +89,27 @@ function FiveSecondRule.UIFactory:MakeColorPicker(name, parent, title, color, On
 end
 
 function FiveSecondRule.UIFactory:ShowColorPicker(r, g, b, a, changedCallback)
-    ColorPickerFrame:SetColorRGB(r,g,b);
-    ColorPickerFrame.hasOpacity = (a ~= nil);
-    
-    if (ColorPickerFrame.hasOpacity) then
-        ColorPickerFrame.opacity = a
-        OpacitySliderFrame:SetValue(a) -- the value is not set automatically by the ColorPickerFrame
-    end
+    local newR = r;
+    local newG = g;
+    local newB = b;
+    local newA = a;
+    local previousValues = {r,g,b,a};
 
-    ColorPickerFrame.previousValues = {r,g,b,a};
-
-    ColorPickerFrame.func = changedCallback
-
-    ColorPickerFrame:SetScript("OnShow", function () 
-        FiveSecondRule:Unlock();
-
-        -- Add callbacks when the color picker is shown, since they might have been removed from previous use
-        ColorPickerFrame.cancelFunc = changedCallback
-        ColorPickerFrame.opacityFunc = changedCallback
-    end)
-
-    ColorPickerFrame:SetScript("OnHide", function () 
-        FiveSecondRule:Lock();
-
-        -- Remove callbacks to avoid leaking callbacks when using multiple color pickers
-        ColorPickerFrame.cancelFunc = nil
-        ColorPickerFrame.opacityFunc = nil
-    end)
-
-    ColorPickerFrame:Hide(); -- Need to run the OnShow handler.
-    ColorPickerFrame:Show();
-
-end
-
-function FiveSecondRule.UIFactory:UnpackColor(restore) 
-    local newR, newG, newB, newA
-            
-    if restore then
-     newR, newG, newB, newA = unpack(restore)
-    else
-     newA, newR, newG, newB = OpacitySliderFrame:GetValue(), ColorPickerFrame:GetColorRGB()
-    end
-
-    return {newR, newG, newB, newA}
+    ColorPickerFrame:SetupColorPickerAndShow({
+        r = newR,
+        g = newG,
+        b = newB,
+        opacity = newA,
+        hasOpacity = true,
+        swatchFunc = function()
+            newR, newG, newB = ColorPickerFrame:GetColorRGB()
+            newA = ColorPickerFrame:GetColorAlpha()
+            changedCallback({newR,newG,newB,newA})
+        end,
+        cancelFunc = function()
+            changedCallback(previousValues)
+        end
+    })
 end
 
 function FiveSecondRule.UIFactory:SetDefaultFont(target)

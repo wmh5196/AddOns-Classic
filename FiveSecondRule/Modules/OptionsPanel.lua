@@ -18,7 +18,9 @@ OptionsPanelFrame:SetScript("OnEvent",
         if event == "PLAYER_LOGIN" then
             if not OptionsPanelFrame.optionsPanel then
                 OptionsPanelFrame.optionsPanel = OptionsPanelFrame:CreateGUI(ADDON_NAME, "5 秒回魔監控")
-                InterfaceOptions_AddCategory(OptionsPanelFrame.optionsPanel);
+				local category = Settings.RegisterCanvasLayoutCategory(OptionsPanelFrame.optionsPanel, "5 秒回魔監控")
+				category.ID = "5 秒回魔監控"
+				Settings.RegisterAddOnCategory(category)
             end
         end
     end
@@ -267,17 +269,10 @@ function OptionsPanelFrame:CreateGUI(name, displayName, parent)
         frame.content.statusBarForegroundColorFrame:SetPoint("TOPLEFT", 12, -270)
         frame.content.statusBarForegroundColorFrame:SetScript("OnMouseDown",  
             function (self, button)
-                colorPickerStateSet = false
+                local editColor = AddonUtils:deepcopy(FiveSecondRule_Options.statusBarColor)
 
-                local editColor = FiveSecondRule_Options.statusBarColor
-
-                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (restore)
-                    if (not colorPickerStateSet) then
-                        colorPickerStateSet = true
-                        return
-                    end
-
-                    FiveSecondRule_Options.statusBarColor = FiveSecondRule.UIFactory:UnpackColor(restore)
+                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (colorTable)
+                    FiveSecondRule_Options.statusBarColor = colorTable
                     OptionsPanelFrame:UpdateOptionValues()
                 end)
             end
@@ -290,17 +285,10 @@ function OptionsPanelFrame:CreateGUI(name, displayName, parent)
         frame.content.statusBarBackgroundColorFrame:SetPoint("TOPLEFT", 100, -270)
         frame.content.statusBarBackgroundColorFrame:SetScript("OnMouseDown",  
             function (self, button)
-                colorPickerStateSet = false
+                local editColor = AddonUtils:deepcopy(FiveSecondRule_Options.statusBarBackgroundColor)
 
-                local editColor = FiveSecondRule_Options.statusBarBackgroundColor
-
-                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (restore)
-                    if (not colorPickerStateSet) then
-                        colorPickerStateSet = true
-                        return
-                    end
-
-                    FiveSecondRule_Options.statusBarBackgroundColor = FiveSecondRule.UIFactory:UnpackColor(restore)
+                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (colorTable)
+                    FiveSecondRule_Options.statusBarBackgroundColor = colorTable
                     OptionsPanelFrame:UpdateOptionValues()
                 end)
             end
@@ -317,17 +305,10 @@ function OptionsPanelFrame:CreateGUI(name, displayName, parent)
         frame.content.manaTicksForegroundColorFrame:SetPoint("TOPLEFT", 12, -330)
         frame.content.manaTicksForegroundColorFrame:SetScript("OnMouseDown",  
             function (self, button)
-                colorPickerStateSet = false
+                local editColor = AddonUtils:deepcopy(FiveSecondRule_Options.manaTicksColor)
 
-                local editColor = FiveSecondRule_Options.manaTicksColor
-
-                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (restore)
-                    if (not colorPickerStateSet) then
-                        colorPickerStateSet = true
-                        return
-                    end
-
-                    FiveSecondRule_Options.manaTicksColor = FiveSecondRule.UIFactory:UnpackColor(restore)
+                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (colorTable)
+                    FiveSecondRule_Options.manaTicksColor = colorTable
                     OptionsPanelFrame:UpdateOptionValues()
                 end)
             end
@@ -340,17 +321,10 @@ function OptionsPanelFrame:CreateGUI(name, displayName, parent)
         frame.content.manaTicksBackgroundColorFrame:SetPoint("TOPLEFT", 100, -330)
         frame.content.manaTicksBackgroundColorFrame:SetScript("OnMouseDown",  
             function (self, button)
-                colorPickerStateSet = false
+                local editColor = AddonUtils:deepcopy(FiveSecondRule_Options.manaTicksBackgroundColor)
 
-                local editColor = FiveSecondRule_Options.manaTicksBackgroundColor
-
-                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (restore)
-                    if (not colorPickerStateSet) then
-                        colorPickerStateSet = true
-                        return
-                    end
-
-                    FiveSecondRule_Options.manaTicksBackgroundColor = FiveSecondRule.UIFactory:UnpackColor(restore)
+                FiveSecondRule.UIFactory:ShowColorPicker(editColor[1], editColor[2], editColor[3], editColor[4], function (colorTable)
+                    FiveSecondRule_Options.manaTicksBackgroundColor = colorTable
                     OptionsPanelFrame:UpdateOptionValues()
                 end)
             end
