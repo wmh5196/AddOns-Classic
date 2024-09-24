@@ -95,15 +95,6 @@ local isSoD = C_Seasons.HasActiveSeason() and (C_Seasons.GetActiveSeason() == En
 
 CALENDAR_FILTER_BATTLEGROUND = L.Options[localeString]["CALENDAR_FILTER_BATTLEGROUND"];
 
--- TODO: Localize these strings
-COMMUNITIES_CALENDAR_CHAT_EVENT_BROADCAST_FORMAT = "%s: %s %s";
-COMMUNITIES_CALENDAR_CHAT_EVENT_TITLE_FORMAT = "[%s]";
-COMMUNITIES_CALENDAR_EVENT_FORMAT = "%s at %s";
-COMMUNITIES_CALENDAR_MOTD_FORMAT = "\"%s\"";
-COMMUNITIES_CALENDAR_ONGOING_EVENT_PREFIX = "Event occurring now";
-COMMUNITIES_CALENDAR_TODAY = "Today";
-COMMUNITIES_CALENDAR_TOOLTIP_TITLE = "Bulletin";
-
 -- Date Utilities
 
 local function dumpTable(o)
@@ -238,38 +229,6 @@ function newEventGetTextures(eventType)
 					mapId=0,
 					expansionLevel=0,
 					iconTexture="Interface/LFGFrame/LFGICON-MOLTENCORE"
-				},
-				{
-					title="Kazzak",
-					isLfr=false,
-					difficultyId=0,
-					mapId=0,
-					expansionLevel=0,
-					iconTexture="Interface/LFGFrame/LFGICON-RAID"
-				},
-				{
-					title="Azuregos",
-					isLfr=false,
-					difficultyId=0,
-					mapId=0,
-					expansionLevel=0,
-					iconTexture="Interface/LFGFrame/LFGICON-RAID"
-				},
-				{
-					title=L.RaidLocalization[localeString][136329],
-					isLfr=false,
-					difficultyId=0,
-					mapId=0,
-					expansionLevel=0,
-					iconTexture="Interface/LFGFrame/LFGICON-BLACKWINGLAIR"
-				},
-				{
-					title=L.RaidLocalization[localeString][136369],
-					isLfr=false,
-					difficultyId=0,
-					mapId=0,
-					expansionLevel=0,
-					iconTexture="Interface/LFGFrame/LFGICON-ZULGURUB"
 				}
 			}
 		else
@@ -298,7 +257,7 @@ function newEventGetTextures(eventType)
 		local SoDDungeons = {
 			[136332]=true,[136353]=true,[136354]=true,[136357]=true,[136364]=true,[136363]=true,[136352]=true,
 			[136345]=true,[136368]=true,[136326]=true,[136327]=true,[136333]=true,[136355]=true,[136359]=true
-			-- Plus Demon Fall Canyon, and whatever is coming in phase 5?
+			-- Plus a new mystery dungeon?
 		}
 		local faction, _ = UnitFactionGroup("player")
 		if faction == "Horde" then
@@ -732,18 +691,3 @@ end
 
 loadFrame:RegisterEvent("VARIABLES_LOADED")
 loadFrame:SetScript("OnEvent", loadFrame.OnEvent)
-
-function GetCalendarEventLink(monthOffset, monthDay, index)
-	local dayEvent = C_Calendar.GetDayEvent(monthOffset, monthDay, index)
-	if dayEvent then
-		-- return LinkUtil.FormatLink("calendarEvent", dayEvent.title, monthOffset, monthDay, index);
-		-- Calendar event links are not supported, so we return the title instead
-		return dayEvent.title
-	end
-
-	return nil
-end
-
-function ToggleCalendar()
-	Calendar_Toggle()
-end

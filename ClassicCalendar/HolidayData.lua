@@ -508,16 +508,6 @@ local SoDEvents = {
 		ongoingTexture="Interface/Calendar/Holidays/Calendar_WeekendWorldQuestStart",
 		endTexture="Interface/Calendar/Holidays/Calendar_WeekendWorldQuestStart",
 		ZIndex=ZIndexes.highest
-	},
-	{
-		name="Phase 5 Launch",
-		description="Season of Discovery phase 5 officially arrives with Blackwing Lair and Zul'Gurub raids!",
-		startDate={ year=2024, month=9, day=26, hour=14, min=0 },
-		endDate={ year=2024, month=9, day=26, hour=14, min=0 },
-		startTexture="Interface/Calendar/Holidays/Calendar_WeekendWorldQuestStart",
-		ongoingTexture="Interface/Calendar/Holidays/Calendar_WeekendWorldQuestStart",
-		endTexture="Interface/Calendar/Holidays/Calendar_WeekendWorldQuestStart",
-		ZIndex=ZIndexes.highest
 	}
 }
 
@@ -698,8 +688,6 @@ function GetClassicRaidResets()
 		local kazzakName = "Kazzak" -- WIP, to be replaced with proper localization if possible?
 		local mcName = L.RaidLocalization[localeString][136346]
 		local onyName = L.RaidLocalization[localeString][136351]
-		local bwlName = L.RaidLocalization[localeString][136329]
-		local zgName = L.RaidLocalization[localeString][136369]
 		raidResets = {
 			{
 				name=bfdName,
@@ -748,41 +736,19 @@ function GetClassicRaidResets()
 				frequency=3
 			},
 			-- Weekly raids
-			-- {
-			-- 	name=templeName,
-			-- 	firstReset = {
-			-- 		year=2024,
-			-- 		month=4,
-			-- 		day=9,
-			-- 		hour=resetHour,
-			-- 		min=0
-			-- 	},
-			-- 	frequency=7
-			-- },
-			-- Twice-weekly raids
-			-- (one entry for Tuesdays, another for Saturdays)
 			{
 				name=templeName,
 				firstReset = {
 					year=2024,
-					month=7,
+					month=4,
 					day=9,
 					hour=resetHour,
 					min=0
 				},
 				frequency=7
 			},
-			{
-				name=templeName,
-				firstReset = {
-					year=2024,
-					month=7,
-					day=13,
-					hour=resetHour,
-					min=0
-				},
-				frequency=7
-			},
+			-- Twice-weekly raids
+			-- (one entry for Tuesdays, another for Saturdays)
 			{
 				name=azuregosName,
 				firstReset = {
@@ -832,6 +798,17 @@ function GetClassicRaidResets()
 				firstReset = {
 					year=2024,
 					month=7,
+					day=27,
+					hour=resetHour,
+					min=0
+				},
+				frequency=7
+			},
+			{
+				name=mcName,
+				firstReset = {
+					year=2024,
+					month=7,
 					day=30,
 					hour=resetHour,
 					min=0
@@ -859,37 +836,8 @@ function GetClassicRaidResets()
 					min=0
 				},
 				frequency=7
-			},
-			{
-				name=bwlName,
-				firstReset = {
-					year=2024,
-					month=10,
-					day=1,
-					hour=resetHour,
-					min=0
-				},
-				frequency=7
-			},
-			{
-				name=zgName,
-				firstReset = {
-					year=2024,
-					month=10,
-					day=1,
-					hour=resetHour,
-					min=0
-				},
-				frequency=7
 			}
 		}
-		if CCConfig.HideLevelUpRaidResets then
-			for i = #raidResets, 1, -1 do
-				if raidResets[i].name == bfdName or raidResets[i].name == gnomerName or raidResets[i].name == templeName then
-					table.remove(raidResets, i)
-				end
-			end
-		end
 	else
 		local MCName, _ = L.RaidLocalization[localeString][136346]
 		local OnyName, _ = L.RaidLocalization[localeString][136351]

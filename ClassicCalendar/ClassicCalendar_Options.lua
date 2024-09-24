@@ -25,8 +25,7 @@ local defaultOptions = {
 	["FlashCalButton"] = false,
 	["UnlockCalendarButton"] = false,
 	["AlarmNumber"] = 15,
-	["AlarmUnit"] = "minute",
-	["HideLevelUpRaidResets"] = false,
+	["AlarmUnit"] = "minute"
 }
 
 local function ToggleCalButtonLock(checked)
@@ -68,8 +67,8 @@ local function shuffle(tbl)
   end
 end
 
-local randomName = {"Toxix-WildGrowth(NA)", "Lovediodes-WildGrowth(NA)"}
--- shuffle(randomName) -- Randomize order of displayed names
+local randomName = {"Toxiix-WildGrowth(NA)", "Lovediodes-WildGrowth(NA)"}
+shuffle(randomName) -- Randomize order of displayed names
 
 -- INTERFACE OPTIONS (starts building the frame now)
 
@@ -210,26 +209,8 @@ local chkIOHideCalButtonDesc = CCIOFrame:CreateFontString(nil, nil, "GameFontHig
 chkIOHideCalButtonDesc:SetPoint("LEFT", chkIOHideCalButton, "LEFT", 0, -24)
 chkIOHideCalButtonDesc:SetText("|cFF9CD6DE"..L.Options[localeString]["HideCalButtonDesc"].."|r")
 
--- Hide resets for level up raids
-
-local hideLevelUpRaidsButton = CreateFrame("CheckButton", nil, CCIOFrame, "OptionsBaseCheckButtonTemplate")
-hideLevelUpRaidsButton:SetPoint("TOPLEFT", chkIOHideCalButton, "BOTTOMLEFT", 0, -24)
-
-hideLevelUpRaidsButton:SetScript("OnUpdate", function(frame)
-	hideLevelUpRaidsButton:SetChecked(CCConfig.HideLevelUpRaidResets)
-end)
-
-hideLevelUpRaidsButton:HookScript("OnClick", function(frame)
-	local checked = frame:GetChecked()
-	CCConfig.HideLevelUpRaidResets = checked
-end)
-
-local hideLevelUpRaidsButtonText = CCIOFrame:CreateFontString(nil, nil, "GameFontHighlight")
-hideLevelUpRaidsButtonText:SetPoint("LEFT", hideLevelUpRaidsButton, "RIGHT", 0, 1)
-hideLevelUpRaidsButtonText:SetText(L.Options[localeString]["HideLevelUpRaidText"])
-
 -- HR line for event alarm options
-local horizRule3 = createHorizontalRule(L.Options[localeString]["EventAlarmsHeaderText"], hideLevelUpRaidsButton)
+local horizRule3 = createHorizontalRule(L.Options[localeString]["EventAlarmsHeaderText"], chkIOHideCalButtonDesc)
 
 local eventAlarmsDesc = CCIOFrame:CreateFontString(nil, nil, "GameFontHighlight")
 eventAlarmsDesc:SetPoint("LEFT", horizRule3, "LEFT", 0, -24)
