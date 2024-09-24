@@ -1,7 +1,7 @@
 --[[
     This file is part of Decursive.
 
-    Decursive (v 2.7.19) add-on for World of Warcraft UI
+    Decursive (v 2.7.22) add-on for World of Warcraft UI
     Copyright (C) 2006-2019 John Wellesz (Decursive AT 2072productions.com) ( http://www.2072productions.com/to/decursive.php )
 
     Decursive is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@
     Decursive is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY.
 
-    This file was last updated on 2024-03-21T03:38:23Z
+    This file was last updated on 2024-08-11T22:33:29Z
 --]]
 -------------------------------------------------------------------------------
 
@@ -86,11 +86,13 @@ local tonumber          = _G.tonumber;
 local UnitGUID          = _G.UnitGUID;
 local band              = _G.bit.band;
 local GetTime           = _G.GetTime;
-local IsSpellInRange    = _G.IsSpellInRange;
+local IsSpellInRange    = _G.C_Spell and _G.C_Spell.IsSpellInRange or _G.IsSpellInRange;
 local UnitInRange       = _G.UnitInRange;
 local debugprofilestop  = _G.debugprofilestop;
-local GetSpellInfo      = _G.GetSpellInfo;
-local GetItemInfo       = _G.GetItemInfo;
+local GetSpellInfo      = _G.C_Spell and _G.C_Spell.GetSpellInfo or _G.GetSpellInfo;
+local GetSpellName      = _G.C_Spell and _G.C_Spell.GetSpellName or function (spellId) return (GetSpellInfo(spellId)) end;
+local GetSpellId        = _G.C_Spell and _G.C_Spell.GetSpellInfo and function(spellName) return GetSpellInfo(spellName).spellID end or function(spellName) return (select(7, GetSpellInfo(spellName))) end
+local GetItemInfo       = _G.C_Item and _G.C_Item.GetItemInfo or _G.GetItemInfo;
 local pcall             = _G.pcall;
 
 -- replacement for the default function as it is bugged in WoW5 (it returns nil for some spells such as resto shamans' 'Purify Spirit')
@@ -597,7 +599,7 @@ function D:GetSpellFromLink(link)
             return nil;
         end
 
-       local isPetAbility = (GetSpellBookItemInfo(spellName)) == "PETACTION" and true or false;
+       local isPetAbility = select(2, D:GetSpellUsefulInfoIfKnown(spellName));
 
         if spellRank and spellRank ~= "" then
             spellName = ("%s(%s)"):format(spellName, spellRank);
@@ -612,9 +614,9 @@ function D:GetSpellFromLink(link)
 end
 
 
-local IsUsableItem      = _G.IsUsableItem;
-local IsEquippableItem  = _G.IsEquippableItem;
-local IsEquippedItem    = _G.IsEquippedItem;
+local IsUsableItem      = _G.C_Item and _G.C_Item.IsUsableItem or _G.IsUsableItem;
+local IsEquippableItem  = _G.C_Item and _G.C_Item.IsEquippableItem or _G.IsEquippableItem;
+local IsEquippedItem    = _G.C_Item and _G.C_Item.IsEquippedItem or _G.IsEquippedItem;
 function D:isItemUsable(itemIDorName)
     if IsEquippableItem(itemIDorName) and not IsEquippedItem(itemIDorName) then
         return false;
@@ -624,6 +626,26 @@ function D:isItemUsable(itemIDorName)
 end
 
 
+function D:GetSpellUsefulInfoIfKnown(spellIdentifier) -- returns spellId, isPet
+
+    if _G.GetSpellBookItemInfo then
+        local spellType, spellID = GetSpellBookItemInfo(spellIdentifier);
+
+        return spellID, spellType == "PETACTION"
+    else
+        local spellBookItemSlotIndex, spellBookItemSpellBank = C_SpellBook.FindSpellBookSlotForSpell(spellIdentifier);
+
+        if spellBookItemSlotIndex then
+
+            local spellBookItemInfo = C_SpellBook.GetSpellBookItemInfo(spellBookItemSlotIndex, spellBookItemSpellBank);
+return spellBookItemInfo.spellID, spellBookItemSpellBank == Enum.SpellBookSpellBank.PetAction
+        else
+            return nil, nil;
+        end
+
+    end
+end
+
 function D:isSpellReady(spellID, isPetAbility)
 
     -- in wow classic flavors, the 'display all ranks' option in the spell book UI changes the output of the IsSpellKnown() function...
@@ -632,13 +654,13 @@ function D:isSpellReady(spellID, isPetAbility)
         -- so we need to get back to the corresponding current spell id using
         -- the name of the spell.
 
-        local spellName = (GetSpellInfo(spellID)); -- may return nil if the spell is not known depending on wow version and whether it is a pet ability or not...
+        local spellName = GetSpellName(spellID); -- may return nil if the spell is not known depending on wow version and whether it is a pet ability or not...
 
-        if not DC.WOTLK then -- but ranks are back in wotlk and former ranks disappear when the next one is learned...
+        if not DC.CATACLYSM then -- but ranks are back in wotlk and former ranks disappear when the next one is learned... Todo: check if still true for Cataclysm
             local spellType, id
 
             if spellName then
-                spellType, id = GetSpellBookItemInfo(spellName);
+                spellType, id = D:GetSpellUsefulInfoIfKnown(spellName);
                 spellID = id;
             end
 
@@ -649,7 +671,7 @@ function D:isSpellReady(spellID, isPetAbility)
             end
         else
             if spellName then
-                spellID = select(7, GetSpellInfo(spellName));
+                spellID = GetSpellId(spellName);
             elseif isPetAbility then
                 D:Debug("Pet ability update lookup failed", spellID, spellName, "GetSpellInfo(spellName):", GetSpellInfo(spellName));
             end
@@ -684,9 +706,9 @@ function D:GetItemFromLink(link)
     return nil;
 end
 
-function D.GetSpellOrItemInfo(spellID)
+function D.GetSpellOrItemInfo(spellID) -- could be renamed to GetSpellOrItemName
     if spellID > 0 then
-        return GetSpellInfo(spellID);
+        return GetSpellName(spellID);
     else
         return GetItemInfo(spellID * -1) or "Item: " .. spellID * -1;
     end
@@ -1039,4 +1061,4 @@ do
         return nocase:trim();
     end
 end
-T._LoadedFiles["Dcr_utils.lua"] = "2.7.19";
+T._LoadedFiles["Dcr_utils.lua"] = "2.7.22";

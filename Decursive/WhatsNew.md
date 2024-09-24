@@ -1,5 +1,43 @@
-Decursive 2.7.19
+Decursive 2.7.22
 ================
+
+Decursive 2.7.22 (2024-08-16)
+-----------------------------
+
+- Fix Cooldown related Lua error in WoW 11
+
+
+**New Way to support Decursive:** If you are an [ADA/Cardano](https://cardano.org) holder you can
+delegate your stake to my pool: [anfra.io](https://anfra.io)
+
+
+Decursive 2.7.21 (2024-08-06)
+-----------------------------
+
+- Fix many compatibility issues with WoW 11 (Cooldown issue and various Lua errors).
+
+- Fix Evoker's spells priorities.
+
+- Add Remove Greater Curse for mages in WoW Classic SoD.
+
+- Fix bug introduced in 2.7.20 for spells set up to only work on the player (or
+  all other units but the player), they had become unusable.
+
+- Mark this version as incompatible with WotLK (This version of WoW classic is still being used in China - Players from China need to stick with Decursive 2.7.17 when playing WotLK).
+
+
+Decursive 2.7.20 (2024-07-19)
+-----------------------------
+
+- Compatible with The War Within Beta.
+
+- Cataclysm: Devour Magic (Felhunter) actually can't remove magic effects on friendly units
+
+- Cataclysm: Fix Priest Dispel Magic capabilities detection: Dispel Magic only
+  works on the player unless they are Holy
+
+- TOC updates
+
 
 Decursive 2.7.19 (2024-05-10)
 -----------------------------
@@ -104,10 +142,6 @@ Decursive 2.7.12 (2023-11-08)
 -----------------------------
 
 - TOC update for Retail
-
-
-**New Way to support Decursive:** If you are an [ADA/Cardano](https://cardano.org) holder you can
-delegate your stake to my pool: [anfra.io](https://anfra.io)
 
 
 Decursive 2.7.11 (2023-10-22)
