@@ -1,5 +1,5 @@
-local addon, L = ...
-local config, UIParent = _G[addon.."ConfigAddon"], UIParent
+local addon, ns = ...
+local L, config, UIParent = ns.L, ns.config, UIParent
 local hb = CreateFrame("FRAME", addon.."Addon")
 local cover = CreateFrame("FRAME")
 cover:Hide()
@@ -2657,6 +2657,10 @@ end
 
 
 local GetMouseFocus, pcall = GetMouseFocus, pcall
+if not GetMouseFocus then
+	local GetMouseFoci = GetMouseFoci
+	GetMouseFocus = function() return GetMouseFoci()[1] end
+end
 function hidingBarMixin:isFocusParent()
 	local status, numPoints = true
 	local frame = GetMouseFocus()
