@@ -195,7 +195,9 @@ function UIConfig:SetupConfigInterface()
 
     CSC_ConfigFrame = CreateFrame("Frame", "CSC_InterfaceOptionsPanel", UIParent);
     CSC_ConfigFrame.name = CSC_UI_OPT_NAME;
-    InterfaceOptions_AddCategory(CSC_ConfigFrame);
+	local category = Settings.RegisterCanvasLayoutCategory(CSC_ConfigFrame, CSC_ConfigFrame.name)
+	category.ID = CSC_ConfigFrame.name
+	Settings.RegisterAddOnCategory(category)
 
     -- Title and font
     CSC_ConfigFrame.title = CreateFrame("Frame", "CharacterStatsClassic", CSC_ConfigFrame);
