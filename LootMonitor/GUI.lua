@@ -19,7 +19,7 @@ local t_insert = table.insert
 function SetWindow:Initialize()
     -- 创建SetWindow框体
     local f = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
-    f:SetWidth(360)
+    f:SetWidth(380)
     f:SetHeight(510)
     f:SetBackdrop({
         bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
@@ -45,15 +45,17 @@ function SetWindow:Initialize()
         Config.SetWindowPos[1], _, Config.SetWindowPos[3], Config.SetWindowPos[4], Config.SetWindowPos[5] = f:GetPoint()
     end)
     f:SetScript("OnMouseDown", clearAllFocus)
-    f:SetPropagateKeyboardInput(false)
-    f:SetScript("OnKeyDown", function(self, key)
-        if key == "ESCAPE" then
-            f:SetPropagateKeyboardInput(false)
-            f:Hide()
-        else
-            f:SetPropagateKeyboardInput(true)
-        end
-    end)
+    if not UnitAffectingCombat("player") then
+        f:SetPropagateKeyboardInput(false)
+        f:SetScript("OnKeyDown", function(self, key)
+            if key == "ESCAPE" then
+                f:SetPropagateKeyboardInput(false)
+                f:Hide()
+            else
+                f:SetPropagateKeyboardInput(true)
+            end
+        end)
+    end
     f:Hide()
     self.background = f
     do -- 创建框体标题栏纹理
@@ -90,7 +92,7 @@ function SetWindow:Initialize()
         local t = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmallLeft")
         t:SetText(L["Output to RW"])
         local c = CreateFrame("CheckButton", nil, f, "InterfaceOptionsCheckButtonTemplate")
-        c:SetPoint("TOPLEFT", 85, -40)
+        c:SetPoint("TOPLEFT", 130, -40)
         t:SetPoint("LEFT", c, "RIGHT", 5, 0)
         c:SetScript("OnShow", function(self) self:SetChecked(Config.OutputToRaidWarning) end)
         c:SetScript("OnClick", function(self) Config.OutputToRaidWarning = self:GetChecked() end)
@@ -113,15 +115,23 @@ function SetWindow:Initialize()
         local t = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmallLeft")
         t:SetText(L["Mini Btn"])
         local c = CreateFrame("CheckButton", nil, f, "InterfaceOptionsCheckButtonTemplate")
-        c:SetPoint("TOPLEFT", 15, -77)
+        c:SetPoint("TOPLEFT", 15, -75)
         t:SetPoint("LEFT", c, "RIGHT", 5, 0)
-        c:SetScript("OnShow", function(self) self:SetChecked(Config.MinimapIcon) end)
+        c:SetScript("OnShow", function(self) self:SetChecked(Config.ShowMinimapIcon) end)
         c:SetScript("OnClick", function(self)
-            Config.MinimapIcon = self:GetChecked()
-            if Config.MinimapIcon and not Addon.MinimapIcon.Minimap:IsShown() then
-                Addon.MinimapIcon.Minimap:Show()
+            Config.ShowMinimapIcon = self:GetChecked()
+            if Addon.LDB and Addon.LDBIcon then
+                if Config.ShowMinimapIcon then
+                    Addon.LDBIcon:Show("LootMonitor")
+                else
+                    Addon.LDBIcon:Hide("LootMonitor")
+                end
             else
-                Addon.MinimapIcon.Minimap:Hide()
+                if Config.ShowMinimapIcon and not Addon.MinimapIcon.Minimap:IsShown() then
+                    Addon.MinimapIcon.Minimap:Show()
+                else
+                    Addon.MinimapIcon.Minimap:Hide()
+                end
             end
         end)
     end
@@ -129,7 +139,7 @@ function SetWindow:Initialize()
         local t = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmallLeft")
         t:SetText(L["Boss Only"])
         local c = CreateFrame("CheckButton", nil, f, "InterfaceOptionsCheckButtonTemplate")
-        c:SetPoint("TOPLEFT", 200, -40)
+        c:SetPoint("TOPLEFT", 250, -40)
         t:SetPoint("LEFT", c, "RIGHT", 5, 0)
         c:SetScript("OnShow", function(self) self:SetChecked(Config.BossOnly) end)
         c:SetScript("OnClick", function(self) Config.BossOnly = self:GetChecked() end)
@@ -164,14 +174,14 @@ function SetWindow:Initialize()
         UIDropDownMenu_JustifyText(d, "CENTER")
         UIDropDownMenu_SetWidth(d, 120)
         UIDropDownMenu_SetButtonWidth(d, 120)
-        d:SetPoint("TOPLEFT", 185, -75)
+        d:SetPoint("TOPLEFT", 200, -75)
     end
     do -- Check Stats 和 Show Logs 按钮
         -- 显示框
         do
             for i = 1, 40 do
                 local t = f:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmallLeft")
-                t:SetWidth(150)
+                t:SetWidth(160)
                 t:SetHeight(25)
                 t:SetText("")
                 if math.fmod(i,2) == 1 then
@@ -202,7 +212,7 @@ function SetWindow:Initialize()
         b2:SetHeight(25)
         b2:SetText(L["Show Logs"])
         b2:SetScript("OnClick", function() Addon:PrintLootLog() end)
-        b1:SetPoint("TOPLEFT", 90, -115)
-        b2:SetPoint("TOPLEFT", 220, -115)
+        b1:SetPoint("TOPLEFT", 65, -115)
+        b2:SetPoint("TOPLEFT", 205, -115)
     end
 end

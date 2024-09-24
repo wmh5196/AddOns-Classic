@@ -1,5 +1,5 @@
 ## Interface: 40400
-## Version: 3.30
+## Version: 3.41
 ## Title: LootMonitor
 ## Author: Aoikaze
 ## SavedVariables: LootMonitorDB
