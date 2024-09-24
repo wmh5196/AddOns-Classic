@@ -1,16 +1,16 @@
-lightweight tag bdba2227c0af9bcea3695f89f91fa4a27ba3dd12 v1.15.0
-Author:	Mike D <mcd8604@users.noreply.github.com>
-Date:	Tue Jul 9 23:37:21 2024 -0400
+lightweight tag e5aef4c1af25e13d17cc2d9c8a2044883a93e3c8 v1.15.3.1
+Author:	GitHub <noreply@github.com>
+Date:	Fri Aug 9 02:47:02 2024 -0400
 
-commit bdba2227c0af9bcea3695f89f91fa4a27ba3dd12
+commit e5aef4c1af25e13d17cc2d9c8a2044883a93e3c8
 Author: Mike D <mcd8604@users.noreply.github.com>
-Date:   Tue Jul 9 23:37:21 2024 -0400
+Date:   Fri Aug 9 02:47:02 2024 -0400
 
-    Update Engraver.toc
+    Update EngraverOptions.lua
 
-commit 8cfb04b3c82afbfad85e9eec8e3becb1564c2bb1
+commit c04811c1e5586797d1d9e6832945f0caf84ef17e
 Author: Mike D <mcd8604@users.noreply.github.com>
-Date:   Thu Jul 4 17:36:07 2024 -0400
+Date:   Wed Jul 31 17:17:33 2024 -0400
 
-    update for finger/back slots and other minor things
+    Update Commands.lua
 
