@@ -1,0 +1,36 @@
+## Interface: 40400
+## Title: Button Forge |cff69ccf0(Classic-Cata)|r
+## Version: 1.0.22-classic-Cata Fix
+## Author: Massiner of Nathrezim, Albirew, Sunnova
+## SavedVariables: ButtonForgeGlobalSettings, ButtonForgeGlobalProfiles, ButtonForgeGlobalBackup
+## SavedVariablesPerCharacter: ButtonForgeSave, BFSave
+## IconTexture: Interface\AddOns\ButtonForge\ButtonForge.blp
+## X-Curse-Project-ID: 25215
+## OptionalDeps: Masque
+
+## Title-zhTW: |cff00CCFF[快捷列]|r 更多
+## Notes-zhTW: Button Forge |n|n讓你可以打造出更多快捷列和按鈕。|n|n|cffffd200使用方法: |r從Esc>選項>插件>快捷列-更多，開啟快捷列製作工具。
+## X-Category-zhTW: 介面
+## DefaultState: disabled
+
+Declares.lua
+Const.lua
+Locale-enUS.lua
+Locale-zhCN.lua
+Locale-zhTW.lua
+EventManager.lua
+UILibLayers.xml
+UILibConfigPage.xml
+UILibClickMask.lua
+UILibDragIcon.lua
+UILibCreateButton.lua
+UILibInputBox.lua
+UILibLines.lua
+Util.lua
+UILibToolbar.xml
+KeyBinder.xml
+Button.lua
+Bar.lua
+CustomAction.lua
+bindings.lua
+ButtonForge_API1.lua
