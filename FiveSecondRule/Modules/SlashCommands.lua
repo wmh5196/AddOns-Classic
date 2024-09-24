@@ -32,7 +32,7 @@ function SlashCmdList.FSR(msg, editbox)
     end
 
     if cmd == "" or cmd == "help" then
-        FiveSecondRule:PrintHelp()  
-        InterfaceOptionsFrame_OpenToCategory(FiveSecondRule.OptionsPanelFrame)
+        -- FiveSecondRule:PrintHelp()  
+        Settings.OpenToCategory(FiveSecondRule.OptionsPanelFrame.name)
     end
 end
