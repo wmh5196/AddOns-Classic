@@ -101,6 +101,7 @@ local LFGDungeonIDs = {
     ["AB"] = 55,  -- Arathi Basin
     ["AV"] = 51,  -- Alterac Valley
     ["DFC"] = isSoD and 830 or nil,  -- Demon Fall Canyon
+    ["WB"] = isSoD and 831 or nil,  -- World Bosses
 }
 -- Note make sure the ID's dont overlap with LFGDungeonIDs
 --see https://wago.tools/db2/GroupFinderActivity?build=1.15.2.54332
@@ -149,11 +150,18 @@ local infoOverrides = {
         maxLevel = 60,
         size = 20,
     },
+    -- Demon Fall Canyon (completely spoofed for SoD since its not added into the LFGDungeon db2 table)
     DFC = isSoD and {
-        name = "Demon Fall Canyon",
-        minLevel = 60, 
-        maxLevel = 60, 
+        name = GetRealZoneText(2784),
+        minLevel = 60,
+        maxLevel = 60,
         typeID = DungeonType.Dungeon,
+    },
+    WB = isSoD and {
+        name = "World Bosses",
+        minLevel = 60,
+        maxLevel = 60,
+        typeID = DungeonType.Raid,
     },
     -- UBRS is colloquially considered a dungeon. (in LFGDungeon table its a raid)
     UBRS = { typeID = DungeonType.Dungeon },

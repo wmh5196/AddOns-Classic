@@ -76,6 +76,7 @@ local preLocalizedFallbacks = {
 ---Localized addon strings, keyed by locale
 GBB.locales = {
 	enGB = {
+		NO_FILTERS_SELECTED = "No results!|nModify tracked dungeons and raids in the addon's filter settings.",
 		["lfg_channel"] = preLocalizedFallbacks["lfg_channel"], -- may as well use the client generated string
 		["world_channel"]="World", -- must be the default chat-name!
 		["GuildChannel"]="Guild Channel",
@@ -122,6 +123,7 @@ GBB.locales = {
 		["Cboxshowminimapbutton"]="Show minimap button",	
 		["CboxLockMinimapButton"]="Lock minimap button position",		
 		["CboxLockMinimapButtonDistance"]="Minimize minimap button distance",
+		USE_LIBDBICON = "Manage minimap button using LibDBIcon (requires /reload)",
 		["CboxShowTotalTime"]="Show total time instead last update",
 		["CboxOnDebug"]="Show debug information",
 		["CboxNotifyChat"]="On new request make a chat notification",
@@ -217,6 +219,7 @@ GBB.locales = {
 		
 	},
 	zhTW = {
+		NO_FILTERS_SELECTED = "沒有結果！|n請在插件的過濾條件設定中修改追蹤的地城與團隊副本。",
 		-- ["lfg_channel"]="尋求組隊", -- uses fallback
 		["world_channel"]="綜合", -- must be the default chat-name!
 		["GuildChannel"]="公會",
@@ -263,6 +266,7 @@ GBB.locales = {
 		["Cboxshowminimapbutton"]="顯示小地圖按鈕",	
 		["CboxLockMinimapButton"]="鎖定小地圖按鈕位置",		
 		["CboxLockMinimapButtonDistance"]="固定在小地圖上",
+		USE_LIBDBICON = "小地圖按鈕使用 LibDBIcon (需要重新載入介面)",
 		["CboxShowTotalTime"]="顯示總時間而不是最後更新",
 		["CboxOnDebug"]="顯示除錯資訊",
 		["CboxNotifyChat"]="有新尋求組隊時顯示聊天通知",
@@ -358,6 +362,7 @@ GBB.locales = {
 
 	},
 	zhCN = {
+		NO_FILTERS_SELECTED = "无结果！|n请在插件的过滤器设置中修改跟踪的地下城和团队副本。",
 		-- ["lfg_channel"]="寻求组队", -- uses fallback
 		["world_channel"]="综合", -- must be the default chat-name!
 		["GuildChannel"]="公会",
