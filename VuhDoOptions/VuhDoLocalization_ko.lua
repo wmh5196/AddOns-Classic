@@ -654,6 +654,7 @@ VUHDO_I18N_TT.K592 = "Check this to show private aura icons on the health bar.";
 VUHDO_I18N_TT.K593 = "Select a size for your private aura icons.";
 VUHDO_I18N_TT.K594 = "Check to sort pet units last.";
 VUHDO_I18N_TT.K595 = "Show effective HP (health including shields) of player.";
+VUHDO_I18N_TT.K596 = "Click to change color to indicate players afflicted by bleed debuffs.";
 
 VUHDO_I18N_DEFAULT_PROFILE = "기본 프로필";
 VUHDO_I18N_DEFAULT_LAYOUT = "기본 배치";
@@ -1064,8 +1065,8 @@ VUHDO_I18N_CLEAR_BINDING = "단축키 해제";
 VUHDO_I18N_MACRO_EDITOR = "VuhDo 매크로 편집툴";
 VUHDO_I18N_ACCEPT = "수락";
 VUHDO_I18N_DISCARD = "취소";
-VUHDO_I18N_LKA_HINT_1 = "매크로에서 다음 템플리트를 사용: |c00000000vuhdo|r => 유닛 자체, |c00000000vdname|r => 유닛 이름" justifyH="LEFT" inherits="VuDoButtonFontDark";
-VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => 유닛 대상/ToT, |c00000000vdpet|r => 유닛 소환수, 예제: /cast [@vuhdo] 순간 치유" justifyH="LEFT" inherits="VuDoButtonFontDark";
+VUHDO_I18N_LKA_HINT_1 = "매크로에서 다음 템플리트를 사용: |c00000000vuhdo|r => 유닛 자체, |c00000000vdname|r => 유닛 이름";
+VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => 유닛 대상/ToT, |c00000000vdpet|r => 유닛 소환수, 예제: /cast [@vuhdo] 순간 치유";
 VUHDO_I18N_LKA_CUSTOM_MACRO_DISCARDED = "사용자 매크로 텍스트가 삭제되었습니다.";
 VUHDO_I18N_NAME_CHANGE_DISCARDED = "아이템 이름의 변경이 취소되었습니다.";
 VUHDO_I18N_LKA_TYPE_CHANGED = "VuhDo 사용자 매크로에서 주문 또는 WoW 클라이언트 매크로로 유형이 변경되었습니다.\n사용자 매크로 텍스트를 삭제 하시겠습니까?";
@@ -1202,3 +1203,5 @@ VUHDO_I18N_PETS_LAST = "Pets last";
 
 VUHDO_I18N_SHOW_EFFECTIVE = "Show\nEffective";
 VUHDO_I18N_DEBUFF_IGNORE_IMPORTED = "Debuff ignore list successfully imported.";
+
+VUHDO_I18N_BLEED = "Bleed";

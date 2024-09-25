@@ -658,6 +658,7 @@ VUHDO_I18N_TT.K592 = "Check this to show private aura icons on the health bar.";
 VUHDO_I18N_TT.K593 = "Select a size for your private aura icons.";
 VUHDO_I18N_TT.K594 = "Check to sort pet units last.";
 VUHDO_I18N_TT.K595 = "Show effective HP (health including shields) of player.";
+VUHDO_I18N_TT.K596 = "Click to change color to indicate players afflicted by bleed debuffs.";
 
 VUHDO_I18N_DEFAULT_PROFILE = "Default Profile";
 VUHDO_I18N_DEFAULT_LAYOUT = "Default Layout";
@@ -1075,8 +1076,8 @@ VUHDO_I18N_CLEAR_BINDING = "Clear Binding";
 VUHDO_I18N_MACRO_EDITOR = "VuhDo Macro Editor";
 VUHDO_I18N_ACCEPT = "Accept";
 VUHDO_I18N_DISCARD = "Discard";
-VUHDO_I18N_LKA_HINT_1 = "Use the following templates in your macro: |c00000000vuhdo|r => unit itself, |c00000000vdname|r => unit's name" justifyH="LEFT" inherits="VuDoButtonFontDark";
-VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => unit's target/ToT, |c00000000vdpet|r => unit's pet, example: /cast [@vuhdo] Flash Heal" justifyH="LEFT" inherits="VuDoButtonFontDark";
+VUHDO_I18N_LKA_HINT_1 = "Use the following templates in your macro: |c00000000vuhdo|r => unit itself, |c00000000vdname|r => unit's name";
+VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => unit's target/ToT, |c00000000vdpet|r => unit's pet, example: /cast [@vuhdo] Flash Heal";
 VUHDO_I18N_LKA_CUSTOM_MACRO_DISCARDED = "Custom macro text was discarded.";
 VUHDO_I18N_NAME_CHANGE_DISCARDED = "Name change of item was discarded.";
 VUHDO_I18N_LKA_TYPE_CHANGED = "Type changed from VuhDo CUSTOM MACRO\nto a Spell or WoW client macro.\nDiscard custom macro text?";
@@ -1211,3 +1212,5 @@ VUHDO_I18N_PETS_LAST = "Pets last";
 
 VUHDO_I18N_SHOW_EFFECTIVE = "Show\nEffective";
 VUHDO_I18N_DEBUFF_IGNORE_IMPORTED = "Debuff ignore list successfully imported.";
+
+VUHDO_I18N_BLEED = "Bleed";

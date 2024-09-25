@@ -35,7 +35,6 @@ local VUHDO_DEFERRED_UPDATE_TYPES = {
 
 
 local VUHDO_parseAddonMessage;
-local VUHDO_spellcastFailed;
 local VUHDO_spellcastSent;
 local VUHDO_parseCombatLogEvent;
 local VUHDO_updateAllOutRaidTargetButtons;
@@ -61,14 +60,14 @@ local VUHDO_UIFrameFlash_OnUpdate = function() end;
 
 local GetTime = GetTime;
 local UnitInRange = UnitInRange;
-local IsSpellInRange = IsSpellInRange;
+local IsSpellInRange = IsSpellInRange or VUHDO_isSpellInRange;
 local UnitDetailedThreatSituation = UnitDetailedThreatSituation;
 local UnitIsCharmed = UnitIsCharmed;
 local UnitCanAttack = UnitCanAttack;
 local UnitName = UnitName;
 local UnitIsEnemy = UnitIsEnemy;
-local UnitIsTrivial = UnitIsTrivial;
-local GetSpellCooldown = GetSpellCooldown;
+local GetSpellCooldown = GetSpellCooldown or VUHDO_getSpellCooldown;
+local GetSpellName = C_Spell.GetSpellName or VUHDO_getSpellName;
 local HasFullControl = HasFullControl;
 local pairs = pairs;
 local UnitThreatSituation = UnitThreatSituation;
@@ -103,7 +102,6 @@ local function VUHDO_eventHandlerInitLocalOverrides()
 	VUHDO_updateAllRaidBars = _G["VUHDO_updateAllRaidBars"];
 	VUHDO_updateAllOutRaidTargetButtons = _G["VUHDO_updateAllOutRaidTargetButtons"];
 	VUHDO_parseAddonMessage = _G["VUHDO_parseAddonMessage"];
-	VUHDO_spellcastFailed = _G["VUHDO_spellcastFailed"];
 	VUHDO_spellcastSent = _G["VUHDO_spellcastSent"];
 	VUHDO_parseCombatLogEvent = _G["VUHDO_parseCombatLogEvent"];
 	VUHDO_updateHealthBarsFor = _G["VUHDO_updateHealthBarsFor"];
@@ -126,8 +124,8 @@ local function VUHDO_eventHandlerInitLocalOverrides()
 	-- FIXME: why can't model sanity be run prior to burst cache initialization?
 	if type(VUHDO_CONFIG["RANGE_SPELL"]) == "table" and type(VUHDO_CONFIG["RANGE_PESSIMISTIC"]) == "table" then
 		sRangeSpell = VUHDO_CONFIG["RANGE_SPELL"];
-		sIsHelpfulRangeKnown = not VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HELPFUL"] and GetSpellInfo(sRangeSpell["HELPFUL"]) ~= nil;
-		sIsHarmfulRangeKnown = not VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HARMFUL"] and GetSpellInfo(sRangeSpell["HARMFUL"]) ~= nil;
+		sIsHelpfulRangeKnown = not VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HELPFUL"] and GetSpellName(sRangeSpell["HELPFUL"]) ~= nil;
+		sIsHarmfulRangeKnown = not VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HARMFUL"] and GetSpellName(sRangeSpell["HARMFUL"]) ~= nil;
 	end
 
 	sIsHealerMode = not VUHDO_CONFIG["THREAT"]["IS_TANK_MODE"];
@@ -158,6 +156,7 @@ local VUHDO_VARIABLES_LOADED = false;
 local VUHDO_IS_RELOAD_BUFFS = false;
 local VUHDO_LOST_CONTROL = false;
 local VUHDO_RELOAD_AFTER_BATTLE = false;
+local VUHDO_OPTIONS_SHOW_AFTER_BATTLE = false;
 local VUHDO_GCD_UPDATE = false;
 
 local VUHDO_RELOAD_PANEL_NUM = nil;
@@ -187,9 +186,6 @@ VUHDO_TIMERS = {
 local VUHDO_TIMERS = VUHDO_TIMERS;
 
 
-local tUnit, tInfo;
-
-
 VUHDO_CONFIG = nil;
 VUHDO_PANEL_SETUP = nil;
 VUHDO_SPELL_ASSIGNMENTS = nil;
@@ -217,7 +213,6 @@ end
 function VUHDO_initBuffs()
 	VUHDO_initBuffsFromSpellBook();
 	VUHDO_reloadBuffPanel();
-	VUHDO_resetHotBuffCache();
 end
 
 
@@ -583,9 +578,21 @@ function VUHDO_OnEvent(_, anEvent, anArg1, anArg2, anArg3, anArg4, anArg5, anArg
 			end
 		end
 
+		if VUHDO_OPTIONS_SHOW_AFTER_BATTLE and VuhDoNewOptionsTabbedFrame and not VuhDoNewOptionsTabbedFrame:IsShown() then
+			VuhDoNewOptionsTabbedFrame:SetShown(true);
+
+			VUHDO_OPTIONS_SHOW_AFTER_BATTLE = false;
+		end
+
 		VUHDO_setIsOutOfCombat(true);
 
 	elseif "PLAYER_REGEN_DISABLED" == anEvent then
+		if VuhDoNewOptionsTabbedFrame and VuhDoNewOptionsTabbedFrame:IsShown() then
+			VuhDoNewOptionsTabbedFrame:SetShown(false);
+
+			VUHDO_OPTIONS_SHOW_AFTER_BATTLE = true;
+		end
+
 		VUHDO_setIsOutOfCombat(false);
 
 	elseif "UNIT_MAXHEALTH" == anEvent then
@@ -804,9 +811,13 @@ function VUHDO_OnEvent(_, anEvent, anArg1, anArg2, anArg3, anArg4, anArg5, anArg
 		
 --[[	elseif "RUNE_POWER_UPDATE" == anEvent then
 		VUHDO_updateBouquetsForEvent("player", 42); -- VUHDO_UPDATE_RUNES
-	
-	elseif "PLAYER_SPECIALIZATION_CHANGED" == anEvent then
+
+	elseif "PLAYER_SPECIALIZATION_CHANGED" == anEvent or "ACTIVE_TALENT_GROUP_CHANGED" == anEvent then
 		if VUHDO_VARIABLES_LOADED and not InCombatLockdown() then
+			if "ACTIVE_TALENT_GROUP_CHANGED" == anEvent then
+				anArg1 = "player";
+			end
+
 			if "player" == anArg1 then
 				local tSpecNum = tostring(GetSpecialization()) or "1";
 				local tBestProfile = VUHDO_getBestProfileAfterSpecChange();
@@ -975,7 +986,7 @@ function VUHDO_slashCmd(aCommand)
 		ReloadUI();
 	elseif (strfind(tCommandWord, "chkvars")) then
 		table.wipe(VUHDO_DEBUG);
-		for tFName, tData in pairs(_G) do
+		for tFName, _ in pairs(_G) do
 			if(strsub(tFName, 1, 1) == "t" or strsub(tFName, 1, 1) == "s") then
 				VUHDO_Msg("Emerging local variable " .. tFName);
 			end
@@ -1228,7 +1239,7 @@ end
 
 --
 local tIsInRange, tIsCharmed;
-local tIsRangeKnown, tRangeSpell;
+local tIsRangeKnown, tRangeSpell, tUnitReaction;
 local function VUHDO_updateAllRange()
 	for tUnit, tInfo in pairs(VUHDO_RAID) do
 		tInfo["baseRange"] = "player" == tUnit or "pet" == tUnit or UnitInRange(tUnit);
@@ -1248,15 +1259,17 @@ local function VUHDO_updateAllRange()
 			-- Check if unit is in range
 			if UnitCanAttack("player", tUnit) then
 				tIsRangeKnown = sIsHarmfulRangeKnown;
-				tRangeSpell = sRangeSpell["HARMFUL"];
+				tUnitReaction = "HARMFUL";
 			else
 				tIsRangeKnown = sIsHelpfulRangeKnown;
-				tRangeSpell = sRangeSpell["HELPFUL"];
+				tUnitReaction = "HELPFUL";
 			end
+
+			tRangeSpell = sRangeSpell[tUnitReaction];
 
 			if tIsRangeKnown then
 				tIsInRange = tInfo["connected"] and 
-					((tRangeSpell and 1 == IsSpellInRange(tRangeSpell, tUnit)) or 
+					((tRangeSpell and 1 == IsSpellInRange(tRangeSpell, tUnit, tUnitReaction)) or 
 						((tInfo["dead"] or tInfo["charmed"]) and tInfo["baseRange"]) or "player" == tUnit or 
 						(VUHDO_isSpecialUnit(tUnit) and VUHDO_checkInteractDistance(tUnit, 1)));
 			else
@@ -1708,10 +1721,14 @@ local VUHDO_ALL_EVENTS = {
 
 --
 function VUHDO_OnLoad(anInstance)
+
 	local _, _, _, tTocVersion = GetBuildInfo();
 
 	if tonumber(tTocVersion or 999999) < VUHDO_MIN_TOC_VERSION then
-		VUHDO_Msg(format(VUHDO_I18N_DISABLE_BY_VERSION, VUHDO_MIN_TOC_VERSION));
+		VUHDO_Msg(format(VUHDO_I18N_DISABLE_BY_MIN_VERSION, VUHDO_VERSION, VUHDO_MIN_TOC_VERSION));
+		return;
+	elseif tonumber(tTocVersion or 0) > VUHDO_MAX_TOC_VERSION then
+		VUHDO_Msg(format(VUHDO_I18N_DISABLE_BY_MAX_VERSION, VUHDO_VERSION, VUHDO_MAX_TOC_VERSION));
 		return;
 	end
 
@@ -1736,6 +1753,7 @@ function VUHDO_OnLoad(anInstance)
 	anInstance:SetScript("OnUpdate", VUHDO_OnUpdate);
 
 	VUHDO_printAbout();
+
 end
 
 

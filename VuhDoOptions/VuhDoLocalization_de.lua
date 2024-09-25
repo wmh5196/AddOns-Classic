@@ -651,6 +651,7 @@ VUHDO_I18N_TT.K592 = "Check this to show private aura icons on the health bar.";
 VUHDO_I18N_TT.K593 = "Select a size for your private aura icons.";
 VUHDO_I18N_TT.K594 = "Check to sort pet units last.";
 VUHDO_I18N_TT.K595 = "Show effective HP (health including shields) of player.";
+VUHDO_I18N_TT.K596 = "Click to change color to indicate players afflicted by bleed debuffs.";
 
 VUHDO_I18N_DEFAULT_PROFILE = "Default Profile";
 VUHDO_I18N_DEFAULT_LAYOUT = "Default Layout";
@@ -1063,8 +1064,8 @@ VUHDO_I18N_CLEAR_BINDING = "Belegung löschen";
 VUHDO_I18N_MACRO_EDITOR = "VuhDo Makro-Editor";
 VUHDO_I18N_ACCEPT = "Annehmen";
 VUHDO_I18N_DISCARD = "Verwerfen";
-VUHDO_I18N_LKA_HINT_1 = "Benutzen sie folgende Platzhalter im Makro: |c00000000vuhdo|r => Spieler, |c00000000vdname|r => Name des Spielers" justifyH="LEFT" inherits="VuDoButtonFontDark";
-VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => Ziel des Spielers/ToT, |c00000000vdpet|r => Pet des Spielers, Bsp: /use [@vuhdo] Blitzheilung" justifyH="LEFT" inherits="VuDoButtonFontDark";
+VUHDO_I18N_LKA_HINT_1 = "Benutzen sie folgende Platzhalter im Makro: |c00000000vuhdo|r => Spieler, |c00000000vdname|r => Name des Spielers";
+VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => Ziel des Spielers/ToT, |c00000000vdpet|r => Pet des Spielers, Bsp: /use [@vuhdo] Blitzheilung";
 VUHDO_I18N_LKA_CUSTOM_MACRO_DISCARDED = "Eigener Makro-Text wurde verworfen.";
 VUHDO_I18N_NAME_CHANGE_DISCARDED = "Die Namensänderung wurde verworfen.";
 VUHDO_I18N_LKA_TYPE_CHANGED = "Zuweisung von EIGENEM TEXT zu\nSpruch oder WoW-Makro geändert.\nMakro-Text verwerfen?";
@@ -1196,3 +1197,5 @@ VUHDO_I18N_PETS_LAST = "Pets last";
 
 VUHDO_I18N_SHOW_EFFECTIVE = "Show\nEffective";
 VUHDO_I18N_DEBUFF_IGNORE_IMPORTED = "Debuff ignore list successfully imported.";
+
+VUHDO_I18N_BLEED = "Bleed";

@@ -29,6 +29,7 @@ local VUHDO_PUMP_SHIELDS = {
 -- Note: if adding by spell ID table key must be a string e.g. ["17"] not [17]
 local VUHDO_IMMEDIATE_HOTS = {
 	[VUHDO_SPELL_ID.ATONEMENT] = true,
+	["194384"] = true, -- VUHDO_SPELL_ID.ATONEMENT
 }
 
 
@@ -142,7 +143,6 @@ local ceil = ceil;
 local floor = floor;
 local GetTime = GetTime;
 local select = select;
-local GetSpellInfo = GetSpellInfo;
 
 
 
@@ -431,10 +431,10 @@ function VUHDO_parseCombatLogShieldAbsorb(aMessage, aSrcGuid, aDstGuid, aShieldN
 		"SPELL_AURA_REFRESH" == aMessage or "SPELL_AURA_BROKEN" == aMessage or
 		"SPELL_AURA_BROKEN_SPELL" == aMessage) then
 
-		tinfo = VUHDO_RAID[tUnit];
+		tInfo = VUHDO_RAID[tUnit];
 
 		if tInfo then
-			VUHDO_updateHots(tUnit, tInfo);
+			VUHDO_updateHots(tUnit, tInfo, aShieldName, aSpellId);
 
 			-- FIXME: why all?
 			VUHDO_updateAllCyclicBouquets(true);

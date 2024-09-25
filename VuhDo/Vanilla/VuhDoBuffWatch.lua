@@ -67,12 +67,12 @@ local GetTotemInfo = GetTotemInfo;
 local table = table;
 local strsub = strsub;
 local GetTime = GetTime;
-local GetSpellCooldown = GetSpellCooldown;
-local GetSpellInfo = GetSpellInfo;
+local GetSpellCooldown = GetSpellCooldown or VUHDO_getSpellCooldown;
+local GetSpellInfo = GetSpellInfo or VUHDO_getSpellInfo;
 local InCombatLockdown = InCombatLockdown;
 local GetWeaponEnchantInfo = GetWeaponEnchantInfo;
 local UnitOnTaxi = UnitOnTaxi;
-local IsSpellInRange = IsSpellInRange;
+local IsSpellInRange = IsSpellInRange or VUHDO_isSpellInRange;
 local GetShapeshiftFormInfo = GetShapeshiftFormInfo;
 
 local tonumber = tonumber;
@@ -888,7 +888,7 @@ function VUHDO_updateBuffSwatch(aSwatch)
 
 	if not InCombatLockdown() then
 		aSwatch:SetAttribute("lowtarget", tLowestUnit);
-		aSwatch:SetAttribute("goodtarget", tGoodTarget);
+		aSwatch:SetAttribute("goodtarget", tVariant[2] == VUHDO_BUFF_TARGET_SELF and "player" or tGoodTarget);
 	end
 
 	VUHDO_NUM_LOWS[tSwatchName] = #(tLowGroup or sEmpty) + #(tMissGroup or sEmpty);

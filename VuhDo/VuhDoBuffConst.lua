@@ -35,7 +35,9 @@ local GROUP_HASTE = { };
 
 local GROUP_CRIT = { };
 
-local GROUP_MASTERY = { };
+local GROUP_MASTERY = {
+	VUHDO_SPELL_ID.SKYFURY,
+};
 
 local GROUP_STATS = { 
 	VUHDO_SPELL_ID.BUFF_MARK_OF_THE_WILD,

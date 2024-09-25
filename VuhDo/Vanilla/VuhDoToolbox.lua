@@ -17,20 +17,14 @@ local IsInGroup = IsInGroup;
 local UnitInRange = UnitInRange;
 local GetRaidRosterInfo = GetRaidRosterInfo;
 local IsInInstance = IsInInstance;
-local IsSpellInRange = IsSpellInRange;
 local GetTime = GetTime;
 local GetRealZoneText = GetRealZoneText;
-local GetSpellInfo = GetSpellInfo;
-local SetMapToCurrentZone = SetMapToCurrentZone;
 local UnitPowerBarID = UnitPowerBarID;
 local GetUnitPowerBarInfoByID = GetUnitPowerBarInfoByID;
 local WorldMapFrame = WorldMapFrame;
-local GetMouseFocus = GetMouseFocus;
 local GetPlayerFacing = GetPlayerFacing;
-local GetSpellBookItemInfo = GetSpellBookItemInfo;
 local CheckInteractDistance = CheckInteractDistance;
 local UnitIsUnit = UnitIsUnit;
-local IsSpellInRange = IsSpellInRange;
 local UnitInRange = UnitInRange;
 local IsAltKeyDown = IsAltKeyDown;
 local IsControlKeyDown = IsControlKeyDown;
@@ -47,6 +41,8 @@ local GetAuraSlots = C_UnitAuras and C_UnitAuras.GetAuraSlots;
 local UnpackAuraData = AuraUtil.UnpackAuraData or VUHDO_unpackAuraData;
 local FindAura = AuraUtil.FindAura;
 local FindAuraByName = AuraUtil.FindAuraByName;
+local IsUsableItem = IsUsableItem or C_Item.IsUsableItem;
+local IsUsableSpell = IsUsableSpell or C_Spell.IsSpellUsable;
 
 -- Number of seconds into the future to look for incoming heals
 -- This ensures we only include the next incoming tick of HoTs
@@ -109,6 +105,152 @@ VUHDO_META_NEW_ARRAY = {
 		return tValue;
 	end
 };
+
+
+
+--
+local tSpellInfo;
+function VUHDO_getSpellInfo(aSpellId)
+
+	if not aSpellId then
+		return;
+	end
+
+	if GetSpellInfo then
+		return GetSpellInfo(aSpellId);
+	end
+
+	tSpellInfo = C_Spell.GetSpellInfo(aSpellId);
+
+	if not tSpellInfo then
+		return;
+	end
+
+	return tSpellInfo.name, nil, tSpellInfo.iconID, tSpellInfo.castTime, tSpellInfo.minRange, tSpellInfo.maxRange, tSpellInfo.spellID, tSpellInfo.originalIconID;
+
+end
+
+
+
+--
+local tSpellCooldown;
+function VUHDO_getSpellCooldown(aSpellId)
+
+	if not aSpellId then
+		return;
+	end
+
+	if GetSpellCooldown then
+		return GetSpellCooldown(aSpellId);
+	end
+
+	tSpellCooldown = C_Spell.GetSpellCooldown(aSpellId);
+
+	if not tSpellCooldown then
+		return;
+	end
+
+	return tSpellCooldown.startTime, tSpellCooldown.duration, tSpellCooldown.isEnabled, tSpellCooldown.modRate;
+
+end
+
+
+
+--
+local tIconId;
+function VUHDO_getSpellBookItemTexture(aSpellId)
+
+	if not aSpellId then
+		return;
+	end
+
+	_, tIconId = VUHDO_getSpellInfo(aSpellId);
+
+	return tIconId;
+
+end
+
+
+
+--
+local VUHDO_RANGE_SPELLS_REMAP = {
+	["HELPFUL"] = {
+		[VUHDO_SPELL_ID.LIVING_FLAME] = { VUHDO_SPELL_ID.EMERALD_BLOSSOM },
+		[VUHDO_SPELL_ID.DETOX] = { VUHDO_SPELL_ID.VIVIFY },
+	},
+	["HARMFUL"] = {
+		[VUHDO_SPELL_ID.SMITE] = { VUHDO_SPELL_ID.SHADOW_WORD_PAIN },
+		[VUHDO_SPELL_ID.LIVING_FLAME] = { VUHDO_SPELL_ID.AZURE_STRIKE },
+		[VUHDO_SPELL_ID.LIGHTNING_BOLT] = { VUHDO_SPELL_ID.FLAME_SHOCK },
+	},
+};
+
+local tIsSpellInRange;
+function VUHDO_isSpellInRange(aSpell, aUnit, aUnitReaction)
+
+	if not aSpell or not aUnit then
+		return;
+	end
+
+	if IsSpellInRange then
+		return IsSpellInRange(aSpell, aUnit);
+	end
+
+	tIsSpellInRange = C_Spell.IsSpellInRange(aSpell, aUnit);
+
+	if tIsSpellInRange == nil and aUnitReaction and
+		VUHDO_RANGE_SPELLS_REMAP[aUnitReaction] and VUHDO_RANGE_SPELLS_REMAP[aUnitReaction][aSpell] then
+		for _, tRangeSpell in pairs(VUHDO_RANGE_SPELLS_REMAP[aUnitReaction][aSpell]) do
+			tIsSpellInRange = C_Spell.IsSpellInRange(tRangeSpell, aUnit);
+
+			if tIsSpellInRange == true then
+				return 1;
+			elseif tIsSpellInRange == false then
+				return 0;
+			end
+		end
+	end
+
+	return tIsSpellInRange and 1 or 0;
+
+end
+
+
+
+--
+local tTextureHeight, tTextureWidth = 256, 256;
+local tRoleHeight, tRoleWidth = 67, 67;
+function VUHDO_getTexCoordsForRole(aRole)
+
+	if aRole == "GUIDE" then
+		return GetTexCoordsByGrid(1, 1, tTextureWidth, tTextureHeight, tRoleWidth, tRoleHeight);
+	elseif aRole == "TANK" then
+		return GetTexCoordsByGrid(1, 2, tTextureWidth, tTextureHeight, tRoleWidth, tRoleHeight);
+	elseif aRole == "HEALER" then
+		return GetTexCoordsByGrid(2, 1, tTextureWidth, tTextureHeight, tRoleWidth, tRoleHeight);
+	elseif aRole == "DAMAGER" then
+		return GetTexCoordsByGrid(2, 2, tTextureWidth, tTextureHeight, tRoleWidth, tRoleHeight);
+	end
+
+end
+
+
+
+--
+local tMouseFoci;
+function VUHDO_getMouseFocus()
+
+	if GetMouseFocus then
+		return GetMouseFocus();
+	end
+
+	tMouseFoci = GetMouseFoci();
+
+	if tMouseFoci and tMouseFoci[1] then
+		return tMouseFoci[1];
+	end
+
+end
 
 
 
@@ -229,8 +371,8 @@ function VUHDO_toolboxInitLocalOverrides()
 	-- FIXME: why can't model sanity be run prior to burst cache initialization?
 	if type(VUHDO_CONFIG["RANGE_SPELL"]) == "table" and type(VUHDO_CONFIG["RANGE_PESSIMISTIC"]) == "table" then
 		sRangeSpell = VUHDO_CONFIG["RANGE_SPELL"];
-		sIsHelpfulGuessRange = VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HELPFUL"] or GetSpellInfo(sRangeSpell["HELPFUL"]) == nil;
-		sIsHarmfulGuessRange = VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HARMFUL"] or GetSpellInfo(sRangeSpell["HARMFUL"]) == nil;
+		sIsHelpfulGuessRange = VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HELPFUL"] or VUHDO_getSpellName(sRangeSpell["HELPFUL"]) == nil;
+		sIsHarmfulGuessRange = VUHDO_CONFIG["RANGE_PESSIMISTIC"]["HARMFUL"] or VUHDO_getSpellName(sRangeSpell["HARMFUL"]) == nil;
 	end
 
 	sZeroRange = "0.0 " .. VUHDO_I18N_YARDS;
@@ -311,7 +453,6 @@ end
 
 
 -- Extracts unit number from a Unit's name
-local tUnitNo;
 function VUHDO_getUnitNo(aUnit)
 	if not aUnit or VUHDO_isSpecialUnit(aUnit) then return 0; end
 	if "player" == aUnit then aUnit = VUHDO_PLAYER_RAID_ID or "player"; end
@@ -338,9 +479,9 @@ function VUHDO_checkInteractDistance(aUnit, aDistIndex)
 		return CheckInteractDistance(aUnit, aDistIndex);
 	else
 		if not sIsHarmfulGuessRange and UnitCanAttack("player", aUnit) then
-			return (IsSpellInRange(sRangeSpell["HARMFUL"], aUnit) == 1) and true or false;
+			return (VUHDO_isSpellInRange(sRangeSpell["HARMFUL"], aUnit, "HARMFUL") == 1) and true or false;
 		elseif not sIsHelpfulGuessRange then
-			return (IsSpellInRange(sRangeSpell["HELPFUL"], aUnit) == 1) and true or false;
+			return (VUHDO_isSpellInRange(sRangeSpell["HELPFUL"], aUnit, "HELPFUL") == 1) and true or false;
 		else
 			-- default to showing in-range when we don't know any better
 			return true;
@@ -386,6 +527,9 @@ end
 
 
 -- returns whether or not a unit is in range
+local tIsGuessRange;
+local tRangeSpell;
+local tUnitReaction;
 function VUHDO_isInRange(aUnit)
 	
 	if "player" == aUnit then 
@@ -395,22 +539,21 @@ function VUHDO_isInRange(aUnit)
 	elseif VUHDO_unitPhaseReason(aUnit) then
 		return false;
 	else
-		local tIsGuessRange;
-		local tRangeSpell;
-
 		if UnitCanAttack("player", aUnit) then
 			tIsGuessRange = sIsHarmfulGuessRange;
-			tRangeSpell = sRangeSpell["HARMFUL"];
+			tUnitReaction = "HARMFUL";
 		else
 			tIsGuessRange = sIsHelpfulGuessRange;
-			tRangeSpell = sRangeSpell["HELPFUL"];
+			tUnitReaction = "HELPFUL";
 		end
+
+		tRangeSpell = sRangeSpell[tUnitReaction];
 
 		if tIsGuessRange or not tRangeSpell then
 			return UnitInRange(aUnit);
 		end
 
-		local tIsSpellInRange = IsSpellInRange(tRangeSpell, aUnit);
+		local tIsSpellInRange = VUHDO_isSpellInRange(tRangeSpell, aUnit, tUnitReaction);
 
 		if tIsSpellInRange ~= nil then
 			return (tIsSpellInRange == 1) and true or false;
@@ -640,12 +783,12 @@ function VUHDO_isSpellKnown(aSpellName)
 	if (type(aSpellName) == "number" and IsSpellKnown(aSpellName))
 		or (type(aSpellName) == "number" and IsSpellKnownOrOverridesKnown(aSpellName))
 		or (type(aSpellName) == "number" and IsPlayerSpell(aSpellName))
-		or GetSpellBookItemInfo(aSpellName) ~= nil
-		or VUHDO_NAME_TO_SPELL[aSpellName] ~= nil and GetSpellBookItemInfo(VUHDO_NAME_TO_SPELL[aSpellName])
 		or VUHDO_isRuneSpellKnown(aSpellName) then
 		return true;
 	elseif type(aSpellName) ~= "number" then
-		_, _, _, _, _, _, tSpellId = GetSpellInfo(aSpellName);
+		aSpellName = VUHDO_NAME_TO_SPELL[aSpellName] or aSpellName;
+
+		_, _, _, _, _, _, tSpellId = VUHDO_getSpellInfo(aSpellName);
 
 		if tSpellId then
 			return IsSpellKnownOrOverridesKnown(tSpellId) or IsSpellKnown(tSpellId) or IsPlayerSpell(tSpellId);
@@ -690,7 +833,7 @@ function VUHDO_initTalentSpellCaches()
 						local tDefinitionInfo = C_Traits.GetDefinitionInfo(tEntryInfo.definitionID);
 
 						if tDefinitionInfo and tDefinitionInfo.spellID then
-							local tSpellName = GetSpellInfo(tDefinitionInfo.spellID);
+							local tSpellName = VUHDO_getSpellName(tDefinitionInfo.spellID);
 
 							VUHDO_TALENT_CACHE_SPELL_ID[tDefinitionInfo.spellID] = tSpellName;
 							VUHDO_TALENT_CACHE_SPELL_NAME[tSpellName] = tDefinitionInfo.spellID;
@@ -1083,7 +1226,7 @@ function VUHDO_getUnitDirection(aUnit)
 	tIsInInstance, _ = IsInInstance();
 
 	if tIsInInstance or (WorldMapFrame ~= nil and WorldMapFrame:IsShown())
-		or (GetMouseFocus() ~= nil and GetMouseFocus():GetName() == nil) then
+		or (VUHDO_getMouseFocus() ~= nil and VUHDO_getMouseFocus():GetName() == nil) then
 		return nil;
 	end
 
@@ -1474,7 +1617,7 @@ end
 function VUHDO_getSpecialization()
 
 	if not GetSpecialization then
-		return 1;
+		return GetActiveTalentGroup();
 	else
 		return GetSpecialization();
 	end
@@ -1483,12 +1626,14 @@ end
 
 
 
-function VUHDO_getSpecializationInfo(...)
+function VUHDO_getSpecializationInfo(aSpecNum, ...)
 
-	if not GetSpecializationInfo then 
-		return 1, "Unknown", _, _, _, "NONE";
+	if not GetSpecializationInfo then
+		local tSpecNum = aSpecNum or VUHDO_getSpecialization();
+
+		return tSpecNum, tSpecNum == 1 and "Primary" or (tSpecNum == 2 and "Secondary" or "Unknown"), _, _, GetTalentGroupRole(tSpecNum) or "NONE";
 	else
-		return GetSpecializationInfo(...);
+		return GetSpecializationInfo(aSpecNum, ...);
 	end
 
 end
@@ -1716,5 +1861,16 @@ function VUHDO_isRuneSpellKnown(aSpellName)
 	else
 		return false;
 	end
+
+end
+
+
+
+local tSpellName;
+function VUHDO_getSpellName(aSpellId)
+
+	tSpellName = GetSpellInfo(aSpellId);
+
+	return tSpellName;
 
 end

@@ -14,6 +14,7 @@ local VUHDO_HEALTH_BAR_TEXT = { };
 local VUHDO_ACTION_PANELS = { };
 
 local VUHDO_BAR_ICON_FRAMES = { };
+local VUHDO_BAR_ICON_FRAME_BACKGROUNDS = { };
 local VUHDO_BAR_ICONS = { };
 local VUHDO_BAR_ICON_TIMERS = { };
 local VUHDO_BAR_ICON_COUNTERS = { };
@@ -67,6 +68,15 @@ end
 
 
 --
+function VUHDO_getBarIconFrameBackground(aButton, anIconNumber)
+
+	return VUHDO_BAR_ICON_FRAME_BACKGROUNDS[aButton][anIconNumber];
+
+end
+
+
+
+--
 function VUHDO_getBarIcon(aButton, anIconNumber)
 	return VUHDO_BAR_ICONS[aButton][anIconNumber];
 end
@@ -92,10 +102,32 @@ end
 
 --
 function VUHDO_getOrCreateCuDeButton(aButton, anIconNumber)
+
 	if not VUHDO_BAR_ICON_BUTTONS[aButton][anIconNumber] then
 		local tParentName = aButton:GetName() .. "BgBarIcBarHlBar";
 		local tFrameName = tParentName .. "Ic" .. anIconNumber;
-		VUHDO_BAR_ICON_FRAMES[aButton][anIconNumber] = CreateFrame("Button", tFrameName, _G[tParentName], "VuhDoDebuffIconTemplate");
+
+		local tBarIconFrame = CreateFrame("Button", tFrameName, _G[tParentName], "VuhDoDebuffIconTemplate");
+		local tBarIconFrameBackground = CreateFrame("Frame", tFrameName .. "Background", tBarIconFrame, "BackdropTemplate");
+
+		tBarIconFrameBackground:SetParent(tBarIconFrame);
+
+		tBarIconFrameBackground:ClearAllPoints();
+		tBarIconFrameBackground:SetPoint("TOPLEFT", tBarIconFrame, -1, 1);
+		tBarIconFrameBackground:SetPoint("BOTTOMRIGHT", tBarIconFrame, 1, -1);
+
+		tBarIconFrameBackground:SetFrameLevel(tBarIconFrame:GetFrameLevel() == 0 and 1 or tBarIconFrame:GetFrameLevel() - 1);
+
+		tBarIconFrameBackground:SetBackdrop(
+			{
+				edgeFile = "Interface\\Buttons\\WHITE8X8",
+				edgeSize = 4,
+			}
+		);
+
+		VUHDO_BAR_ICON_FRAMES[aButton][anIconNumber] = tBarIconFrame;
+		VUHDO_BAR_ICON_FRAME_BACKGROUNDS[aButton][anIconNumber] = tBarIconFrameBackground;
+
 		VUHDO_BAR_ICON_BUTTONS[aButton][anIconNumber] = _G[tFrameName.. "B"];
 		VUHDO_BAR_ICONS[aButton][anIconNumber] = _G[tFrameName .. "BI"];
 		VUHDO_BAR_ICON_TIMERS[aButton][anIconNumber] = _G[tFrameName .. "BT"];
@@ -105,6 +137,7 @@ function VUHDO_getOrCreateCuDeButton(aButton, anIconNumber)
 	end
 
 	return VUHDO_BAR_ICON_BUTTONS[aButton][anIconNumber];
+
 end
 
 
@@ -707,6 +740,7 @@ local function VUHDO_fastCacheInitButton(aPanelNum, aButtonNum)
 	VUHDO_BUTTON_CACHE[tTotButton] = aPanelNum;
 
 	VUHDO_BAR_ICON_FRAMES[tButton] = { };
+	VUHDO_BAR_ICON_FRAME_BACKGROUNDS[tButton] = { };
 	VUHDO_BAR_ICON_BUTTONS[tButton] = { };
 	VUHDO_BAR_ICONS[tButton] = { };
 	VUHDO_BAR_ICON_TIMERS[tButton] = { };

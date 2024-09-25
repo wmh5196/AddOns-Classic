@@ -755,6 +755,7 @@ VUHDO_I18N_TT.K592 = "Отметьте, что бы показывать ико�
 VUHDO_I18N_TT.K593 = "Выберите размер для иконок приватных аур.";
 VUHDO_I18N_TT.K594 = "Check to sort pet units last.";
 VUHDO_I18N_TT.K595 = "Show effective HP (health including shields) of player.";
+VUHDO_I18N_TT.K596 = "Click to change color to indicate players afflicted by bleed debuffs.";
 
 VUHDO_I18N_DEFAULT_PROFILE = "Стандартный\nпрофиль";
 VUHDO_I18N_DEFAULT_LAYOUT = "Стандартная раскладка клавиш ";
@@ -1237,8 +1238,8 @@ VUHDO_I18N_CLEAR_BINDING = "Очистить Назначение";
 VUHDO_I18N_MACRO_EDITOR = "Редактор макросов VuhDo";
 VUHDO_I18N_ACCEPT = "Принять";
 VUHDO_I18N_DISCARD = "Отменить";
-VUHDO_I18N_LKA_HINT_1 = "Используйте следующие шаблоны в макросах: |c00000000vuhdo|r => игрок, |c00000000vdname|r => имя игрока" justifyH="LEFT" inherits="VuDoButtonFontDark";
-VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => цель игрока / цель цели, |c00000000vdpet|r => питомец игрока; Пример: /cast [@vuhdo] Быстрое исцеление" justifyH="LEFT" inherits="VuDoButtonFontDark";
+VUHDO_I18N_LKA_HINT_1 = "Используйте следующие шаблоны в макросах: |c00000000vuhdo|r => игрок, |c00000000vdname|r => имя игрока";
+VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => цель игрока / цель цели, |c00000000vdpet|r => питомец игрока; Пример: /cast [@vuhdo] Быстрое исцеление";
 VUHDO_I18N_LKA_CUSTOM_MACRO_DISCARDED = "Пользовательский макрос удален.";
 VUHDO_I18N_NAME_CHANGE_DISCARDED = "Смена имени отменена.";
 VUHDO_I18N_LKA_TYPE_CHANGED = "Тип изменен с пользовательского макроса VuhDo\nна заклинание или стандартный макрос.\nУдалить пользовательский макрос?";
@@ -1373,3 +1374,5 @@ VUHDO_I18N_PETS_LAST = "Питомцы последние";
 
 VUHDO_I18N_SHOW_EFFECTIVE = "Показать\nЭффективное";
 VUHDO_I18N_DEBUFF_IGNORE_IMPORTED = "Список игнорируемых дебаффов успешно импортирован.";
+
+VUHDO_I18N_BLEED = "Bleed";

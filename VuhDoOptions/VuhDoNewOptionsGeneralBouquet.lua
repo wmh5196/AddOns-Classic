@@ -78,6 +78,7 @@ function VUHDO_bouquetsUpdateDefaultColors()
 	VUHDO_BOUQUET_BUFFS_SPECIAL["DEBUFF_DISEASE"]["defaultColor"] = VUHDO_deepCopyColor(VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF" .. VUHDO_DEBUFF_TYPE_DISEASE]);
 	VUHDO_BOUQUET_BUFFS_SPECIAL["DEBUFF_POISON"]["defaultColor"] = VUHDO_deepCopyColor(VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF" .. VUHDO_DEBUFF_TYPE_POISON]);
 	VUHDO_BOUQUET_BUFFS_SPECIAL["DEBUFF_CURSE"]["defaultColor"] = VUHDO_deepCopyColor(VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF" .. VUHDO_DEBUFF_TYPE_CURSE]);
+	VUHDO_BOUQUET_BUFFS_SPECIAL["DEBUFF_BLEED"]["defaultColor"] = VUHDO_deepCopyColor(VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF" .. VUHDO_DEBUFF_TYPE_BLEED]);
 	VUHDO_BOUQUET_BUFFS_SPECIAL["DEBUFF_CHARMED"]["defaultColor"] = VUHDO_deepCopyColor(VUHDO_PANEL_SETUP["BAR_COLORS"]["CHARMED"]);
 	VUHDO_BOUQUET_BUFFS_SPECIAL["DEAD"]["defaultColor"] = VUHDO_deepCopyColor(VUHDO_PANEL_SETUP["BAR_COLORS"]["DEAD"]);
 	VUHDO_BOUQUET_BUFFS_SPECIAL["DISCONNECTED"]["defaultColor"] = VUHDO_deepCopyColor(VUHDO_PANEL_SETUP["BAR_COLORS"]["OFFLINE"]);
@@ -100,7 +101,6 @@ end
 
 
 --
-local tInfo;
 local function VUHDO_getBouquetItemDisplayText(aName)
 	if (VUHDO_BOUQUET_BUFFS_SPECIAL[aName] ~= nil) then
 		return "[" .. VUHDO_BOUQUET_BUFFS_SPECIAL[aName]["displayName"] .. "]";
@@ -587,7 +587,7 @@ function VUHDO_rebuildAllBouquetItems(aParent, aCursorPos)
 		tBouquet = VUHDO_getCurrentBouquet();
 
 		if (tBouquet ~= nil) then
-			for tIndex, tBuffInfo in ipairs(tBouquet) do
+			for tIndex, _ in ipairs(tBouquet) do
 				tPanel = VUHDO_getOrCreateBouqetItem(tIndex, tParent);
 			end
 

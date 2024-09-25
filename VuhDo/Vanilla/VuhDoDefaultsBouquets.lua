@@ -1,3 +1,5 @@
+local GetSpellName = C_Spell.GetSpellName or VUHDO_getSpellName;
+
 --
 function VUHDO_makeFullColor(...)
 	return {
@@ -25,25 +27,25 @@ VUHDO_DEFAULT_BOUQUETS = {
 	["STORED"] = {
 		[VUHDO_I18N_DEF_BOUQUET_TANK_COOLDOWNS] = {
 			{
-				["name"] = GetSpellInfo(12975), -- "Last Stand",
+				["name"] = GetSpellName(12975), -- "Last Stand",
 				["mine"] = true, ["others"] = true,	["icon"] = 1,
 				["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
 				["custom"] = { [1] = 1, ["radio"] = 1,	["bright"] = 1.0 },
 			},
 			{
-				["name"] = GetSpellInfo(871), -- "Shield Wall",
+				["name"] = GetSpellName(871), -- "Shield Wall",
 				["mine"] = true, ["others"] = true,	["icon"] = 1,
 				["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
 				["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1.0	},
 			},
 			{
-				["name"] = GetSpellInfo(61336), -- "Survival Instincts",
+				["name"] = GetSpellName(61336), -- "Survival Instincts",
 				["mine"] = true, ["others"] = true, ["icon"] = 1,
 				["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
 				["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1.0	},
 			},
 			{
-				["name"] = GetSpellInfo(22842), -- "Frenzied Regeneration",
+				["name"] = GetSpellName(22842), -- "Frenzied Regeneration",
 				["mine"] = true, ["others"] = true, ["icon"] = 1,
 				["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
 				["custom"] = { [1] = 1, ["radio"] = 1,	["bright"] = 1.0 },
@@ -53,13 +55,13 @@ VUHDO_DEFAULT_BOUQUETS = {
 
 		[VUHDO_I18N_DEF_BOUQUET_PW_S_WEAKENED_SOUL] = {
 			{
-				["name"] = GetSpellInfo(17), -- "Powerword: Shield",
+				["name"] = GetSpellName(17), -- "Powerword: Shield",
 				["mine"] = true, ["icon"] = 8,
 				["color"] = VUHDO_makeFullColorForBouquet(0.074, 0.749, 1, 1,   1, 1, 1, 1),
 				["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1.0 },
 			},
 			{
-				["name"] = GetSpellInfo(6788), -- "Weakened Soul",
+				["name"] = GetSpellName(6788), -- "Weakened Soul",
 				["mine"] = true, ["others"] = true,	["icon"] = 9,
 				["color"] = VUHDO_makeFullColorForBouquet(1, 0.623, 0.305, 1,   1, 1, 1, 1),
 				["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1.0	},
@@ -712,6 +714,18 @@ VUHDO_DEFAULT_TRAIL_OF_LIGHT_BOUQUET = {
 };
 
 
+VUHDO_DEFAULT_TRAIL_OF_LIGHT_NEXT_BOUQUET = {
+	[VUHDO_I18N_DEF_TRAIL_OF_LIGHT_NEXT] = {
+		{
+			["name"] = "TRAIL_OF_LIGHT_NEXT",
+			["mine"] = true, ["icon"] = 1,
+			["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
+			["custom"] = { [1] = 3, ["radio"] = 2, ["bright"] = 1 },
+		},
+	},
+};
+
+
 --
 VUHDO_DEFAULT_GRID_BOUQUETS = {
 	[VUHDO_I18N_GRID_MOUSEOVER_SINGLE] = {
@@ -882,19 +896,19 @@ VUHDO_DEFAULT_BAR_MANA_TANK_ONLY = {
 VUHDO_DEFAULT_MONK_STAGGER_BOUQUET = {
 	[VUHDO_I18N_DEF_BOUQUET_MONK_STAGGER] = {
 		{
-			["name"] = GetSpellInfo(124273), -- "Heavy Stagger",
+			["name"] = GetSpellName(124273), -- "Heavy Stagger",
 			["mine"] = true, ["others"] = true, ["icon"] = 1,
 			["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
 			["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1.0 },
 		},
 		{
-			["name"] = GetSpellInfo(124274), -- "Moderate Stagger",
+			["name"] = GetSpellName(124274), -- "Moderate Stagger",
 			["mine"] = true, ["others"] = true,	["icon"] = 1,
 			["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
 			["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1.0	},
 		},
 		{
-			["name"] = GetSpellInfo(124275), -- "Light Stagger",
+			["name"] = GetSpellName(124275), -- "Light Stagger",
 			["mine"] = true, ["others"] = true,	["icon"] = 1,
 			["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1,   1, 1, 1, 1),
 			["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1.0	},
@@ -915,6 +929,34 @@ VUHDO_DEFAULT_HEAL_ABSORB_COUNTER_BOUQUET = {
 			["color"] = VUHDO_makeFullColorForBouquet(1, 1, 1, 1, 1, 1, 1, 1),
 			["custom"] = { [1] = 1, ["radio"] = 1, ["bright"] = 1 },
 		},
+	},
+};
+
+
+
+--
+VUHDO_DEFAULT_EVOKER_REVERSION_BOUQUET = {
+	[VUHDO_I18N_BOUQUET_EVOKER_REVERSION] = {
+	},
+};
+
+VUHDO_DEFAULT_EVOKER_REVERSION_ECHO_BOUQUET = {
+	[VUHDO_I18N_BOUQUET_EVOKER_REVERSION_ECHO] = {
+	},
+};
+
+VUHDO_DEFAULT_EVOKER_DREAM_BREATH_BOUQUET = {
+	[VUHDO_I18N_BOUQUET_EVOKER_DREAM_BREATH] = {
+	},
+};
+
+VUHDO_DEFAULT_EVOKER_DREAM_BREATH_ECHO_BOUQUET = {
+	[VUHDO_I18N_BOUQUET_EVOKER_DREAM_BREATH_ECHO] = {
+	},
+};
+
+VUHDO_DEFAULT_EVOKER_ALL_ECHO_BOUQUET = {
+	[VUHDO_I18N_BOUQUET_EVOKER_ALL_ECHO] = {
 	},
 };
 
@@ -1102,7 +1144,7 @@ local function VUHDO_addDefaultBouquet(aName)
 		return;
 	end
 	aName = VUHDO_decompressIfCompressed(aName);
-	for tKey, tValue in pairs(aName) do
+	for tKey, _ in pairs(aName) do
 		VUHDO_BOUQUETS["STORED"][tKey] = VUHDO_deepCopyTable(aName[tKey]);
 	end
 end
@@ -1339,19 +1381,30 @@ end
 
 
 --
-local function VUHDO_AddSpellBouquetItem(aBouquetName, ...)
-	local tId, tNewItem;
+local function VUHDO_addSpellBouquetItem(aBouquetName, anIsAddById, ...)
+
+	local tId, tNewItem, tName;
+
 	for tCnt = 1, select("#", ...) do
 		tId = select(tCnt, ...);
+
 		tNewItem = VUHDO_deepCopyTable(VUHDO_SANE_BOUQUET_ITEM);
-		tName = GetSpellInfo(tId);
+
+		if anIsAddById then
+			tName = tostring(tId);
+		else
+			tName = GetSpellName(tId);
+		end
+
 		tNewItem["name"] = tName;
 		tNewItem["icon"] = 1;
 		tNewItem["color"]["isManuallySet"] = true;
+
 		tinsert(VUHDO_BOUQUETS["STORED"][aBouquetName], tNewItem);
 	end
 
 	return tNewItem;
+
 end
 
 
@@ -1569,7 +1622,7 @@ local tPvPFlags = {
 	23335, -- Alliance Flag
 	34976, -- Netherstorm Flag
 	127163, -- Power Orb
-}
+};
 
 
 local tPaladinBeacons = {
@@ -1577,7 +1630,29 @@ local tPaladinBeacons = {
 	197446, -- Beacon of the Lightbringer
 	200025, -- Beacon of Virtue
 	53563, -- Beacon of Light
-}
+};
+
+
+
+local tEvokerReversionSpellIds = {
+	366155, -- Reversion (non-echo)
+};
+
+
+local tEvokerReversionEchoSpellIds = {
+	367364, -- Reversion (echo)
+};
+
+
+local tEvokerDreamBreathSpellIds = {
+	355941, -- Dream Breath (non-echo)
+};
+
+
+local tEvokerDreamBreathEchoSpellIds = {
+	376788, -- Dream Breath (echo)
+};
+
 
 
 --
@@ -1605,7 +1680,7 @@ function VUHDO_loadDefaultBouquets()
 	if VUHDO_BOUQUETS["VERSION"] < 4 then
 		VUHDO_BOUQUETS["VERSION"] = 4;
 		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_TANKS_CDS_EXTD_BOUQUET);
-		VUHDO_AddSpellBouquetItem(VUHDO_I18N_DEF_TANK_CDS_EXTENDED, unpack(tTankCdsExtended));
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_DEF_TANK_CDS_EXTENDED, false, unpack(tTankCdsExtended));
 	end
 	tTankCdsExtended = nil;
 
@@ -1650,21 +1725,21 @@ function VUHDO_loadDefaultBouquets()
 	if VUHDO_BOUQUETS["VERSION"] < 12 then
 		VUHDO_BOUQUETS["VERSION"] = 12;
 		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_RAID_CDS_BOUQUET);
-		VUHDO_AddSpellBouquetItem(VUHDO_I18N_DEF_RAID_CDS, unpack(tRaidCds));
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_DEF_RAID_CDS, false, unpack(tRaidCds));
 	end
 	tRaidCds = nil;
 
 	if VUHDO_BOUQUETS["VERSION"] < 13 then
 		VUHDO_BOUQUETS["VERSION"] = 13;
 		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_PVP_FLAGS_BOUQUET);
-		VUHDO_AddSpellBouquetItem(VUHDO_I18N_DEF_PVP_FLAGS, unpack(tPvPFlags));
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_DEF_PVP_FLAGS, false, unpack(tPvPFlags));
 	end
 	tPvPFlags = nil;
 
 	if VUHDO_BOUQUETS["VERSION"] < 14 then
 		VUHDO_BOUQUETS["VERSION"] = 14;
 		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_PALADIN_BEACON_BOUQUET);
-		VUHDO_AddSpellBouquetItem(VUHDO_I18N_BOUQUET_PALADIN_BEACON, unpack(tPaladinBeacons));
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_BOUQUET_PALADIN_BEACON, false, unpack(tPaladinBeacons));
 	end
 	tPaladinBeacons = nil;
 
@@ -1744,6 +1819,50 @@ function VUHDO_loadDefaultBouquets()
 	end
 	VUHDO_DEFAULT_HEAL_ABSORB_COUNTER_BOUQUET = nil;
 
+	if VUHDO_BOUQUETS["VERSION"] < 27 then
+		VUHDO_BOUQUETS["VERSION"] = 27;
+		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_EVOKER_REVERSION_BOUQUET);
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_BOUQUET_EVOKER_REVERSION, true, unpack(tEvokerReversionSpellIds));
+	end
+	tEvokerReversionSpellIds = nil;
+
+	if VUHDO_BOUQUETS["VERSION"] < 28 then
+		VUHDO_BOUQUETS["VERSION"] = 28;
+		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_EVOKER_REVERSION_ECHO_BOUQUET);
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_BOUQUET_EVOKER_REVERSION_ECHO, true, unpack(tEvokerReversionEchoSpellIds));
+	end
+
+	if VUHDO_BOUQUETS["VERSION"] < 29 then
+		VUHDO_BOUQUETS["VERSION"] = 29;
+		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_EVOKER_DREAM_BREATH_BOUQUET);
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_BOUQUET_EVOKER_DREAM_BREATH, true, unpack(tEvokerDreamBreathSpellIds));
+	end
+	tEvokerDreamBreathSpellIds = nil;
+
+	if VUHDO_BOUQUETS["VERSION"] < 30 then
+		VUHDO_BOUQUETS["VERSION"] = 30;
+		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_EVOKER_DREAM_BREATH_ECHO_BOUQUET);
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_BOUQUET_EVOKER_DREAM_BREATH_ECHO, true, unpack(tEvokerDreamBreathEchoSpellIds));
+	end
+
+	if VUHDO_BOUQUETS["VERSION"] < 31 then
+		VUHDO_BOUQUETS["VERSION"] = 31;
+
+		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_EVOKER_ALL_ECHO_BOUQUET);
+
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_BOUQUET_EVOKER_ALL_ECHO, true, unpack(tEvokerDreamBreathEchoSpellIds));
+		VUHDO_addSpellBouquetItem(VUHDO_I18N_BOUQUET_EVOKER_ALL_ECHO, true, unpack(tEvokerReversionEchoSpellIds));
+	end
+	tEvokerDreamBreathEchoSpellIds = nil;
+	tEvokerReversionEchoSpellIds = nil;
+
+	if VUHDO_BOUQUETS["VERSION"] < 32 then
+		VUHDO_BOUQUETS["VERSION"] = 32;
+		VUHDO_addDefaultBouquet(VUHDO_DEFAULT_TRAIL_OF_LIGHT_NEXT_BOUQUET);
+	end
+	VUHDO_DEFAULT_TRAIL_OF_LIGHT_NEXT_BOUQUET = nil;
+
+
 	VUHDO_buildGenericHealthBarBouquet();
 	VUHDO_buildGenericTargetHealthBouquet();
 
@@ -1788,7 +1907,7 @@ function VUHDO_loadDefaultBouquets()
 
 				tPanelIndicatorConfig["TEXT_INDICATORS"] = VUHDO_decompressOrCopy(VUHDO_INDICATOR_CONFIG["TEXT_INDICATORS"]);
 
-				for tTextIndicatorName, tTextIndicatorConfig in pairs(tPanelIndicatorConfig["TEXT_INDICATORS"]) do
+				for _, tTextIndicatorConfig in pairs(tPanelIndicatorConfig["TEXT_INDICATORS"]) do
 					if type(tTextIndicatorConfig["TEXT_PROVIDER"]) == "table" then
 						tTextIndicatorConfig["TEXT_PROVIDER"] = tTextIndicatorConfig["TEXT_PROVIDER"][tPanelNum] or "";
 

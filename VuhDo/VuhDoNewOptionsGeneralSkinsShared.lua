@@ -378,7 +378,7 @@ local VUHDO_DEFAULT_PROFILES = {
 			},
 			["HOTS"] = {
 				["SLOTS"] = {
-					[10] = "BOUQUET_" .. VUHDO_I18N_DEF_AOE_ADVICE,
+					["firstFlood"] = true,
 				},
 				["BARS"] = {
 					["radioValue"] = 1,
@@ -1626,7 +1626,7 @@ local VUHDO_DEFAULT_PROFILES = {
 			},
 			["HOTS"] = {
 				["SLOTS"] = {
-					[10] = "BOUQUET_" .. VUHDO_I18N_DEF_AOE_ADVICE,
+					["firstFlood"] = true,
 				},
 				["BARS"] = {
 					["radioValue"] = 1,
@@ -2261,6 +2261,7 @@ function VUHDO_createNewProfileName(aName, aUnitName)
 	local tIdx = 1;
 	local tProfile = { };
 	local tPrefix = aUnitName .. ": ";
+	local tNewName;
 
 	while tProfile do
 		tNewName = tPrefix .. aName;
@@ -2280,6 +2281,7 @@ function VUHDO_createNewLayoutName(aName, aUnitName)
 	local tIdx = 1;
 	local tLayout = { };
 	local tPrefix = aUnitName .. ": ";
+	local tNewName;
 
 	while tLayout do
 		tNewName = tPrefix .. aName;
@@ -2481,6 +2483,7 @@ local VUHDO_PROFILE_MODEL = {
 
 	["SPELL_CONFIG"] = {
 		["-root-"] = VUHDO_PROFILE_MODEL_MATCH_TOON,
+		["IS_TOOLTIP_INFO"] = VUHDO_PROFILE_MODEL_MATCH_ALL,
 	},
 
 	["BUFF_SETTINGS"] = {
