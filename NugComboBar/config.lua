@@ -7,6 +7,18 @@ local GetSpecialization = APILevel <= 4 and function() return 1 end or _G.GetSpe
 
 local DRUID_CAT_FORM = DRUID_CAT_FORM or CAT_FORM or 1
 local DRUID_BEAR_FORM = DRUID_BEAR_FORM or BEAR_FORM or 5
+local RetailGetSpellCooldown = function(...)
+    local C_Spell_GetSpellCooldown = C_Spell.GetSpellCooldown
+    local info = C_Spell_GetSpellCooldown(...)
+    return info.startTime, info.duration, info.enabled, info.modRate
+end
+local RetailGetSpellCharges = function(...)
+    local C_Spell_GetSpellCharges = C_Spell.GetSpellCharges
+    local info = C_Spell_GetSpellCharges(...)
+    return info.currentCharges, info.maxCharges, info.cooldownStartTime, info.cooldownDuration
+end
+local GetSpellCooldown = GetSpellCooldown or RetailGetSpellCooldown
+local GetSpellCharges = GetSpellCharges or RetailGetSpellCharges
 
 ns.DRUID_BEAR_FORM = DRUID_BEAR_FORM
 ns.DRUID_CAT_FORM = DRUID_CAT_FORM
@@ -17,6 +29,16 @@ local GetSpell = function(spellId)
         return IsPlayerSpell(spellId)
     end
 end
+
+local DeprecatedUnitAura = function(unitToken, index, filter)
+    local auraData = C_UnitAuras.GetAuraDataByIndex(unitToken, index, filter);
+    if not auraData then
+        return nil;
+    end
+
+    return AuraUtil.UnpackAuraData(auraData);
+end
+local UnitAura = UnitAura or DeprecatedUnitAura
 
 local function FindAura(unit, spellID, filter)
     for i=1, 100 do
@@ -153,7 +175,8 @@ NugComboBar:RegisterConfig("ComboPointsRogue", {
         local DeeperStratagem = IsPlayerSpell(193531) and 1 or 0 -- Deeper Stratagem
         local DeviousStratagem = IsPlayerSpell(394321) and 1 or 0 -- Deeper Stratagem
         local SecretStratagem = IsPlayerSpell(394320) and 1 or 0 -- Secret Stratagem
-        local maxCP = 5 + DeeperStratagem + DeviousStratagem + SecretStratagem
+        local SanguineStratagem = IsPlayerSpell(457512) and 1  or 0 -- Sanguine Stratagem
+        local maxCP = 5 + DeeperStratagem + DeviousStratagem + SecretStratagem + SanguineStratagem
 
         self:SetMaxPoints(maxCP)
         self:SetPointGetter(RogueGetComboPoints)
