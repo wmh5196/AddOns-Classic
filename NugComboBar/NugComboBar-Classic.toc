@@ -1,10 +1,10 @@
-## Interface: 11503
+## Interface: 11504
 ## Title: NugComboBar
 ## Notes: Combopoints counter
 ## Author: d87
 ## SavedVariablesPerCharacter: NugComboBarDB_Character
 ## SavedVariables: NugComboBarDB_Global
-## Version: 10.2.6
+## Version: 11.0.3
 
 ## X-WoWI-ID: 6308
 ## X-Curse-Project-ID: 2538

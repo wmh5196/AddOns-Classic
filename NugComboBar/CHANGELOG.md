@@ -1,7 +1,6 @@
 # NugComboBar
 
-## [10.2.6](https://github.com/rgd87/NugComboBar/tree/10.2.6) (2024-06-16)
-[Full Changelog](https://github.com/rgd87/NugComboBar/compare/10.2.5...10.2.6) [Previous Releases](https://github.com/rgd87/NugComboBar/releases)
+## [11.0.3](https://github.com/rgd87/NugComboBar/tree/11.0.3) (2024-09-23)
+[Full Changelog](https://github.com/rgd87/NugComboBar/compare/11.0.2...11.0.3) [Previous Releases](https://github.com/rgd87/NugComboBar/releases)
 
-- Added Shadow Infusion for Cata  
-- Added Pulverize in Cata  
+- Fixed GetSpellCharges on Retail  

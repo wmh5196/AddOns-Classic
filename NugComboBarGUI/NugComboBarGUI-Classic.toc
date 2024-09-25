@@ -1,7 +1,7 @@
-## Interface: 11503
+## Interface: 11504
 ## Title: NugComboBarGUI
 ## Notes: NugComboBar Configuration Panel
-## Version: 10.2.6
+## Version: 11.0.3
 ## Dependencies: NugComboBar
 ## Author: d87
 ## LoadOnDemand: 1
