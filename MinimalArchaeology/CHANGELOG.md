@@ -1,6 +1,15 @@
 # Minimal Archaeology
 ## Latest Version
 
+### 11.0.0
+
+- Updated for War Within
+- **11.0.0.1** Fix waypoint creation ignoring hidden races even when the "Ignore Hidden" option is disabled
+- **11.0.0.1** Fix opening Options on Mainline
+- **11.0.0.2** Fix GetSpellInfo lua error
+- **11.0.0.3** Fix surveying
+- **11.0.0.4** Fix flight map showing hidden and special pins
+
 ### 10.2.13
 
 - **New Feature: Taxi Service**: if enabled, waypoints will be created to the nearest flight master if the nearest digsite is farther than the user-configured distance. You can find the options in the Navigation section.
