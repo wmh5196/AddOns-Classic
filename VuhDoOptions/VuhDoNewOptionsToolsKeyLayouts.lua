@@ -378,7 +378,7 @@ function VUHDO_shareCurrentKeyLayout(aUnitName, aKeyLayoutName)
 	end
 
 	local tQuestion = VUHDO_PLAYER_NAME .. " 請求傳送按鍵配置 " .. aKeyLayoutName .. " 給你。\n是否要接受?"
-	VUHDO_startShare(aUnitName, { aKeyLayoutName, tLayout }, sCmdKeyLayoutDataChunk, sCmdKeyLayoutDataEnd, tQuestion);
+	VUHDO_startShare(aUnitName, { aKeyLayoutName, tLayout }, VUHDO_sCmdKeyLayoutDataChunk, VUHDO_sCmdKeyLayoutDataEnd, tQuestion);
 end
 
 

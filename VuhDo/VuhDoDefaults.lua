@@ -1,3 +1,4 @@
+local GetSpellName = C_Spell.GetSpellName or VUHDO_getSpellName;
 local pairs = pairs;
 local _;
 
@@ -143,7 +144,7 @@ local VUHDO_DEFAULT_RANGE_SPELLS = {
 	},
 	["SHAMAN"] = {
 		["HELPFUL"] = { VUHDO_SPELL_ID.HEALING_WAVE },
-		["HARMFUL"] = { VUHDO_SPELL_ID.LIGHTNING_BOLT },
+		["HARMFUL"] = { VUHDO_SPELL_ID.FLAME_SHOCK, VUHDO_SPELL_ID.LIGHTNING_BOLT },
 	},
 	["DRUID"] = {
 		["HELPFUL"] = { VUHDO_SPELL_ID.REJUVENATION },
@@ -151,14 +152,14 @@ local VUHDO_DEFAULT_RANGE_SPELLS = {
 	},
 	["PRIEST"] = {
 		["HELPFUL"] = { VUHDO_SPELL_ID.FLASH_HEAL },
-		["HARMFUL"] = { VUHDO_SPELL_ID.SMITE },
+		["HARMFUL"] = { VUHDO_SPELL_ID.SHADOW_WORD_PAIN, VUHDO_SPELL_ID.SMITE },
 	},
 	["DEATHKNIGHT"] = {
 		["HELPFUL"] = { 47541 }, -- VUHDO_SPELL_ID.DEATH_COIL
 		["HARMFUL"] = { 47541, 49576 }, -- VUHDO_SPELL_ID.DEATH_COIL, VUHDO_SPELL_ID.DEATH_GRIP
 	},
 	["MONK"] = {
-		["HELPFUL"] = { VUHDO_SPELL_ID.DETOX },
+		["HELPFUL"] = { VUHDO_SPELL_ID.VIVIFY, VUHDO_SPELL_ID.DETOX },
 		["HARMFUL"] = { VUHDO_SPELL_ID.PROVOKE },
 	},
 	["DEMONHUNTER"] = {
@@ -166,8 +167,8 @@ local VUHDO_DEFAULT_RANGE_SPELLS = {
 		["HARMFUL"] = { VUHDO_SPELL_ID.THROW_GLAIVE },
 	},
 	["EVOKER"] = {
-		["HELPFUL"] = { VUHDO_SPELL_ID.LIVING_FLAME },
-		["HARMFUL"] = { VUHDO_SPELL_ID.LIVING_FLAME },
+		["HELPFUL"] = { VUHDO_SPELL_ID.EMERALD_BLOSSOM, VUHDO_SPELL_ID.LIVING_FLAME },
+		["HARMFUL"] = { VUHDO_SPELL_ID.AZURE_STRIKE, VUHDO_SPELL_ID.LIVING_FLAME },
 	},
 };
 
@@ -271,7 +272,7 @@ local VUHDO_CLASS_DEFAULT_SPELL_ASSIGNMENT = {
 		["ctrl1"] = { "ctrl-", "1", VUHDO_SPELL_ID.DETOX },
 		["ctrl2"] = { "ctrl-", "2", VUHDO_SPELL_ID.LIFE_COCOON },
 
-		["shift1"] = { "shift-", "1", VUHDO_SPELL_ID.UPLIFT },
+		["shift1"] = { "shift-", "1", VUHDO_SPELL_ID.VIVIFY },
 		["shift2"] = { "shift-", "2", VUHDO_SPELL_ID.REVIVAL },
 	},
 
@@ -606,7 +607,7 @@ local VUHDO_DEFAULT_CONFIG = {
 	["LOCK_PANELS"] = false,
 	["LOCK_CLICKS_THROUGH"] = false,
 	["LOCK_IN_FIGHT"] = true,
-	["PARSE_COMBAT_LOG"] = true,
+	["PARSE_COMBAT_LOG"] = false,
 	["HIDE_EMPTY_BUTTONS"] = false,
 
 	["MODE"] = VUHDO_MODE_NEUTRAL,
@@ -632,7 +633,7 @@ local VUHDO_DEFAULT_CONFIG = {
 	["DETECT_DEBUFFS_IGNORE_DURATION"] = true,
 
 	["SMARTCAST_RESURRECT"] = true,
-	["SMARTCAST_CLEANSE"] = true,
+	["SMARTCAST_CLEANSE"] = false,
 	["SMARTCAST_BUFF"] = false,
 
 	["SHOW_PLAYER_TAGS"] = true,
@@ -732,7 +733,7 @@ local VUHDO_DEFAULT_CONFIG = {
 	},
 
 	["CLUSTER"] = {
-		["REFRESH"] = 180,
+		["REFRESH"] = 500,
 		["RANGE"] = 30,
 		["RANGE_JUMP"] = 11,
 		["BELOW_HEALTH_PERC"] = 85,
@@ -745,7 +746,7 @@ local VUHDO_DEFAULT_CONFIG = {
 		["CHAIN_MAX_JUMP"] = 3,
 		["COOLDOWN_SPELL"] = "",
 		["CONE_DEGREES"] = 360,
-        ["ARE_TARGETS_RANDOM"] = true,
+		["ARE_TARGETS_RANDOM"] = true,
 
 		["TEXT"] = {
 			["ANCHOR"] = "BOTTOMRIGHT",
@@ -911,8 +912,7 @@ end
 
 --
 function VUHDO_loadDefaultConfig()
-	local tClass;
-	_, tClass = UnitClass("player");
+	local _, tClass = UnitClass("player");
 
 	if (VUHDO_CONFIG == nil) then
 		VUHDO_CONFIG = VUHDO_decompressOrCopy(VUHDO_DEFAULT_CONFIG);
@@ -941,12 +941,14 @@ function VUHDO_loadDefaultConfig()
 			if VUHDO_strempty(VUHDO_CONFIG["RANGE_SPELL"][tUnitReaction]) then
 				for _, tRangeSpell in pairs(tRangeSpells) do
 					if type(tRangeSpell) == "number" then
-						tRangeSpell = IsPlayerSpell(tRangeSpell) and GetSpellInfo(tRangeSpell) or "!";
+						tRangeSpell = IsPlayerSpell(tRangeSpell) and GetSpellName(tRangeSpell) or "!";
 					end
 
 					if tRangeSpell ~= "!" then
 						VUHDO_CONFIG["RANGE_SPELL"][tUnitReaction] = tRangeSpell;
 						tIsGuessRange = false;
+
+						break;
 					end
 				end
 
@@ -1146,7 +1148,7 @@ function VUHDO_loadDefaultConfig()
 		194509  -- Power Word: Radiance
 	);
 
-	for tIndex, tName in pairs(VUHDO_CONFIG["SPELL_TRACE"]["STORED"]) do
+	for _, tName in pairs(VUHDO_CONFIG["SPELL_TRACE"]["STORED"]) do
 		VUHDO_spellTraceAddDefaultSettings(tName);
 
 		VUHDO_CONFIG["SPELL_TRACE"]["STORED_SETTINGS"][tName] = VUHDO_ensureSanity(
@@ -1310,6 +1312,7 @@ local VUHDO_DEFAULT_PANEL_SETUP = {
 		["DEBUFF" .. VUHDO_DEBUFF_TYPE_CURSE] = VUHDO_makeFullColor(0.7, 0, 0.7, 1,   1, 0, 1, 1),
 		["DEBUFF" .. VUHDO_DEBUFF_TYPE_MAGIC] = VUHDO_makeFullColor(0.4, 0.4, 0.8, 1,   0.329, 0.957, 1, 1),
 		["DEBUFF" .. VUHDO_DEBUFF_TYPE_CUSTOM] = VUHDO_makeFullColor(0.6, 0.3, 0, 1,   0.8, 0.5, 0, 1),
+		["DEBUFF" .. VUHDO_DEBUFF_TYPE_BLEED] = VUHDO_makeFullColor(1, 0.2, 0, 1,   1, 0.2, 0.4, 1),
 		["DEBUFF_BAR_GLOW"] = VUHDO_makeFullColor(0.95, 0.95, 0.32, 1,   1, 1, 0, 1),
 		["DEBUFF_ICON_GLOW"] = VUHDO_makeFullColor(0.95, 0.95, 0.32, 1,   1, 1, 0, 1),
 		["CHARMED"] = VUHDO_makeFullColor(0.51, 0.082, 0.263, 1,   1, 0.31, 0.31, 1),
@@ -1686,7 +1689,7 @@ local VUHDO_DEFAULT_BUFF_CONFIG = {
 	["BAR_COLORS_BACKGROUND"] = true,
 	["BAR_COLORS_IN_FIGHT"] = false,
 	["HIDE_CHARGES"] = false,
-	["REFRESH_SECS"] = 1,
+	["REFRESH_SECS"] = 2,
 	["POSITION"] = {
 		["x"] = 130,
 		["y"] = -130,

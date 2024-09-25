@@ -1,10 +1,11 @@
-local huge = math.huge;
+local GetSpellName = C_Spell.GetSpellName or VUHDO_getSpellName;
 
 
 
 local VUHDO_CUSTOM_DEBUFF_CONFIG = { };
 local VUHDO_UNIT_CUSTOM_DEBUFFS = { };
 setmetatable(VUHDO_UNIT_CUSTOM_DEBUFFS, VUHDO_META_NEW_ARRAY);
+local VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS = { };
 local VUHDO_LAST_UNIT_DEBUFFS = { };
 local VUHDO_PLAYER_ABILITIES = { };
 
@@ -27,11 +28,11 @@ local VUHDO_DEBUFF_TYPES = {
 
 
 VUHDO_DEBUFF_BLACKLIST = {
---	[GetSpellInfo(69127)] = true, -- Chill of the Throne
---	[GetSpellInfo(57724)] = true, -- Sated (Bloodlust)
---	[GetSpellInfo(71328)] = true, -- Dungeon Cooldown
---	[GetSpellInfo(57723)] = true, -- Exhaustion (Heroism)
---	[GetSpellInfo(80354)] = true, -- Temporal Displacement (Time Warp)
+--	[GetSpellName(69127)] = true, -- Chill of the Throne
+--	[GetSpellName(57724)] = true, -- Sated (Bloodlust)
+--	[GetSpellName(71328)] = true, -- Dungeon Cooldown
+--	[GetSpellName(57723)] = true, -- Exhaustion (Heroism)
+--	[GetSpellName(80354)] = true, -- Temporal Displacement (Time Warp)
 --	[VUHDO_SPELL_ID.DEBUFF_FATIGUED] = true -- Fatigued (Primal Fury)
 };
 
@@ -46,21 +47,20 @@ local VUHDO_RAID;
 local VUHDO_PANEL_SETUP;
 local VUHDO_DEBUFF_COLORS = { };
 
-local VUHDO_shouldScanUnit;
 local VUHDO_DEBUFF_BLACKLIST = { };
 
 local UnitIsFriend = UnitIsFriend;
 local table = table;
 local GetTime = GetTime;
-local PlaySoundFile = PlaySoundFile;
 local InCombatLockdown = InCombatLockdown;
 local twipe = table.wipe;
 local pairs = pairs;
 local _;
 local tostring = tostring;
 local ForEachAura = AuraUtil.ForEachAura or VUHDO_forEachAura;
-local UnpackAuraData = AuraUtil.UnpackAuraData or VUHDO_unpackAuraData;
 local GetAuraDataByAuraInstanceID = C_UnitAuras.GetAuraDataByAuraInstanceID;
+local VUHDO_shouldScanUnit;
+
 
 local sIsNotRemovableOnly;
 local sIsNotRemovableOnlyIcons;
@@ -71,15 +71,17 @@ local sStdDebuffSound;
 local sAllDebuffSettings;
 local sIsShowOnlyForFriendly;
 local sEmpty = { };
+local sCurChosenColor = { };
 --local sColorArray = nil;
 
 function VUHDO_debuffsInitLocalOverrides()
+
+	VUHDO_shouldScanUnit = _G["VUHDO_shouldScanUnit"];
+
 	VUHDO_CONFIG = _G["VUHDO_CONFIG"];
 	VUHDO_RAID = _G["VUHDO_RAID"];
 	VUHDO_PANEL_SETUP = _G["VUHDO_PANEL_SETUP"];
 	VUHDO_DEBUFF_BLACKLIST = _G["VUHDO_DEBUFF_BLACKLIST"];
-
-	VUHDO_shouldScanUnit = _G["VUHDO_shouldScanUnit"];
 
 	sIsNotRemovableOnly = not VUHDO_CONFIG["DETECT_DEBUFFS_REMOVABLE_ONLY"];
 	sIsNotRemovableOnlyIcons = not VUHDO_CONFIG["DETECT_DEBUFFS_REMOVABLE_ONLY_ICONS"];
@@ -96,6 +98,7 @@ function VUHDO_debuffsInitLocalOverrides()
 		[3] = VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF3"],
 		[4] = VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF4"],
 		[6] = VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF6"],
+		[8] = VUHDO_PANEL_SETUP["BAR_COLORS"]["DEBUFF8"],
 	};
 
 	--[[if not sColorArray then
@@ -104,6 +107,7 @@ function VUHDO_debuffsInitLocalOverrides()
 			sColorArray[tCnt] = { };
 		end
 	end]]
+
 end
 
 ----------------------------------------------------
@@ -139,46 +143,36 @@ function _VUHDO_getDebuffColor(anInfo)
 		return tEmpty;
 	end
 
-	if (tDebuff or 6) ~= 6 and VUHDO_DEBUFF_COLORS[tDebuff] then -- VUHDO_DEBUFF_TYPE_CUSTOM
-		return VUHDO_DEBUFF_COLORS[tDebuff];
+	twipe(tColor);
+
+	if tDebuff and tDebuff > 0 and tDebuff ~= 7 and anInfo["unit"] and sCurChosenColor[anInfo["unit"]] then
+		tSourceColor = sCurChosenColor[anInfo["unit"]];
+
+		if tSourceColor["useText"] then
+			tColor["useText"], tColor["TR"], tColor["TG"], tColor["TB"], tColor["TO"] = true, tSourceColor["TR"], tSourceColor["TG"], tSourceColor["TB"], tSourceColor["TO"];
+		end
+
+		if tSourceColor["useBackground"] then
+			tColor["useBackground"], tColor["R"], tColor["G"], tColor["B"], tColor["O"] = true, tSourceColor["R"], tSourceColor["G"], tSourceColor["B"], tSourceColor["O"];
+		end
 	end
 
-	tDebuffSettings = sAllDebuffSettings[anInfo["debuffName"]];
-
-	if tDebuff == 6 and tDebuffSettings ~= nil -- VUHDO_DEBUFF_TYPE_CUSTOM
-		and tDebuffSettings["isColor"] then
-		if tDebuffSettings["color"] ~= nil then
-			tSourceColor = tDebuffSettings["color"];
-		else
-			tSourceColor = VUHDO_DEBUFF_COLORS[6];
-		end
-
-		twipe(tColor);
-
-		if VUHDO_DEBUFF_COLORS[6]["useBackground"] then
-			tColor["R"], tColor["G"], tColor["B"], tColor["O"], tColor["useBackground"] = tSourceColor["R"], tSourceColor["G"], tSourceColor["B"], tSourceColor["O"], true;
-		end
-
-		if VUHDO_DEBUFF_COLORS[6]["useText"] then
-			tColor["TR"], tColor["TG"], tColor["TB"], tColor["TO"], tColor["useText"] = tSourceColor["TR"], tSourceColor["TG"], tSourceColor["TB"], tSourceColor["TO"], true;
-		end
-
+	if not anInfo["mibucateg"] or not VUHDO_BUFF_SETTINGS[anInfo["mibucateg"]] then
 		return tColor;
 	end
 
-	if not anInfo["mibucateg"] or not VUHDO_BUFF_SETTINGS[anInfo["mibucateg"]] then	return tEmpty; end
-
 	tSourceColor = VUHDO_BUFF_SETTINGS[anInfo["mibucateg"]]["missingColor"];
-	twipe(tColor);
-	if VUHDO_BUFF_SETTINGS["CONFIG"]["BAR_COLORS_TEXT"] then
+
+	if not tColor["useText"] and VUHDO_BUFF_SETTINGS["CONFIG"]["BAR_COLORS_TEXT"] then
 		tColor["useText"], tColor["TR"], tColor["TG"], tColor["TB"], tColor["TO"] = true, tSourceColor["TR"], tSourceColor["TG"], tSourceColor["TB"], tSourceColor["TO"];
 	end
 
-	if VUHDO_BUFF_SETTINGS["CONFIG"]["BAR_COLORS_BACKGROUND"] then
+	if not tColor["useBackground"] and VUHDO_BUFF_SETTINGS["CONFIG"]["BAR_COLORS_BACKGROUND"] then
 		tColor["useBackground"], tColor["R"], tColor["G"], tColor["B"], tColor["O"] = true, tSourceColor["R"], tSourceColor["G"], tSourceColor["B"], tSourceColor["O"];
 	end
 
 	return tColor;
+
 end
 
 
@@ -223,10 +217,10 @@ setmetatable(VUHDO_UNIT_DEBUFF_INFOS, {
 			[VUHDO_DEBUFF_TYPE_DISEASE] = { },
 			[VUHDO_DEBUFF_TYPE_MAGIC] = { },
 			[VUHDO_DEBUFF_TYPE_CURSE] = { },
+			[VUHDO_DEBUFF_TYPE_BLEED] = { },
 --			["listHeads"] = {
 --				[<CHOSEN|VUHDO_DEBUFF_TYPE>] = {
 --					["auraInstanceId"] = <aura instance ID>,
---					["next"] = <next aura>,
 --					["prev"] = <prev aura>,
 --				},
 --			},
@@ -310,7 +304,6 @@ local function VUHDO_addUnitDebuffInfo(aUnit, aType, anAuraInstanceId, anIcon, a
 
 		if tUnitDebuffInfoListPrev then
 			VUHDO_UNIT_DEBUFF_INFOS[aUnit]["listHeads"][aType]["prev"] = tUnitDebuffInfoListPrev;
-			tUnitDebuffInfoListPrev["next"] = VUHDO_UNIT_DEBUFF_INFOS[aUnit]["listHeads"][aType];
 		end
 
 		VUHDO_UNIT_DEBUFF_INFOS[aUnit][aType][1], VUHDO_UNIT_DEBUFF_INFOS[aUnit][aType][2],
@@ -346,22 +339,19 @@ local function VUHDO_removeUnitDebuffInfo(aUnit, aType, anAuraInstanceId)
 		return;
 	end
 
+	tUnitDebuffInfoNext = false;
 	tUnitDebuffInfo = VUHDO_UNIT_DEBUFF_INFOS[aUnit]["listHeads"][aType];
 
 	while tUnitDebuffInfo and tUnitDebuffInfo["auraInstanceId"] do
 		if tUnitDebuffInfo["auraInstanceId"] == anAuraInstanceId then
 			tUnitDebuffInfoPrev = tUnitDebuffInfo["prev"];
-			tUnitDebuffInfoNext = tUnitDebuffInfo["next"];
 
 			if tUnitDebuffInfoPrev and not tUnitDebuffInfoNext then
 				-- remove head
-				tUnitDebuffInfoPrev["next"] = nil;
-
 				VUHDO_UNIT_DEBUFF_INFOS[aUnit]["listHeads"][aType] = tUnitDebuffInfoPrev;
 			elseif tUnitDebuffInfoPrev and tUnitDebuffInfoNext then
 				-- remove link
 				tUnitDebuffInfoNext["prev"] = tUnitDebuffInfoPrev;
-				tUnitDebuffInfoPrev["next"] = tUnitDebuffInfoNext;
 			elseif not tUnitDebuffInfoPrev and tUnitDebuffInfoNext then
 				-- remove tail
 				tUnitDebuffInfoNext["prev"] = nil;
@@ -371,8 +361,9 @@ local function VUHDO_removeUnitDebuffInfo(aUnit, aType, anAuraInstanceId)
 
 			tUnitDebuffInfoAuras[anAuraInstanceId] = nil;
 
-			tUnitDebuffInfo = nil;
+			break;
 		else
+			tUnitDebuffInfoNext = tUnitDebuffInfo;
 			tUnitDebuffInfo = tUnitDebuffInfo["prev"];
 		end
 	end
@@ -443,7 +434,7 @@ local VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT = { VUHDO_DEBUFF_TYPE_NONE, "", nil, false
 local sCurChosenInfo = {
 	-- [<unit ID>] = {
 	--	[<aura instance ID>] = {
-	--		VUHDO_DEBUFF_TYPE_<NONE|POISON|DISEASE|MAGIC|CURSE|CUSTOM|MISSING_BUFF>,
+	--		VUHDO_DEBUFF_TYPE_<NONE|POISON|DISEASE|MAGIC|CURSE|CUSTOM|MISSING_BUFF|BLEED>,
 	--		<aura spell Id>,
 	--		<aura name>,
 	--		<isStandard: true|false>,
@@ -454,6 +445,51 @@ local sCurChosenInfo = {
 local sCurChosenListHead = { };
 local sCurChosen = { };
 local sCurIcons = { };
+
+
+
+--
+local tSourceColor;
+local tDebuffSettings;
+local function VUHDO_updateCurChosenColor(aUnit, aType)
+
+	if (aType or 0) == 0 then -- VUHDO_DEBUFF_TYPE_NONE
+		return;
+	end
+
+	if (aType or 6) ~= 6 and VUHDO_DEBUFF_COLORS[aType] then -- VUHDO_DEBUFF_TYPE_<POISON|DISEASE|MAGIC|CURSE|BLEED>
+		tSourceColor = VUHDO_DEBUFF_COLORS[aType];
+
+		if tSourceColor["useBackground"] then
+			sCurChosenColor[aUnit]["R"], sCurChosenColor[aUnit]["G"], sCurChosenColor[aUnit]["B"], sCurChosenColor[aUnit]["O"], sCurChosenColor[aUnit]["useBackground"] = tSourceColor["R"], tSourceColor["G"], tSourceColor["B"], tSourceColor["O"], true;
+		end
+
+		if tSourceColor["useText"] then
+			sCurChosenColor[aUnit]["TR"], sCurChosenColor[aUnit]["TG"], sCurChosenColor[aUnit]["TB"], sCurChosenColor[aUnit]["TO"], sCurChosenColor[aUnit]["useText"] = tSourceColor["TR"], tSourceColor["TG"], tSourceColor["TB"], tSourceColor["TO"], true;
+		end
+
+		return;
+	end
+
+	tDebuffSettings = sAllDebuffSettings[sCurChosen[aUnit][2]] or sAllDebuffSettings[tostring(sCurChosen[aUnit][3])];
+
+	if aType == 6 and tDebuffSettings ~= nil and tDebuffSettings["isColor"] then -- VUHDO_DEBUFF_TYPE_CUSTOM
+		if tDebuffSettings["color"] ~= nil then
+			tSourceColor = tDebuffSettings["color"];
+		else
+			tSourceColor = VUHDO_DEBUFF_COLORS[6];
+		end
+
+		if VUHDO_DEBUFF_COLORS[6]["useBackground"] then
+			sCurChosenColor[aUnit]["R"], sCurChosenColor[aUnit]["G"], sCurChosenColor[aUnit]["B"], sCurChosenColor[aUnit]["O"], sCurChosenColor[aUnit]["useBackground"] = tSourceColor["R"], tSourceColor["G"], tSourceColor["B"], tSourceColor["O"], true;
+		end
+
+		if VUHDO_DEBUFF_COLORS[6]["useText"] then
+			sCurChosenColor[aUnit]["TR"], sCurChosenColor[aUnit]["TG"], sCurChosenColor[aUnit]["TB"], sCurChosenColor[aUnit]["TO"], sCurChosenColor[aUnit]["useText"] = tSourceColor["TR"], tSourceColor["TG"], tSourceColor["TB"], tSourceColor["TO"], true;
+		end
+	end
+
+end
 
 
 
@@ -495,7 +531,6 @@ local function VUHDO_addCurChosen(aUnit, anAuraInstanceId, aType, aName, aSpellI
 
 		if tCurChosenPrev then
 			sCurChosenListHead[aUnit]["prev"] = tCurChosenPrev;
-			tCurChosenPrev["next"] = sCurChosenListHead[aUnit];
 		end
 
 		sCurChosen[aUnit][1], sCurChosen[aUnit][2], sCurChosen[aUnit][3], sCurChosen[aUnit][4] =
@@ -504,6 +539,8 @@ local function VUHDO_addCurChosen(aUnit, anAuraInstanceId, aType, aName, aSpellI
 			aSpellId or sCurChosen[aUnit][3] or VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[3],
 			(anIsStandard ~= nil) and anIsStandard or (sCurChosen[aUnit][4] or VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[4]);
 	end
+
+	VUHDO_updateCurChosenColor(aUnit, aType or VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[1]);
 
 end
 
@@ -519,22 +556,19 @@ local function VUHDO_removeCurChosen(aUnit, anAuraInstanceId)
 		return;
 	end
 
+	tCurChosenNext = false;
 	tCurChosen = sCurChosenListHead[aUnit];
 
 	while tCurChosen and tCurChosen["auraInstanceId"] do
 		if tCurChosen["auraInstanceId"] == anAuraInstanceId then
 			tCurChosenPrev = tCurChosen["prev"];
-			tCurChosenNext = tCurChosen["next"];
 
 			if tCurChosenPrev and not tCurChosenNext then
 				-- remove head
-				tCurChosenPrev["next"] = nil;
-
 				sCurChosenListHead[aUnit] = tCurChosenPrev;
 			elseif tCurChosenPrev and tCurChosenNext then
 				-- remove link
 				tCurChosenNext["prev"] = tCurChosenPrev;
-				tCurChosenPrev["next"] = tCurChosenNext;
 			elseif not tCurChosenPrev and tCurChosenNext then
 				-- remove tail
 				tCurChosenNext["prev"] = nil;
@@ -544,8 +578,9 @@ local function VUHDO_removeCurChosen(aUnit, anAuraInstanceId)
 
 			sCurChosenInfo[aUnit][anAuraInstanceId] = nil;
 
-			tCurChosen = nil;
+			break;
 		else
+			tCurChosenNext = tCurChosen;
 			tCurChosen = tCurChosen["prev"];
 		end
 	end
@@ -583,6 +618,8 @@ local function VUHDO_updateCurChosen(aUnit)
 		VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[1], VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[2],
 		VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[3], VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[4];
 
+	sCurChosenColor[aUnit] = { };
+
 	tCurChosen = sCurChosenListHead[aUnit];
 
 	while tCurChosen and tCurChosen["auraInstanceId"] do
@@ -604,6 +641,10 @@ local function VUHDO_updateCurChosen(aUnit)
 			if tCurChosenInfo[4] and sCurChosen[aUnit][4] == VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[4] then
 				sCurChosen[aUnit][4] = tCurChosenInfo[4];
 			end
+
+			if not sCurChosenColor[aUnit]["useBackground"] or not sCurChosenColor[aUnit]["useText"] then
+				VUHDO_updateCurChosenColor(aUnit, tCurChosenInfo[1]);
+			end
 		end
 
 		tCurChosen = tCurChosen["prev"];
@@ -624,6 +665,7 @@ local function VUHDO_initDebuffInfos(aUnit)
 	tUnitDebuffInfo[2][2] = nil; -- VUHDO_DEBUFF_TYPE_DISEASE
 	tUnitDebuffInfo[3][2] = nil; -- VUHDO_DEBUFF_TYPE_MAGIC
 	tUnitDebuffInfo[4][2] = nil; -- VUHDO_DEBUFF_TYPE_CURSE
+	tUnitDebuffInfo[8][2] = nil; -- VUHDO_DEBUFF_TYPE_BLEED
 
 	if not tUnitDebuffInfo["listHeads"] then
 		tUnitDebuffInfo["listHeads"] = { };
@@ -634,6 +676,7 @@ local function VUHDO_initDebuffInfos(aUnit)
 	tUnitDebuffInfo["listHeads"][2] = nil; -- VUHDO_DEBUFF_TYPE_DISEASE
 	tUnitDebuffInfo["listHeads"][3] = nil; -- VUHDO_DEBUFF_TYPE_MAGIC
 	tUnitDebuffInfo["listHeads"][4] = nil; -- VUHDO_DEBUFF_TYPE_CURSE
+	tUnitDebuffInfo["listHeads"][8] = nil; -- VUHDO_DEBUFF_TYPE_BLEED
 
 	if not tUnitDebuffInfo["typeAuras"] then
 		tUnitDebuffInfo["typeAuras"] = { };
@@ -669,6 +712,8 @@ local function VUHDO_initDebuffInfos(aUnit)
 		VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[1], VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[2],
 		VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[3], VUHDO_DEBUFF_CUR_CHOSEN_DEFAULT[4];
 
+	sCurChosenColor[aUnit] = { };
+
 	if not sCurIcons[aUnit] then
 		sCurIcons[aUnit] = { };
 	else
@@ -685,6 +730,16 @@ local function VUHDO_initDebuffInfos(aUnit)
 --			VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] = nil;
 --		end
 	end
+
+	if not VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit] then
+		VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit] = { };
+--	else
+--		for tSpell, _ in pairs(VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit]) do
+--			VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tSpell] = nil;
+--		end
+	end
+
+--	VUHDO_LAST_UNIT_DEBUFFS[aUnit] = nil;
 
 --	VUHDO_removeAllDebuffIcons(aUnit);
 
@@ -730,10 +785,15 @@ local tInfo;
 local tType;
 local tAbility;
 local tIsRelevant;
-local tSchool;
 local function VUHDO_determineDebuffPredicate(anAuraInstanceId, aName, anIcon, aStacks, aTypeString, aDuration, anExpiry, aUnitCaster, aSpellId, anIsBossDebuff, anIsUpdate, aCnt)
 
 	if not anIcon then
+		return;
+	end
+
+	tInfo = (VUHDO_RAID or sEmpty)[sUnit];
+
+	if not tInfo then
 		return;
 	end
 
@@ -760,7 +820,7 @@ local function VUHDO_determineDebuffPredicate(anAuraInstanceId, aName, anIcon, a
 		tIsShown = true;
 	end
 
-	tType = VUHDO_DEBUFF_TYPES[aTypeString];
+	tType = VUHDO_DEBUFF_BLEED_SPELLS[aSpellId] and VUHDO_DEBUFF_TYPE_BLEED or VUHDO_DEBUFF_TYPES[aTypeString];
 	tAbility = VUHDO_PLAYER_ABILITIES[tType] and UnitIsFriend("player", sUnit);
 	tIsRelevant = not VUHDO_IGNORE_DEBUFF_NAMES[aName]
 		and not (VUHDO_IGNORE_DEBUFFS_BY_CLASS[tInfo["class"] or ""] or sEmpty)[aName];
@@ -781,7 +841,7 @@ local function VUHDO_determineDebuffPredicate(anAuraInstanceId, aName, anIcon, a
 
 		-- Entweder Fähigkeit vorhanden ODER noch keiner gewählt UND auch nicht entfernbare
 		-- Either ability available OR none selected AND not removable (DETECT_DEBUFFS_REMOVABLE_ONLY)
-		if not anIsUpdate and tType and (tAbility or (sCurChosen[sUnit][1] == 0 and sIsNotRemovableOnly)) then -- VUHDO_DEBUFF_TYPE_NONE
+		if not anIsUpdate and tType and (tAbility or sIsNotRemovableOnly) then -- VUHDO_DEBUFF_TYPE_NONE
 			VUHDO_addCurChosen(sUnit, anAuraInstanceId, tType, nil, nil, nil);
 			VUHDO_addUnitDebuffInfo(sUnit, "CHOSEN", anAuraInstanceId, anIcon, anExpiry, aStacks, aDuration);
 		end
@@ -830,6 +890,20 @@ function VUHDO_determineAuraPredicate(anAuraData, anIsUpdate)
 			anIsUpdate,
 			sCnt
 		);
+
+		VUHDO_updateHotPredicate(
+			sUnit,
+			sNow,
+			anAuraData.auraInstanceID,
+			anAuraData.name,
+			anAuraData.icon,
+			anAuraData.applications,
+			anAuraData.duration,
+			anAuraData.expirationTime,
+			anAuraData.sourceUnit,
+			anAuraData.spellId,
+			anIsUpdate
+		);
 	elseif anAuraData and anAuraData.isHelpful then
 		VUHDO_determineBuffPredicate(
 			anAuraData.auraInstanceID,
@@ -842,6 +916,20 @@ function VUHDO_determineAuraPredicate(anAuraData, anIsUpdate)
 			anAuraData.spellId,
 			anIsUpdate,
 			sCnt
+		);
+
+		VUHDO_updateHotPredicate(
+			sUnit,
+			sNow,
+			anAuraData.auraInstanceID,
+			anAuraData.name,
+			anAuraData.icon,
+			anAuraData.applications,
+			anAuraData.duration,
+			anAuraData.expirationTime,
+			anAuraData.sourceUnit,
+			anAuraData.spellId,
+			anIsUpdate
 		);
 	end
 
@@ -882,169 +970,229 @@ end
 
 
 --
-local tAura;
-local tDoUpdate
-local tDoUpdateUnitDebuffInfo = { };
-local tType;
+local tDoUpdateInfo;
+local tDebuffType;
+local tDoUpdateChosen;
+local function VUHDO_removeDebuff(aUnit, anAuraInstanceId)
+
+	tDoUpdateInfo, tDebuffType, tDoUpdateChosen = false, nil, false;
+
+	if sCurIcons[aUnit] and sCurIcons[aUnit][anAuraInstanceId] then
+		sCurIcons[aUnit][anAuraInstanceId] = nil;
+	end
+
+	if sCurChosenInfo[aUnit] and sCurChosenInfo[aUnit][anAuraInstanceId] then
+		VUHDO_removeCurChosen(aUnit, anAuraInstanceId);
+		tDoUpdateInfo = true;
+	end
+
+	if sUnitDebuffInfo["typeAuras"] and sUnitDebuffInfo["typeAuras"][anAuraInstanceId] then
+		tDebuffType = sUnitDebuffInfo["typeAuras"][anAuraInstanceId][5];
+
+		VUHDO_removeUnitDebuffInfo(aUnit, tDebuffType, anAuraInstanceId);
+	end
+
+	if sUnitDebuffInfo["chosenAuras"] and sUnitDebuffInfo["chosenAuras"][anAuraInstanceId] then
+		VUHDO_removeUnitDebuffInfo(aUnit, "CHOSEN", anAuraInstanceId);
+		tDoUpdateChosen = true;
+	end
+
+	return tDoUpdateInfo, tDebuffType, tDoUpdateChosen;
+
+end
+
+
+
+--
+local tInfo;
+local tDoStdSound;
 local tName;
+local tSpellIdStr;
 local tDebuffSettings;
 local tCurChosenInfo;
-local tDoStdSound;
+local function VUHDO_updateDebuffs(aUnit)
+
+	tInfo = (VUHDO_RAID or sEmpty)[aUnit];
+
+	if not tInfo then
+		return;
+	end
+
+	tDoStdSound = false;
+
+	-- Gained new custom debuff?
+	-- note we only play sounds for debuff customs with isIcon set to true
+	if sCurIcons[aUnit] then
+		for tAuraInstanceId, tDebuffInfo in pairs(sCurIcons[aUnit]) do
+			tName = tDebuffInfo[8];
+			tSpellIdStr = tostring(tDebuffInfo[6]);
+
+			if not VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] then
+				if not sIsShowOnlyForFriendly or UnitIsFriend("player", aUnit) then
+					-- tExpiry, tStacks, tIcon, tAuraInstanceId, tName
+					VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] = {
+						tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[1], tDebuffInfo[7], tName, tDebuffInfo[6], tDebuffInfo[9]
+					};
+
+					VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tName] = (VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tName] or 0) + 1;
+					VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tSpellIdStr] = (VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tSpellIdStr] or 0) + 1;
+
+					VUHDO_addDebuffIcon(aUnit, tDebuffInfo[1], tName, tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[4], tDebuffInfo[5], tDebuffInfo[6], tDebuffInfo[7], tDebuffInfo[9]);
+
+					if not VUHDO_IS_CONFIG and VUHDO_MAY_DEBUFF_ANIM then
+						-- the key used to store the debuff settings is either the debuff name or spell ID
+						tDebuffSettings = sAllDebuffSettings[tName] or sAllDebuffSettings[tostring(tDebuffInfo[6])];
+
+						if tDebuffSettings then -- particular custom debuff sound?
+							VUHDO_playDebuffSound(tDebuffSettings["SOUND"], tName);
+						elseif VUHDO_CONFIG["CUSTOM_DEBUFF"]["SOUND"] then -- default custom debuff sound?
+							VUHDO_playDebuffSound(VUHDO_CONFIG["CUSTOM_DEBUFF"]["SOUND"], tName);
+						end
+					end
+
+					tCurChosenInfo = sCurChosenInfo[aUnit][tAuraInstanceId];
+
+					if sStdDebuffSound and tCurChosenInfo
+						and (tCurChosenInfo[1] ~= VUHDO_DEBUFF_TYPE_NONE or tCurChosenInfo[4])
+						and tCurChosenInfo[1] ~= VUHDO_DEBUFF_TYPE_CUSTOM
+						and tCurChosenInfo[1] ~= VUHDO_LAST_UNIT_DEBUFFS[aUnit]
+						and tInfo["range"] then
+							VUHDO_LAST_UNIT_DEBUFFS[aUnit] = tCurChosenInfo[1];
+
+							tDoStdSound = true;
+					end
+
+					VUHDO_updateBouquetsForEvent(aUnit, 29); -- VUHDO_UPDATE_CUSTOM_DEBUFF
+				end
+			-- update number of stacks?
+			elseif VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] and
+				(VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][1] ~= tDebuffInfo[2]
+				or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][2] ~= tDebuffInfo[3]
+				or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][3] ~= tDebuffInfo[1]
+				or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][4] ~= tDebuffInfo[7]
+				or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][5] ~= tName
+				or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][7] ~= tDebuffInfo[9]) then
+				VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][1], VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][2],
+				VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][3], VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][4],
+				VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][5], VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][7] =
+					tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[1], tDebuffInfo[7], tName, tDebuffInfo[9];
+
+				VUHDO_updateDebuffIcon(aUnit, tDebuffInfo[1], tName, tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[4], tDebuffInfo[5], tDebuffInfo[6], tDebuffInfo[7], tDebuffInfo[9]);
+
+				VUHDO_updateBouquetsForEvent(aUnit, 29); -- VUHDO_UPDATE_CUSTOM_DEBUFF
+			end
+		end
+	end
+
+	-- Play standard debuff sound?
+	if sStdDebuffSound and tDoStdSound then
+		VUHDO_playDebuffSound(sStdDebuffSound);
+	end
+
+end
+
+
+
+--
+local tInfo;
+local tAura;
+local tDoUpdate, tDoUpdateIter;
+local tDoUpdateDebuffType, tDoUpdateDebuffChosen;
+local tDoUpdateUnitDebuffInfo = { };
+local tSpellIdStr;
 function VUHDO_determineDebuff(aUnit, aUpdateInfo)
 
 	tInfo = (VUHDO_RAID or sEmpty)[aUnit];
 
 	if not tInfo then
 		return 0, ""; -- VUHDO_DEBUFF_TYPE_NONE
-	elseif VUHDO_CONFIG_SHOW_RAID then
-		return tInfo["debuff"], tInfo["debuffName"];
 	end
 
-	if VUHDO_shouldScanUnit(aUnit) then
-		sUnit = aUnit;
-		sNow = GetTime();
+	sUnit = aUnit;
+	sNow = GetTime();
 
-		if not aUpdateInfo or (aUpdateInfo and aUpdateInfo.isFullUpdate) then
-			sUnitDebuffInfo = VUHDO_initDebuffInfos(aUnit);
+	if (not aUpdateInfo and VUHDO_shouldScanUnit(aUnit)) or (aUpdateInfo and aUpdateInfo.isFullUpdate) then
+		VUHDO_initHots(aUnit);
 
-			sCnt = 1;
-			ForEachAura(aUnit, "HARMFUL", nil, VUHDO_determineAuraPredicate, true);
+		sUnitDebuffInfo = VUHDO_initDebuffInfos(aUnit);
 
-			sCnt = 1;
-			ForEachAura(aUnit, "HELPFUL", nil, VUHDO_determineAuraPredicate, true);
-		elseif aUpdateInfo then
-			sUnitDebuffInfo = (sCurIcons[aUnit] and sCurChosen[aUnit]) and VUHDO_UNIT_DEBUFF_INFOS[aUnit] or VUHDO_initDebuffInfos(aUnit);
+		sCnt = 1;
+		ForEachAura(aUnit, "HARMFUL", nil, VUHDO_determineAuraPredicate, true);
 
-			if aUpdateInfo.addedAuras then
-				for _, tAuraData in pairs(aUpdateInfo.addedAuras) do
-					VUHDO_determineAuraPredicate(tAuraData);
-				end
+		sCnt = 1;
+		ForEachAura(aUnit, "HELPFUL", nil, VUHDO_determineAuraPredicate, true);
+	elseif aUpdateInfo then
+		sUnitDebuffInfo = (sCurIcons[aUnit] and sCurChosen[aUnit]) and VUHDO_UNIT_DEBUFF_INFOS[aUnit] or VUHDO_initDebuffInfos(aUnit);
+
+		if aUpdateInfo.addedAuras then
+			for _, tAuraData in pairs(aUpdateInfo.addedAuras) do
+				VUHDO_determineAuraPredicate(tAuraData);
 			end
+		end
 
-			if aUpdateInfo.updatedAuraInstanceIDs then
-				for _, tAuraInstanceId in pairs(aUpdateInfo.updatedAuraInstanceIDs) do
-					tAura = GetAuraDataByAuraInstanceID(aUnit, tAuraInstanceId);
+		if aUpdateInfo.updatedAuraInstanceIDs then
+			for _, tAuraInstanceId in pairs(aUpdateInfo.updatedAuraInstanceIDs) do
+				tAura = GetAuraDataByAuraInstanceID(aUnit, tAuraInstanceId);
 
-					if tAura then
-						VUHDO_determineAuraPredicate(tAura, true);
-					end
-				end
-			end
-
-			if aUpdateInfo.removedAuraInstanceIDs then
-				tDoUpdate = false;
-
-				tDoUpdateUnitDebuffInfo["CHOSEN"], tDoUpdateUnitDebuffInfo[1], tDoUpdateUnitDebuffInfo[2],
-				tDoUpdateUnitDebuffInfo[3], tDoUpdateUnitDebuffInfo[4] =
-					false, false, false, false, false;
-
-				for _, tAuraInstanceId in pairs(aUpdateInfo.removedAuraInstanceIDs) do
-					if sCurIcons[aUnit] and sCurIcons[aUnit][tAuraInstanceId] then
-						sCurIcons[aUnit][tAuraInstanceId] = nil;
-					end
-
-					if sCurChosenInfo[aUnit] and sCurChosenInfo[aUnit][tAuraInstanceId] then
-						VUHDO_removeCurChosen(aUnit, tAuraInstanceId);
-						tDoUpdate = true;
-					end
-
-					if sUnitDebuffInfo["typeAuras"] and sUnitDebuffInfo["typeAuras"][tAuraInstanceId] then
-						tType = sUnitDebuffInfo["typeAuras"][tAuraInstanceId][5];
-
-						VUHDO_removeUnitDebuffInfo(aUnit, tType, tAuraInstanceId);
-						tDoUpdateUnitDebuffInfo[tType] = true;
-					end
-
-					if sUnitDebuffInfo["chosenAuras"] and sUnitDebuffInfo["chosenAuras"][tAuraInstanceId] then
-						VUHDO_removeUnitDebuffInfo(aUnit, "CHOSEN", tAuraInstanceId);
-						tDoUpdateUnitDebuffInfo["CHOSEN"] = true;
-					end
-				end
-
-				if tDoUpdate then
-					VUHDO_updateCurChosen(aUnit);
-				end
-
-				for tUpdateType, tDoUpdateType in pairs(tDoUpdateUnitDebuffInfo) do
-					if tDoUpdateType then
-						VUHDO_updateUnitDebuffInfo(aUnit, tUpdateType);
-					end
+				if tAura then
+					VUHDO_determineAuraPredicate(tAura, true);
 				end
 			end
 		end
 
-		tDoStdSound = false;
+		if aUpdateInfo.removedAuraInstanceIDs then
+			tDoUpdate = false;
 
-		-- Gained new custom debuff?
-		-- note we only play sounds for debuff customs with isIcon set to true
-		if sCurIcons[aUnit] then
-			for tAuraInstanceId, tDebuffInfo in pairs(sCurIcons[aUnit]) do
-				tName = tDebuffInfo[8];
+			tDoUpdateUnitDebuffInfo["CHOSEN"], tDoUpdateUnitDebuffInfo[1], tDoUpdateUnitDebuffInfo[2],
+			tDoUpdateUnitDebuffInfo[3], tDoUpdateUnitDebuffInfo[4] =
+				false, false, false, false, false;
 
-				if not VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] then
-					if not sIsShowOnlyForFriendly or UnitIsFriend("player", aUnit) then
-						-- tExpiry, tStacks, tIcon, tAuraInstanceId, tName
-						VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] = {
-							tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[1], tDebuffInfo[7], tName, tDebuffInfo[9]
-						};
+			tDoUpdateIter, tDoUpdateDebuffType, tDoUpdateDebuffChosen = false, nil, false;
 
-						VUHDO_addDebuffIcon(aUnit, tDebuffInfo[1], tName, tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[4], tDebuffInfo[5], tDebuffInfo[6], tDebuffInfo[7], tDebuffInfo[9]);
+			for _, tAuraInstanceId in pairs(aUpdateInfo.removedAuraInstanceIDs) do
+				VUHDO_removeHot(aUnit, tAuraInstanceId);
 
-						if not VUHDO_IS_CONFIG and VUHDO_MAY_DEBUFF_ANIM then
-							-- the key used to store the debuff settings is either the debuff name or spell ID
-							tDebuffSettings = sAllDebuffSettings[tName] or sAllDebuffSettings[tostring(tDebuffInfo[6])];
+				tDoUpdateIter, tDoUpdateDebuffType, tDoUpdateDebuffChosen = VUHDO_removeDebuff(aUnit, tAuraInstanceId);
 
-							if tDebuffSettings then -- particular custom debuff sound?
-								VUHDO_playDebuffSound(tDebuffSettings["SOUND"], tName);
-							elseif VUHDO_CONFIG["CUSTOM_DEBUFF"]["SOUND"] then -- default custom debuff sound?
-								VUHDO_playDebuffSound(VUHDO_CONFIG["CUSTOM_DEBUFF"]["SOUND"], tName);
-							end
-						end
+				if tDoUpdateIter then
+					tDoUpdate = true;
+				end
 
-						tCurChosenInfo = sCurChosenInfo[aUnit][tAuraInstanceId];
+				if tDoUpdateDebuffType then
+					tDoUpdateUnitDebuffInfo[tDoUpdateDebuffType] = true;
+				end
 
-						if sStdDebuffSound and tCurChosenInfo
-							and (tCurChosenInfo[1] ~= VUHDO_DEBUFF_TYPE_NONE or tCurChosenInfo[4])
-							and tCurChosenInfo[1] ~= VUHDO_DEBUFF_TYPE_CUSTOM
-							and tCurChosenInfo[1] ~= VUHDO_LAST_UNIT_DEBUFFS[aUnit]
-							and tInfo["range"] then
-								VUHDO_LAST_UNIT_DEBUFFS[aUnit] = tCurChosenInfo[1];
+				if tDoUpdateDebuffChosen then
+					tDoUpdateUnitDebuffInfo["CHOSEN"] = true;
+				end
+			end
 
-								tDoStdSound = true;
-						end
+			if tDoUpdate then
+				VUHDO_updateCurChosen(aUnit);
+			end
 
-						VUHDO_updateBouquetsForEvent(aUnit, 29); -- VUHDO_UPDATE_CUSTOM_DEBUFF
-					end
-				-- update number of stacks?
-				elseif VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] and
-					(VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][1] ~= tDebuffInfo[2]
-					or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][2] ~= tDebuffInfo[3]
-					or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][3] ~= tDebuffInfo[1]
-					or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][4] ~= tDebuffInfo[7]
-					or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][5] ~= tName
-					or VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][6] ~= tDebuffInfo[9]) then
-					VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][1], VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][2],
-					VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][3], VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][4],
-					VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][5], VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId][6] =
-						tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[1], tDebuffInfo[7], tName, tDebuffInfo[9];
-
-					VUHDO_updateDebuffIcon(aUnit, tDebuffInfo[1], tName, tDebuffInfo[2], tDebuffInfo[3], tDebuffInfo[4], tDebuffInfo[5], tDebuffInfo[6], tDebuffInfo[7], tDebuffInfo[9]);
-
-					VUHDO_updateBouquetsForEvent(aUnit, 29); -- VUHDO_UPDATE_CUSTOM_DEBUFF
+			for tUpdateType, tDoUpdateType in pairs(tDoUpdateUnitDebuffInfo) do
+				if tDoUpdateType then
+					VUHDO_updateUnitDebuffInfo(aUnit, tUpdateType);
 				end
 			end
 		end
+	end
 
-		-- Play standard debuff sound?
-		if sStdDebuffSound and tDoStdSound then
-			VUHDO_playDebuffSound(sStdDebuffSound);
-		end
-	end -- shouldScanUnit
+	VUHDO_updateHots(aUnit, tInfo);
+
+	VUHDO_updateDebuffs(aUnit);
 
 	-- Lost old custom debuff?
 	for tAuraInstanceId, tUnitCustomDebuff in pairs(VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit]) do
 		if tUnitCustomDebuff and (not sCurIcons[aUnit] or not sCurIcons[aUnit][tAuraInstanceId]) then
-			VUHDO_removeDebuffIcon(aUnit, tUnitCustomDebuff[5]);
+			VUHDO_removeDebuffIcon(aUnit, tAuraInstanceId);
+
+			tSpellIdStr = tostring(tUnitCustomDebuff[6]);
+
+			VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tUnitCustomDebuff[5]] = VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tUnitCustomDebuff[5]] - 1;
+			VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tSpellIdStr] = VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][tSpellIdStr] - 1;
+
 			VUHDO_UNIT_CUSTOM_DEBUFFS[aUnit][tAuraInstanceId] = nil;
 
 			VUHDO_updateBouquetsForEvent(aUnit, 29); -- VUHDO_UPDATE_CUSTOM_DEBUFF
@@ -1054,7 +1202,6 @@ function VUHDO_determineDebuff(aUnit, aUpdateInfo)
 	return VUHDO_getDeterminedDebuffInfo(aUnit);
 
 end
-
 local VUHDO_determineDebuff = VUHDO_determineDebuff;
 
 
@@ -1095,7 +1242,7 @@ function VUHDO_initDebuffs()
 				if VUHDO_SPEC_TO_DEBUFF_ABIL[tAbility] then
 					tAbility = VUHDO_SPEC_TO_DEBUFF_ABIL[tAbility];
 				elseif type(tAbility) == "number" then
-					tAbility = GetSpellInfo(tAbility);
+					tAbility = GetSpellName(tAbility);
 				end
 
 				VUHDO_PLAYER_ABILITIES[tDebuffType] = tAbility;
@@ -1261,5 +1408,44 @@ end
 function VUHDO_getDebuffCurChosen()
 
 	return sCurChosen;
+
+end
+
+
+
+--
+function VUHDO_getDebuffCurChosenColor()
+
+	return sCurChosenColor;
+
+end
+
+
+
+--
+function VUHDO_getUnitCustomDebuffSpells()
+
+	return VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS;
+
+end
+
+
+
+--
+function VUHDO_hasUnitDebuff(aUnit, aSpell)
+
+	if not aUnit or not aSpell then
+		return;
+	end
+
+	if type(aSpell) == "number" then
+		aSpell = tostring(aSpell);
+	end
+
+	if VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit] and (VUHDO_UNIT_CUSTOM_DEBUFF_SPELLS[aUnit][aSpell] or 0) > 0 then
+		return true;
+	else
+		return false;
+	end
 
 end

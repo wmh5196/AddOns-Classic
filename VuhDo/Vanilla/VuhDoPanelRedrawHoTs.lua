@@ -1,4 +1,4 @@
-local GetSpellBookItemTexture = GetSpellBookItemTexture;
+local GetSpellBookItemTexture = GetSpellBookItemTexture or VUHDO_getSpellBookItemTexture;
 
 local VUHDO_getHealthBar;
 local VUHDO_getBarIcon;
@@ -13,7 +13,6 @@ local sHotPos;
 local sBarsPos;
 local sBarColors;
 local sStacksRadio;
-local sIcqqonRadio;
 local sIconRadio;
 local sHotBarConfig = { };
 local sOrientation = { };

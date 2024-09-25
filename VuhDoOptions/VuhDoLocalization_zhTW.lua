@@ -653,6 +653,11 @@ VUHDO_I18N_TT.K592 = "在血量條上顯示非公開性的光環圖示。";
 VUHDO_I18N_TT.K593 = "選擇非公開性的光環圖示的大小。";
 VUHDO_I18N_TT.K594 = "將寵物排列在最後面。";
 VUHDO_I18N_TT.K595 = "顯示玩家的有效血量 (包含護盾的血量)。";
+VUHDO_I18N_TT.K596 = "更改表示玩家受到流血減益效果影響的顏色。";
+
+-- TBCC game version specific strings (tooltip IDs begin at K900)
+
+VUHDO_I18N_TT.K900 = "使用 LibHealComm-4.0 顯示即將治療預估。";
 
 VUHDO_I18N_DEFAULT_PROFILE = "預設設定檔";
 VUHDO_I18N_DEFAULT_LAYOUT = "預設按鍵配置";
@@ -1063,8 +1068,8 @@ VUHDO_I18N_CLEAR_BINDING = "清除綁定";
 VUHDO_I18N_MACRO_EDITOR = "VuhDo 巨集編輯器";
 VUHDO_I18N_ACCEPT = "接受";
 VUHDO_I18N_DISCARD = "放棄";
-VUHDO_I18N_LKA_HINT_1 = "在巨集中使用這些文字來代替: |c00000000vuhdo|r => 單位自己, |c00000000vdname|r => 單位的名字" justifyH="LEFT" inherits="VuDoButtonFontDark";
-VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => 單位的目標/目標的目標，|c00000000vdpet|r => 單位的寵物，範例: /cast [@vuhdo] 快速治療" justifyH="LEFT" inherits="VuDoButtonFontDark";
+VUHDO_I18N_LKA_HINT_1 = "在巨集中使用這些文字來代替: |c00000000vuhdo|r => 單位自己, |c00000000vdname|r => 單位的名字";
+VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => 單位的目標/目標的目標，|c00000000vdpet|r => 單位的寵物，範例: /cast [@vuhdo] 快速治療";
 VUHDO_I18N_LKA_CUSTOM_MACRO_DISCARDED = "已放棄自訂巨集文字。";
 VUHDO_I18N_NAME_CHANGE_DISCARDED = "已放棄物品名稱變更。";
 VUHDO_I18N_LKA_TYPE_CHANGED = "VuhDo 自訂巨集、法術或魔獸巨集的類型已經變更。\n是否要放棄自訂巨集文字? ";
@@ -1199,3 +1204,9 @@ VUHDO_I18N_PETS_LAST = "寵物最後";
 
 VUHDO_I18N_SHOW_EFFECTIVE = "有效血量";
 VUHDO_I18N_DEBUFF_IGNORE_IMPORTED = "減益效果忽略清單已匯入成功。";
+
+VUHDO_I18N_BLEED = "流血";
+
+-- TBCC game version specific strings
+
+VUHDO_I18N_LIBHEALCOMM = "使用 Lib\nHealComm";

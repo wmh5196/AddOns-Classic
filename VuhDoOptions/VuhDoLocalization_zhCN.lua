@@ -652,6 +652,7 @@ VUHDO_I18N_TT.K592 = "Check this to show private aura icons on the health bar.";
 VUHDO_I18N_TT.K593 = "Select a size for your private aura icons.";
 VUHDO_I18N_TT.K594 = "Check to sort pet units last.";
 VUHDO_I18N_TT.K595 = "Show effective HP (health including shields) of player.";
+VUHDO_I18N_TT.K596 = "Click to change color to indicate players afflicted by bleed debuffs.";
 
 VUHDO_I18N_DEFAULT_PROFILE = "预设存档";
 VUHDO_I18N_DEFAULT_LAYOUT = "预设按键配置";
@@ -1063,8 +1064,8 @@ VUHDO_I18N_CLEAR_BINDING = "清除绑定";
 VUHDO_I18N_MACRO_EDITOR = "VuhDo 巨集编辑器";
 VUHDO_I18N_ACCEPT = "接受";
 VUHDO_I18N_DISCARD = "放弃";
-VUHDO_I18N_LKA_HINT_1 = "在巨集中使用这些文字来代替: |c00000000vuhdo|r => 单位自己, |c00000000vdname|r => 单位的名字" justifyH="LEFT" inherits="VuDoButtonFontDark";
-VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => 单位的目标/目标的目标，|c00000000vdpet|r => 单位的宠物，例子: /cast [@vuhdo] 快速治疗" justifyH="LEFT" inherits="VuDoButtonFontDark";
+VUHDO_I18N_LKA_HINT_1 = "在巨集中使用这些文字来代替: |c00000000vuhdo|r => 单位自己, |c00000000vdname|r => 单位的名字";
+VUHDO_I18N_LKA_HINT_2 = "|c00000000vdtarget, vdtargettarget|r => 单位的目标/目标的目标，|c00000000vdpet|r => 单位的宠物，例子: /cast [@vuhdo] 快速治疗";
 VUHDO_I18N_LKA_CUSTOM_MACRO_DISCARDED = "已放弃自订巨集文字。";
 VUHDO_I18N_NAME_CHANGE_DISCARDED = "已放弃物品名称变更。";
 VUHDO_I18N_LKA_TYPE_CHANGED = "VuhDo 自订巨集、法术或魔兽巨集的类型已经变更。\n是否要放弃自订巨集文字? ";
@@ -1198,3 +1199,5 @@ VUHDO_I18N_PETS_LAST = "Pets last";
 
 VUHDO_I18N_SHOW_EFFECTIVE = "Show\nEffective";
 VUHDO_I18N_DEBUFF_IGNORE_IMPORTED = "Debuff ignore list successfully imported.";
+
+VUHDO_I18N_BLEED = "Bleed";
