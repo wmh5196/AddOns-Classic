@@ -1,4 +1,4 @@
-## Interface: 11503
+## Interface: 11504
 ## Title: Unlearned Recipes
 ## Version: r021
 ## Notes: Displays profession recipes you have not yet learned
