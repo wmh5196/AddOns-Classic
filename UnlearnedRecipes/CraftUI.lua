@@ -11,7 +11,6 @@ EventUtil.ContinueOnAddOnLoaded("Blizzard_CraftUI", function()
 function CraftFrame_Update()
 	local numCrafts = GetNumCrafts();
     local craftName = GetCraftName()
-	if not craftName then return end -- 暫時修正
 	local db = dbCache[craftName]
     
     if not db then
@@ -618,7 +617,7 @@ for i = 1, 8 do
             local numTradeSkills = GetNumCrafts();
             local db = dbCache[GetCraftName()]
             local data = db[CraftFrame.selectedSkill - numTradeSkills]
-            if data.reagents then
+            if data and data.reagents then
                 GameTooltip:SetItemByID(data.reagents[self:GetID()])
             end
         end
