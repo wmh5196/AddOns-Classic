@@ -125,17 +125,17 @@ D["AdiBags"] = {
 D["AdvancedInterfaceOptions"] = {
 	defaultEnable = 0,
 	tags = { "MISC" },
-	title = "進階介面選項",
+	title = "進階遊戲選項",
 	desc = "軍臨天下版本移除了一些遊戲內建的介面選項，這個插件除了讓你可以使用這些被移除的介面選項，還可以瀏覽和設定 CVar 遊戲參數，以及更多遊戲設定。`",
 	modifier = "BNS, 彩虹ui",
 	img = true,
     {
         text = "設定選項",
-        callback = function(cfg, v, loading) SlashCmdList["AIO"]("") end,
+        callback = function() SlashCmdList["AIO"]("") end,
     },
 	{
 		type = "text",
-        text = "自己的戰鬥文字捲動：請改在 Esc > 介面設定 > 戰鬥，勾選/取消勾選。\n\n鏡頭最遠距離：調整前請先關閉功能百寶箱裡面的 '最大鏡頭縮放'。\n",       
+        text = "鏡頭最遠距離：調整前請先關閉功能百寶箱裡面的 '最大鏡頭縮放'。\n",       
 	},
 };
 D["alaGearMan"] = {
@@ -1885,6 +1885,14 @@ D["PallyPower"] = {
 	title = "聖騎威能",
 	desc = "能快速施放祝福的快捷列，並且可以分配團隊祝福工作，顯示祝福、光環、正義之怒及聖印的時間跟提醒。`",
 	icon = "Interface\\AddOns\\PallyPower\\Icons\\SummonChampion",
+	{
+        text = "設定選項",
+        callback = function() PallyPower:OpenConfigWindow() end,
+    },
+	{
+		type = "text",
+		text = "點小地圖按鈕的 '聖騎威能' 按鈕也可以打開設定選項。\n",
+	},
 };
 D["Pawn"] = {
     defaultEnable = 1,
