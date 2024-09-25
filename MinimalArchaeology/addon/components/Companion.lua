@@ -60,7 +60,7 @@ end
 
 local function OpenSettingsAndHideHelp(self, button)
     if (button == "RightButton") then
-        InterfaceOptionsFrame_OpenToCategory(MinArch.Options.menu);
+        MinArch:OpenSettings(MinArch.Options.menu);
 
         MinArch.db.profile.companion.showHelpTip = false;
         HelpPlate_TooltipHide();
@@ -211,7 +211,7 @@ local function InitSurveyButton()
         GameTooltip:SetSpellByID(SURVEY_SPELL_ID);
 
         if not MinArch:CanCast() then
-            GameTooltip:AddLine("Can't be casted right now")
+            GameTooltip:AddLine("現在無法施放")
         end
 
 		GameTooltip:Show()

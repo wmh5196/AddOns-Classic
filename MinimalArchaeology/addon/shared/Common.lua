@@ -98,8 +98,7 @@ function MinArch:CreateAutoWaypointButton(parent, x, y)
         if (button == "LeftButton") then
             MinArch:SetWayToNearestDigsite()
         elseif (button == "RightButton") then
-            InterfaceOptionsFrame_OpenToCategory(MinArch.Options.menu);
-		    InterfaceOptionsFrame_OpenToCategory(MinArch.Options.menu);
+            MinArch:OpenSettings(MinArch.Options.menu);
         end
 	end)
 
@@ -243,7 +242,7 @@ function MinArch:CanCast()
     end
 
     -- Check general conditions
-    if InCombatLockdown() or not CanScanResearchSite() or GetSpellCooldown(SURVEY_SPELL_ID) ~= 0 then
+    if InCombatLockdown() or not CanScanResearchSite() or MinArch:GetSpellCooldown(SURVEY_SPELL_ID) ~= 0 then
         MinArch:DisplayStatusMessage('Can\'t cast: not in research site or spell on cooldown', MINARCH_MSG_DEBUG)
         return false;
     end
@@ -309,6 +308,22 @@ function MinArch:TestForMissingDigsites()
 	end
 end
 
+function MinArch:GetSpellCooldown(spellID)
+    if C_Spell and C_Spell.GetSpellCooldown then
+        return C_Spell.GetSpellCooldown(spellID).startTime
+    else
+        return GetSpellCooldown(spellID)
+    end
+end
+
+function MinArch:OpenSettings(category)
+	if Settings and Settings.OpenToCategory then
+		Settings.OpenToCategory(category.name);
+	else
+		InterfaceOptionsFrame_OpenToCategory(category)
+	end
+end
+
 function MinArch:Round(x)
     return math.floor(x + 0.5);
 end
@@ -316,7 +331,6 @@ end
 function MinArch_TrackingChanged(self)
 	MinArch:TrackingChanged(self);
 end
-
 
 function MinArch_MapLayerChanged(self)
 	MinArch:MapLayerChanged(self);
