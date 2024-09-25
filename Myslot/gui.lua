@@ -65,7 +65,7 @@ do
 end
 
 local function CreateSettingMenu(opt)
-    
+
     local tableref = function (name)
         if name == "action" then
             return opt.ignoreActionBars
@@ -231,6 +231,19 @@ local function CreateSettingMenu(opt)
         })
     end
 
+    -- 10.0
+    if select(4, GetBuildInfo()) > 100000 then
+        table.insert(actionbarlist, {
+            text = L["Skyriding Bar"],
+            isNotRadio = true,
+            keepShownOnClick = true,
+            arg1 = "action",
+            arg2 = 11,
+            checked = childchecked,
+            func = childclicked,
+        })        
+    end
+
     for i = 1, 4 do
 
         -- local _, _, _, spell = GetShapeshiftFormInfo(i)
@@ -318,6 +331,40 @@ local function CreateSettingMenu(opt)
     }
 end
 
+local function DrawMenu(root, menuData)
+    for _, m in ipairs(menuData) do
+        if m.isTitle then
+            root:CreateTitle(m.text)
+        else
+            local c = root:CreateCheckbox(m.text, m.checked, function ()
+
+            end, {
+                arg1 = m.arg1,
+                arg2 = m.arg2,
+            })
+            c:SetResponder(function(data, menuInputData, menu)
+                m.func({
+                    arg1 = m.arg1,
+                    arg2 = m.arg2,
+                })
+                -- Your handler here...
+                return MenuResponse.Refresh;
+            end)
+
+            if m.menuList then
+                DrawMenu(c, m.menuList)
+            end
+        end
+    end
+
+end
+
+local EasyMenu = _G.EasyMenu or function (settings)
+    MenuUtil.CreateContextMenu(UIParent, function(ownerRegion, rootDescription)
+        DrawMenu(rootDescription, settings)
+    end)
+end
+
 -- import
 do
 
@@ -371,7 +418,7 @@ do
     local settings = {
         {
             isTitle = true,
-            text = L["Ignore during Import"],
+            text = "|cffff0000" .. L["IGNORE"] .. "|r" .. L[" during Import"],
             notCheckable = true,
         }
     }
@@ -381,7 +428,7 @@ do
     tAppendAll(settings, {
         {
             isTitle = true,
-            text = L["Clear before Import"],
+            text = "|cffff0000" .. L["CLEAR"] .. "|r" .. L[" before Import"],
             notCheckable = true,
         }
     })
@@ -446,7 +493,7 @@ do
     local settings = {
         {
             isTitle = true,
-            text = L["Ignore during Export"],
+            text = "|cffff0000" .. L["IGNORE"] .. "|r" .. L[" during Export"],
             notCheckable = true,
         }
     }
@@ -755,7 +802,7 @@ SlashCmdList["MYSLOT"] = function(msg, editbox)
                 return
             end
 
-            local opt = {} 
+            local opt = {}
             CreateSettingMenu(opt)
 
             MySlot:RecoverData(msg, {

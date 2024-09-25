@@ -1,6 +1,6 @@
 # Myslot
 
-## [v5.17.2](https://github.com/tg123/myslot/tree/v5.17.2) (2024-07-02)
-[Full Changelog](https://github.com/tg123/myslot/commits/v5.17.2) 
+## [v5.20.0](https://github.com/tg123/myslot/tree/v5.20.0) (2024-08-21)
+[Full Changelog](https://github.com/tg123/myslot/commits/v5.20.0) 
 
-- fix missing commits  
+- add skyriding support  
