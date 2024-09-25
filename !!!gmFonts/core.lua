@@ -30,7 +30,7 @@ local PCD = LibStub("PhanxConfig-Dropdown")
 local function SetFont(obj, font, size, style, r, g, b, sr, sg, sb, sox, soy)
 	
 	if not obj then return end -- TODO: prune things that don't exist anymore
-	
+
 	size = size + GMFONTS["delta"]
 	obj:SetFont(font, size, style)
 	
@@ -357,27 +357,41 @@ slidertxt:SetPoint("TOPLEFT", 16, -300)
 slidertxt:SetText(string_format("|cffffffff%s|r : %s","文字大小比例","調整文字大小的縮放比例"))
 options.slidertxt = slidertxt
 
-local slider = CreateFrame("Slider","slider_name",options,"OptionsSliderTemplate") --frameType, frameName, frameParent, frameTemplate   
-slider:SetPoint("TOPLEFT", 16, -330)
-slider.textLow = _G["slider_name".."Low"]
-slider.textHigh = _G["slider_name".."High"]
-slider.text = _G["slider_name".."Text"]
-slider:SetMinMaxValues(-4, 4)
-slider.minValue, slider.maxValue = slider:GetMinMaxValues() 
-slider.textLow:SetText(slider.minValue)
-slider.textHigh:SetText(slider.maxValue)
-slider.text:SetText("")
-slider:SetValue(2)
-slider:SetValueStep(1)
-slider.value = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-slider.value:SetPoint("TOP", slider, "BOTTOM", 0, 0)
-slider.value:SetText(GMFONTS["delta"])
-slider:SetScript("OnValueChanged", function(self, value)
-	GMFONTS["delta"] = floor(value + 0.5)
-	self:SetValue(GMFONTS["delta"])
-	self.value:SetText(GMFONTS["delta"])
-end)
+if WOW_PROJECT_ID == WOW_PROJECT_CLASSIC then -- 經典版
+	local deltaList = {0,1,2,3,4,-1,-2,-3,-4}
+	local dropdownDelta = PCD:New(options)
+	dropdownDelta:SetPoint("TOPLEFT", 16, -300)
+	dropdownDelta:SetList(deltaList)
 
+	function dropdownDelta:OnValueChanged(text,value)
+		GMFONTS["delta"] = value
+		UpdateFonts()
+		options.refresh()
+	end
+else
+	
+	local slider = CreateFrame("Slider","slider_name",options, "OptionsSliderTemplate") --frameType, frameName, frameParent, frameTemplate   "UISliderTemplateWithLabels" 
+	slider:SetPoint("TOPLEFT", 16, -330)
+	slider.textLow = _G["slider_name".."Low"]
+	slider.textHigh = _G["slider_name".."High"]
+	slider.text = _G["slider_name".."Text"]
+	slider:SetMinMaxValues(-4, 4)
+	slider.minValue, slider.maxValue = slider:GetMinMaxValues() 
+	slider.textLow:SetText(slider.minValue)
+	slider.textHigh:SetText(slider.maxValue)
+	slider.text:SetText("")
+	slider:SetValue(2)
+	slider:SetValueStep(1)
+	slider.value = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
+	slider.value:SetPoint("TOP", slider, "BOTTOM", 0, 0)
+	slider.value:SetText(GMFONTS["delta"])
+	
+	slider:SetScript("OnValueChanged", function(self, value)
+		GMFONTS["delta"] = floor(value + 0.5)
+		self:SetValue(GMFONTS["delta"])
+		self.value:SetText(GMFONTS["delta"])
+	end)
+end
 
 local textadvice = options:CreateFontString("$parentTitle", "ARTWORK", "GameFontNormal")
 textadvice:SetPoint("TOPLEFT", 16, -400)
@@ -416,7 +430,9 @@ credits:SetText("Font engine: |cffffd200tekticles|r by tekkub      Widget engine
 options.credits = credits	
 	
 function options.refresh()
-	slider:SetValue(GMFONTS["delta"])
+	if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+		slider:SetValue(GMFONTS["delta"])
+	end
 	textdefaultn:SetText(string_format("|cffffffff%s|r : %s","一般",GMFONTS["N"] ))
 	textdefaultb:SetText(string_format("|cffffffff%s|r : %s","粗體",GMFONTS["B"] ))
 	textdefaultbi:SetText(string_format("|cffffffff%s|r : %s","粗斜體",GMFONTS["BI"] ))
@@ -440,7 +456,7 @@ f:SetScript("OnEvent", function()
 		["BI"]="Interface\\Addons\\SharedMedia_Rainbow\\fonts\\bHEI00M\\bHEI00M.ttf",
 		["I"]="Interface\\Addons\\SharedMedia_Rainbow\\fonts\\bHEI00M\\bHEI00M.ttf",
 		["NR"]="Interface\\Addons\\SharedMedia_Rainbow\\fonts\\bHEI00M\\bHEI00M.ttf",
-		["delta"]="2",
+		["delta"]="1",
 	}
 
 	for k in pairs(GMFONTS_DEFAULTS) do
@@ -463,8 +479,10 @@ f:SetScript("OnEvent", function()
 	textdefaultbi:SetText(string_format("|cffffffff%s|r : %s","粗斜體",GMFONTS["BI"] ))
 	textdefaulti:SetText(string_format("|cffffffff%s|r : %s","斜體",GMFONTS["I"] ))
 	textdefaultnr:SetText(string_format("|cffffffff%s|r : %s","數字",GMFONTS["NR"] ))	
-	slider:SetValue(GMFONTS["delta"])
-	slider.value:SetText(GMFONTS["delta"])
+	if WOW_PROJECT_ID ~= WOW_PROJECT_CLASSIC then
+		slider:SetValue(GMFONTS["delta"])
+		slider.value:SetText(GMFONTS["delta"])
+	end
 
 	if checkfont == 1 then UpdateFonts() end
 
