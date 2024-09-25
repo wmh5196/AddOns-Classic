@@ -206,8 +206,8 @@ function TotemTimers_Slash()
 		return
 	end
 
-    InterfaceAddOnsList_Update()
-    InterfaceOptionsFrame_OpenToCategory(TotemTimers.LastGUIPanel)
+    -- InterfaceAddOnsList_Update()
+    Settings.OpenToCategory(TotemTimers.LastGUIPanel.name)
 end
 
 
@@ -248,6 +248,7 @@ end
 local DebugText = ""
 
 function TotemTimers.ResetDebug()
+    DebugText = ""
 end
 
 function TotemTimers.AddDebug(text)

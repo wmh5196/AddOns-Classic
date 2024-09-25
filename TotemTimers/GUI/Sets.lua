@@ -62,7 +62,7 @@ frame:HookScript("OnShow", function(self)
                     set.name = value
 
                     ACR:NotifyChange("TotemTimers")
-                    InterfaceOptionsFrame_OpenToCategory(frame)
+                    Settings.OpenToCategory(frame.name)
                 end,
             })
 
@@ -88,6 +88,6 @@ StaticPopupDialogs["TOTEMTIMERS_DELETESET"].OnAccept = function(self, nr)
     deleteOnAccept(self, nr)
     if frame:IsVisible() then
         ACR:NotifyChange("TotemTimers")
-        InterfaceOptionsFrame_OpenToCategory(frame)
+        Settings.OpenToCategory(frame.name)
     end
 end
