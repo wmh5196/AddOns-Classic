@@ -26,6 +26,66 @@ local isCata = WOW_PROJECT_ID == WOW_PROJECT_CATACLYSM_CLASSIC
 
 Skillet.NewsName = "Skillet-Classic News"
 Skillet.NewsData = {
+	{	version = "2.00",
+		data = {
+			{	name = "Changes",
+				data = {
+					{ header = "TOC", body = "Update TOC" },
+					{ header = "Packaging", body = "Change to single build" },
+				},
+			},
+		},
+	},
+	{	version = "1.99",
+		data = {
+			{	name = "Changes",
+				data = {
+					{ header = "Skill Levels", body = "Separate skill level data into two files" },
+				},
+			},
+			{	name = "Fixes",
+				data = {
+					{ header = "Shopping List", body = "Fix for items displaying outside of frame" },
+				},
+			},
+		},
+	},
+	{	version = "1.98",
+		data = {
+			{	name = "Fixes",
+				data = {
+					{ header = "Skill Levels", body = "Remove conditionals in SkillLevel data" },
+				},
+			},
+		},
+	},
+	{	version = "1.97",
+		data = {
+			{	name = "Fixes",
+				data = {
+					{ header = "Skill Level", body = "Fix for issue #184" },
+				},
+			},
+		},
+	},
+	{	version = "1.96",
+		data = {
+			{	name = "Fixes",
+				data = {
+					{ header = "Display required level", body = "Fixes for issues #181, #182" },
+				},
+			},
+		},
+	},
+	{	version = "1.95",
+		data = {
+			{	name = "Fixes",
+				data = {
+					{ header = "Display required level", body = "Fix for issue #180" },
+				},
+			},
+		},
+	},
 	{	version = "1.94",
 		data = {
 			{	name = "Changes",
