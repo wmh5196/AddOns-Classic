@@ -675,16 +675,14 @@ function Skillet:TradeButton_OnEnter(button)
 		local rank, maxRank = data.rank, data.maxRank
 		GameTooltip:AddLine("["..tostring(rank).."/"..tostring(maxRank).."]",0,1,0)
 		if tradeID == self.currentTrade then
+			local link
 			if GetTradeSkillListLink then
-				local link = GetTradeSkillListLink()
-				if link then
-					GameTooltip:AddLine(L["shift-click to link"])
-				elseif C_TradeSkillUI then
-					link = C_TradeSkillUI.GetTradeSkillListLink()
-					if link then
-						GameTooltip:AddLine(L["shift-click to link"])
-					end
-				end
+				link = GetTradeSkillListLink()
+			elseif C_TradeSkillUI.GetTradeSkillListLink then
+				link = C_TradeSkillUI.GetTradeSkillListLink()
+			end
+			if link then
+				GameTooltip:AddLine(L["shift-click to link"])
 			end
 		end
 		local buttonIcon = _G[button:GetName().."Icon"]
@@ -722,16 +720,14 @@ function Skillet:TradeButton_OnClick(this,button)
 	if button == "LeftButton" then
 		if player == self.currentPlayer and self.currentTrade then
 			if self.currentTrade == tradeID and IsShiftKeyDown() then
+				local link
 				if GetTradeSkillListLink then
-					local link = GetTradeSkillListLink()
-					if link then
-						ChatEdit_InsertLink(link)
-					elseif C_TradeSkillUI then
-						link = C_TradeSkillUI.GetTradeSkillListLink()
-						if link then
-							ChatEdit_InsertLink(link)
-						end
-					end
+					link = GetTradeSkillListLink()
+				elseif C_TradeSkillUI.GetTradeSkillListLink then
+					link = C_TradeSkillUI.GetTradeSkillListLink()
+				end
+				if link then
+					ChatEdit_InsertLink(link)
 				end
 			elseif self.currentTrade ~= tradeID then
 				if self.skillIsCraft[self.currentTrade] ~= self.skillIsCraft[tradeID] then
@@ -1116,7 +1112,7 @@ function Skillet:UpdateTradeSkillWindow()
 			suffixText:Hide()
 			skillRankBar:Hide()
 			if self.db.profile.display_required_level or self.db.profile.display_item_level then
-				levelText:SetWidth(skill.depth*8+20)
+				levelText:SetWidth(math.max(skill.depth*8+20,28))
 			else
 				levelText:SetWidth(skill.depth*8)
 			end
@@ -1826,25 +1822,29 @@ function Skillet:UpdateDetailsWindow(skillIndex)
 			--DA.DEBUG(1,"UpdateDetailsWindow: recipe= "..DA.DUMP1(recipe))
 			--DA.DEBUG(1,"UpdateDetailsWindow: itemID= "..tostring(recipe.itemID)..", spellID= "..tostring(recipe.spellID))
 			local orange,yellow,green,gray = self:GetTradeSkillLevels(recipe.itemID, recipe.spellID)
-			--DA.DEBUG(1,"UpdateDetailsWindow: orange= "..tostring(orange)..", yellow= "..tostring(yellow)..", green= "..tostring(green)..", gray= "..tostring(gray))
+			if not gray or not green or not yellow or not orange then
+				DA.DEBUG(1,"UpdateDetailsWindow: orange= "..tostring(orange)..", yellow= "..tostring(yellow)..", green= "..tostring(green)..", gray= "..tostring(gray))
+				DA.DEBUG(1,"UpdateDetailsWindow: sourceTradeSkillLevel= "..tostring(self.sourceTradeSkillLevel))
+			else
 --
 -- Save the actual values
 --
-			SkilletRankFrame.itemID = recipe.itemID
-			SkilletRankFrame.spellID = recipe.spellID
-			SkilletRankFrame.gray = gray
-			SkilletRankFrame.green = green
-			SkilletRankFrame.yellow = yellow
-			SkilletRankFrame.orange = orange
+				SkilletRankFrame.itemID = recipe.itemID
+				SkilletRankFrame.spellID = recipe.spellID
+				SkilletRankFrame.gray = gray
+				SkilletRankFrame.green = green
+				SkilletRankFrame.yellow = yellow
+				SkilletRankFrame.orange = orange
 --
 -- Set the graphical values
 --
-			SkilletRankFrame.subRanks.green:SetValue(gray)
-			SkilletRankFrame.subRanks.yellow:SetValue(green)
-			SkilletRankFrame.subRanks.orange:SetValue(yellow)
-			SkilletRankFrame.subRanks.red:SetValue(orange)
-			for c,s in pairs(SkilletRankFrame.subRanks) do
-				s:Show()
+				SkilletRankFrame.subRanks.green:SetValue(gray)
+				SkilletRankFrame.subRanks.yellow:SetValue(green)
+				SkilletRankFrame.subRanks.orange:SetValue(yellow)
+				SkilletRankFrame.subRanks.red:SetValue(orange)
+				for c,s in pairs(SkilletRankFrame.subRanks) do
+					s:Show()
+				end
 			end
 		end
 --
