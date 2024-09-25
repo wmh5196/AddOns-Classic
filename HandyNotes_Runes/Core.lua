@@ -634,7 +634,7 @@ ns.options = {
 function pluginHandler:OnEnable()
 	ns.HereBeDragons = LibStub("HereBeDragons-2.0", true)
 	if not ns.HereBeDragons then return end
-	HandyNotes:RegisterPluginDB("Runes", pluginHandler, ns.options)
+	HandyNotes:RegisterPluginDB(ns.L["Runes"], pluginHandler, ns.options)
 	ns.db = LibStub("AceDB-3.0"):New("HandyNotes_RunesDB", defaults, "Default").profile
 	pluginHandler:Refresh()
 end
