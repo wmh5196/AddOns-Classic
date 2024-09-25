@@ -101,6 +101,8 @@ function ns:ADDON_LOADED(event, addon)
         db = _G[myname.."DB"]
         ns.db = db
 
+        ns:SetupConfig()
+
         -- So our upgrade arrows can work reliably when opening inventories
         ns.CacheEquippedItems()
     end
@@ -183,8 +185,25 @@ local function DetailsFromItem(item)
     details.missingEnchants = ns.ItemIsMissingEnchants(details.link)
     details.upgrade = ItemIsUpgrade(item)
 
-    local itemLocation = item:GetItemLocation()
-    details.bound = itemLocation and item:IsItemInPlayersControl() and C_Item.IsBound(itemLocation)
+    if C_Item.IsItemBindToAccountUntilEquip and details.link then
+        -- 11.0.2 adds this, which works on any item:
+        details.warboundUntilEquip = C_Item.IsItemBindToAccountUntilEquip(details.link)
+    end
+    if item:IsItemInPlayersControl() then
+        local itemLocation = item:GetItemLocation()
+        -- this only works on items in our control:
+        details.warboundUntilEquip = C_Item.IsBoundToAccountUntilEquip and C_Item.IsBoundToAccountUntilEquip(itemLocation)
+        details.bound = C_Item.IsBound(itemLocation)
+        if details.bound then
+            -- As of 11.0.0 blizzard has created Enum.ItemBind entries for
+            -- warbound, but never uses them. Zepto worked out that we can
+            -- use "can I put it in the warbank?" as a proxy to distinguish,
+            -- even when we're not at the bank.
+            -- TODO: occasionally check whether the bindTypes start getting
+            -- returned via `select (14, C_Item.GetItemInfo(details.link)) == 7/8/9`
+            details.warbound = C_Bank and C_Bank.IsItemAllowedInBankType and C_Bank.IsItemAllowedInBankType(Enum.BankType.Account, itemLocation)
+        end
+    end
 
     return details
 end
@@ -282,16 +301,33 @@ local function AddMissingToButton(button, details)
     button.simpleilvlmissing:SetFormattedText("%s%s", missingGems and ns.gemString or "", missingEnchants and ns.enchantString or "")
     button.simpleilvlmissing:Show()
 end
+
+local function ColorFrameByBinding(frame, details)
+    -- returns bool, whether is bound in some way
+    if details.bound then
+        if details.warbound then
+            frame:SetVertexColor(0.5, 1, 0) -- green
+        else
+            frame:SetVertexColor(1, 1, 1) -- blue
+        end
+        return true
+    elseif details.warboundUntilEquip then
+        -- once you equip it the label changes to soulbound, but this property remains
+        frame:SetVertexColor(1, 0.5, 1) -- pale purple
+        return true
+    end
+    return false
+end
 local function AddBoundToButton(button, details)
     if not db.bound then
         return button.simpleilvlbound and button.simpleilvlbound:Hide()
     end
-    if details.bound then
+    if ColorFrameByBinding(button.simpleilvlbound, details) then
         button.simpleilvlbound:Show()
     end
 end
 local function ShouldShowOnItem(item)
-    local quality = item:GetItemQuality()
+    local quality = item:GetItemQuality() or -1
     if quality < db.quality then
         return false
     end
@@ -312,7 +348,7 @@ local function ShouldShowOnItem(item)
     end
     return db.misc
 end
-local function UpdateButtonFromItem(button, item, variant, suppress)
+local function UpdateButtonFromItem(button, item, variant, suppress, extradetails)
     if not item or item:IsItemEmpty() then
         return
     end
@@ -321,6 +357,7 @@ local function UpdateButtonFromItem(button, item, variant, suppress)
         if not ShouldShowOnItem(item) then return end
         PrepareItemButton(button)
         local details = DetailsFromItem(item)
+        if extradetails then MergeTable(details, extradetails) end
         if not suppress.level then AddLevelToButton(button, details) end
         if not suppress.upgrade then AddUpgradeToButton(button, details) end
         if not suppress.bound then AddBoundToButton(button, details) end
@@ -511,6 +548,10 @@ local function UpdateContainerButton(button, bag, slot)
     if not db.bags then
         return
     end
+    slot = slot or button:GetID()
+    if not (bag and slot) then
+        return
+    end
     local item = Item:CreateFromBagAndSlot(bag, slot or button:GetID())
     UpdateButtonFromItem(button, item, "bags")
 end
@@ -537,11 +578,41 @@ else
     end
 end
 
+-- Main bank frame, bankbags are covered by containerframe above
 hooksecurefunc("BankFrameItemButton_Update", function(button)
     if not button.isBag then
         UpdateContainerButton(button, button:GetParent():GetID())
     end
 end)
+
+if _G.AccountBankPanel then
+    -- Warband bank
+    local lastButtons = {} -- needed as of 11.0.0, see below for why
+    local update = function(frame)
+        table.wipe(lastButtons)
+        for itemButton in frame:EnumerateValidItems() do
+            UpdateContainerButton(itemButton, itemButton:GetBankTabID(), itemButton:GetContainerSlotID())
+            table.insert(lastButtons, itemButton)
+        end
+    end
+    -- Initial load and switching tabs
+    hooksecurefunc(AccountBankPanel, "GenerateItemSlotsForSelectedTab", update)
+    -- Moving items
+    hooksecurefunc(AccountBankPanel, "RefreshAllItemsForSelectedTab", update)
+    hooksecurefunc(AccountBankPanel, "SetItemDisplayEnabled", function(_, state)
+        -- Papering over a Blizzard bug: when you open the "buy" tab, they
+        -- call this which releases the itembuttons from the pool... but
+        -- doesn't *hide* them, so they're all still there with the buy panel
+        -- sitting one layer above them.
+        -- I sadly need to remember the buttons, because once it released them
+        -- they're no longer available via EnumerateValidItems.
+        if state == false then
+            for _, itemButton in ipairs(lastButtons) do
+                CleanButton(itemButton)
+            end
+        end
+    end)
+end
 
 -- Loot
 
@@ -562,6 +633,19 @@ if _G.LootFrame_UpdateButton then
     end)
 else
     -- Dragonflight
+    local ITEM_LEVEL_PATTERN = ITEM_LEVEL:gsub("%%d", "(%%d+)")
+    local function itemLevelFromLootTooltip(slot)
+        -- GetLootSlotLink doesn't give a link for the scaled item you'll
+        -- actually loot. As such, we can fall back on tooltip scanning to
+        -- extract the real level. This is only going to work on
+        -- weapons/armor, but conveniently that's the things that get scaled!
+        if not _G.C_TooltipInfo then return end -- in case we get a weird Classic update...
+        local info = C_TooltipInfo.GetLootItem(slot)
+        if info and info.lines and info.lines[2] and info.lines[2].type == Enum.TooltipDataLineType.None then
+            return tonumber(info.lines[2].leftText:match(ITEM_LEVEL_PATTERN))
+        end
+    end
+
     local function handleSlot(frame)
         if not frame.Item then return end
         CleanButton(frame.Item)
@@ -570,7 +654,9 @@ else
         if not (data and data.slotIndex) then return end
         local link = GetLootSlotLink(data.slotIndex)
         if link then
-            UpdateButtonFromItem(frame.Item, Item:CreateFromItemLink(link), "loot")
+            UpdateButtonFromItem(frame.Item, Item:CreateFromItemLink(link), "loot", nil, {
+                level = itemLevelFromLootTooltip(data.slotIndex),
+            })
         end
     end
     LootFrame.ScrollBox:RegisterCallback("OnUpdate", function(...)
@@ -582,11 +668,18 @@ end
 
 local OnTooltipSetItem = function(self)
     if not db.tooltip then return end
-    local _, itemLink = self:GetItem()
-    if not itemLink then return end
-    local item = Item:CreateFromItemLink(itemLink)
-    if item:IsItemEmpty() then return end
-	if not item:GetCurrentItemLevel() then return end -- 暫時修正與 AtlasLootClassic 的相容性
+    local item
+    if self.GetItem then
+        local _, itemLink =  self:GetItem()
+        if not itemLink then return end
+        item = Item:CreateFromItemLink(itemLink)
+    elseif self.GetPrimaryTooltipData then
+        local data = self:GetPrimaryTooltipData()
+        if data and data.guid and data.type == Enum.TooltipDataType.Item then
+            item = Item:CreateFromItemGUID(data.guid)
+        end
+    end
+    if not item or item:IsItemEmpty() then return end
     item:ContinueOnItemLoad(function()
 		self:AddLine(ITEM_LEVEL:format(item:GetCurrentItemLevel()))
     end)
@@ -624,6 +717,25 @@ ns:RegisterAddonHook("Blizzard_VoidStorageUI", function()
     end)
 end)
 
+-- Guild Bank
+
+ns:RegisterAddonHook("Blizzard_GuildBankUI", function()
+    hooksecurefunc(GuildBankFrame, "Update", function(self)
+        if self.mode ~= "bank" then return end
+        local tab = GetCurrentGuildBankTab()
+        for _, column in ipairs(self.Columns) do
+            for _, button in ipairs(column.Buttons) do
+                CleanButton(button)
+                local link = GetGuildBankItemLink(tab, button:GetID())
+                if link then
+                    local item = Item:CreateFromItemLink(link)
+                    UpdateButtonFromItem(button, item, "bags")
+                end
+            end
+        end
+    end)
+end)
+
 -- Inventorian
 ns:RegisterAddonHook("Inventorian", function()
     local inv = LibStub("AceAddon-3.0", true):GetAddon("Inventorian", true)
@@ -641,6 +753,7 @@ ns:RegisterAddonHook("Inventorian", function()
             elseif itemID then
                 item = Item:CreateFromItemID(itemID)
             end
+            CleanButton(button)
             UpdateButtonFromItem(button, item, "bags")
         else
             UpdateContainerButton(button, bag, slot)
@@ -674,11 +787,10 @@ do
             return
         end
         local bag = button:GetBag()
-        if type(bag) ~= "number" then
-            -- try to fall back on item links, mostly for void storage which would be "vault" here
-            local itemLink = button:GetItem()
-            if itemLink then
-                local item = Item:CreateFromItemLink(itemLink)
+        if type(bag) ~= "number" or button:GetClassName() ~= "BagnonContainerItem" then
+            local info = button:GetInfo()
+            if info and info.hyperlink then
+                local item = Item:CreateFromItemLink(info.hyperlink)
                 UpdateButtonFromItem(button, item, "bags")
             end
             return
@@ -711,9 +823,13 @@ ns:RegisterAddonHook("Baganator", function()
         text.sizeFont = true
         return text
     end
+    -- Note to self: Baganator API update function returns are tri-state:
+    -- true: something to show
+    -- false: nothing to show
+    -- nil: call this again soon (probably because of item-caching)
     local function onUpdate(callback)
         return function(cornerFrame, details)
-            if not details.itemLink then return end
+            if not details.itemLink then return false end
             local button = cornerFrame:GetParent():GetParent()
             local item
             -- If we have a container-item, we should use that because it's needed for soulbound detection
@@ -724,7 +840,8 @@ ns:RegisterAddonHook("Baganator", function()
             elseif details.itemLink then
                 item = Item:CreateFromItemLink(details.itemLink)
             end
-            if not item then return end
+            if not item then return false end -- no item, go away
+            if not item:IsItemDataCached() then return nil end -- item isn't cached, come back in a second
             local data = DetailsFromItem(item)
             return callback(cornerFrame, item, data, details)
         end
@@ -732,7 +849,7 @@ ns:RegisterAddonHook("Baganator", function()
     Baganator.API.RegisterCornerWidget("sIlvl: Item Level", "simpleitemlevel-ilvl",
         onUpdate(function(cornerFrame, item, data, details)
             cornerFrame:SetText(data.level)
-            if db.color then
+            if db.color and data.quality then
                 local r, g, b = C_Item.GetItemQualityColor(data.quality)
                 cornerFrame:SetTextColor(r, g, b)
             else
@@ -753,6 +870,7 @@ ns:RegisterAddonHook("Baganator", function()
                 end
                 return true
             end
+            return false
         end),
         function (itemButton)
             local texture = itemButton:CreateTexture(nil, "ARTWORK")
@@ -763,11 +881,9 @@ ns:RegisterAddonHook("Baganator", function()
         {default_position = "top_left", priority = 1}
     )
     Baganator.API.RegisterCornerWidget("sIlvl: Soulbound", "simpleitemlevel-bound",
-        function(cornerFrame, details)
-            if details.isBound then
-                return true
-            end
-        end,
+        onUpdate(function(cornerFrame, item, data, details)
+            return ColorFrameByBinding(cornerFrame, data)
+        end),
         function (itemButton)
             local texture = itemButton:CreateTexture(nil, "ARTWORK")
             texture:SetAtlas(ns.soulboundAtlas)
@@ -784,6 +900,7 @@ ns:RegisterAddonHook("Baganator", function()
                 cornerFrame:SetFormattedText("%s%s", missingGems and ns.gemString or "", missingEnchants and ns.enchantString or "")
                 return true
             end
+            return false
         end),
         textInit, {default_position = "bottom_right", priority = 2}
     )

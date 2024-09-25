@@ -227,7 +227,7 @@ local function makeItemButton(parent)
     -- classic
     if not button.SetItem then
         function button:SetItem(item)
-            local itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = GetItemInfoInstant(item)
+            local itemID, itemType, itemSubType, itemEquipLoc, icon, classID, subclassID = C_Item.GetItemInfoInstant(item)
             if itemID then
                 self.itemID = itemID
                 SetItemButtonTexture(button, icon)
@@ -237,7 +237,7 @@ local function makeItemButton(parent)
             return self.itemID
         end
         function button:GetItemLink()
-            return select(2, GetItemInfo(self.itemID))
+            return select(2, C_Item.GetItemInfo(self.itemID))
         end
     end
     button:SetScript("OnEnter", button_onenter)
@@ -270,119 +270,120 @@ local function makeConfigPanel(id, name, parent, parentname)
 end
 
 -- actual config panel:
-
-local demoButtons = {}
-local function refresh(_, value)
-    ns.RefreshOverlayFrames()
-    for itemID, button in pairs(demoButtons) do
-        ns.CleanButton(button)
-        ns.UpdateButtonFromItem(button, Item:CreateFromItemID(itemID), "character")
-    end
-end
-
-do
-    local frame = makeConfigPanel(myname, myfullname)
-    local title = makeTitle(frame, SHOW_ITEM_LEVEL)
-    title:SetPoint("TOPLEFT", frame)
-
-    local checkboxes = {
-        {"bags", BAGSLOTTEXT},
-        {"character", ORDER_HALL_EQUIPMENT_SLOTS},
-        {"flyout", "裝備欄位彈出式選單"},
-        {"inspect", INSPECT},
-        {"loot", LOOT},
-        {"characteravg", "角色平均物品等級"},
-        {"inspectavg", "觀察平均物品等級"},
-    }
-    if isClassic then
-        table.insert(checkboxes, {"tooltip", "物品浮動提示資訊", "在浮動提示資訊中加入物品等級"})
-    end
-
-    local last = makeCheckboxList(frame, checkboxes, title, refresh)
-
-    last = makeCheckboxList(frame, {
-        {false, "可選擇\n(哪些東西要顯示物品等級)"},
-        {"equipment", "可裝備的物品"},
-        {"battlepets", "戰寵"},
-        {"reagents", "製造材料"},
-        {"misc", "其他所有東西"},
-    }, last, refresh)
-
-    local values = {}
-    for label, value in pairs(Enum.ItemQuality) do
-        values[value] = label
-    end
-    local quality = makeDropdown(frame, "quality", "要顯示的最低物品品質", values, refresh)
-    quality:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -4)
-
-    -- Settings.OpenToCategory(myname)
-end
-
-do
-    local frame = makeConfigPanel(myname.."_appearance", APPEARANCE_LABEL, myname, myfullname)
-    local demo = CreateFrame("Frame", nil, frame)
-
-    demo:SetPoint("TOPLEFT", frame)
-    demo:SetPoint("RIGHT", frame)
-    demo:SetHeight(43)
-
-    demo:SetScript("OnShow", function()
-        local previousButton
-        for _, itemID in ipairs(isClassic and {19019, 19364, 10328, 11122, 23192, 7997, 14047} or {120978, 186414, 195527, 194065, 197957, 77256, 86079, 44168}) do
-            local button = makeItemButton(demo)
-            if not previousButton then
-                button:SetPoint("TOPLEFT", 112, -2)
-            else
-                button:SetPoint("TOPLEFT", previousButton, "TOPRIGHT", 2, 0)
-            end
-            button:SetItem(itemID)
+function ns:SetupConfig()
+    local demoButtons = {}
+    local function refresh(_, value)
+        ns.RefreshOverlayFrames()
+        for itemID, button in pairs(demoButtons) do
+            ns.CleanButton(button)
             ns.UpdateButtonFromItem(button, Item:CreateFromItemID(itemID), "character")
-            demoButtons[itemID] = button
-            previousButton = button
         end
-        demo:SetScript("OnShow", nil)
-    end)
-
-    local title = makeTitle(frame, APPEARANCE_LABEL)
-    -- title:SetPoint("TOPLEFT", frame)
-    title:SetPoint("TOPLEFT", demo, "BOTTOMLEFT", 0, -4)
-
-    local fonts = {}
-    for k,v in pairs(ns.Fonts) do
-        fonts[k] = k
     end
-    local font = makeDropdown(frame, "font", "字體", fonts, refresh)
-    font:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
 
-    local positions = {}
-    for k,v in pairs(ns.PositionOffsets) do
-        positions[k] = k
+    do
+        local frame = makeConfigPanel(myname, myfullname)
+        local title = makeTitle(frame, SHOW_ITEM_LEVEL)
+        title:SetPoint("TOPLEFT", frame)
+
+        local checkboxes = {
+            {"bags", BAGSLOTTEXT},
+            {"character", ORDER_HALL_EQUIPMENT_SLOTS},
+            {"flyout", "裝備欄位彈出式選單"},
+            {"inspect", INSPECT},
+            {"loot", LOOT},
+            {"characteravg", "角色平均物品等級"},
+            {"inspectavg", "觀察平均物品等級"},
+        }
+        if isClassic or ns.db.tooltip then
+            table.insert(checkboxes, {"tooltip", "物品浮動提示資訊", "在浮動提示資訊中加入物品等級"})
+        end
+
+        local last = makeCheckboxList(frame, checkboxes, title, refresh)
+
+        last = makeCheckboxList(frame, {
+            {false, "可選擇\n(哪些東西要顯示物品等級)"},
+            {"equipment", "可裝備的物品"},
+            {"battlepets", "戰寵"},
+            {"reagents", "製造材料"},
+            {"misc", "其他所有東西"},
+        }, last, refresh)
+
+        local values = {}
+        for label, value in pairs(Enum.ItemQuality) do
+            values[value] = label
+        end
+        local quality = makeDropdown(frame, "quality", "要顯示的最低物品品質", values, refresh)
+        quality:SetPoint("TOPLEFT", last, "BOTTOMLEFT", 0, -4)
+
+        -- Settings.OpenToCategory(myname)
     end
-    local position = makeDropdown(frame, "position", "物品等級的位置", positions, refresh)
-    position:SetPoint("TOPLEFT", font, "BOTTOMLEFT", 0, -4)
-    local positionup = makeDropdown(frame, "positionup", "升級提示的位置", positions, refresh)
-    positionup:SetPoint("TOPLEFT", position, "BOTTOMLEFT", 0, -4)
 
-    local positionmissing = makeDropdown(frame, "positionmissing", "缺少提示的位置", positions, refresh)
-    positionmissing:SetPoint("TOPLEFT", positionup, "BOTTOMLEFT", 0, -4)
-    local scaleup = makeSlider(frame, "scaleup", "升級提示的大小", 0.5, 3, 0.1, nil, refresh, true)
-    scaleup:SetPoint("TOPLEFT", positionmissing, "BOTTOMLEFT", 0, -4)
+    do
+        local frame = makeConfigPanel(myname.."_appearance", APPEARANCE_LABEL, myname, myfullname)
+        local demo = CreateFrame("Frame", nil, frame)
 
-    local positionbound = makeDropdown(frame, "positionbound", "靈魂綁定提示的位置", positions, refresh)
-    positionbound:SetPoint("TOPLEFT", scaleup, "BOTTOMLEFT", 0, -4)
-    local scalebound = makeSlider(frame, "scalebound", "靈魂綁定提示的大小", 0.5, 3, 0.1, nil, refresh, true)
-    scalebound:SetPoint("TOPLEFT", positionbound, "BOTTOMLEFT", 0, -4)
+        demo:SetPoint("TOPLEFT", frame)
+        demo:SetPoint("RIGHT", frame)
+        demo:SetHeight(43)
 
-    makeCheckboxList(frame, {
-        {false, DISPLAY_HEADER},
-        {"itemlevel", SHOW_ITEM_LEVEL, "你確定要停用這個插件的核心功能?"},
-        {"upgrades", ("升級物品的提示 (%s)"):format(ns.upgradeString)},
-        {"missinggems", ("物品沒有寶石的提示 (%s)"):format(ns.gemString)},
-        {"missingenchants", ("物品沒有附魔的提示 (%s)"):format(ns.enchantString)},
-        {"missingcharacter", "...只在自己的角色視窗顯示缺少寶石/附魔?"},
-        {"bound", ("%s的提示 (%s)"):format(ITEM_SOULBOUND, CreateAtlasMarkup(ns.soulboundAtlas)), "只有你能控制的物品才會顯示，像是背包和角色視窗。"},
-        {"color", "用品質顏色顯示物品等級"},
-    }, scalebound, refresh)
+        demo:SetScript("OnShow", function()
+            local previousButton
+            for _, itemID in ipairs(isClassic and {19019, 19364, 10328, 11122, 23192, 7997, 14047} or {120978, 186414, 195527, 194065, 197957, 77256, 86079, 44168}) do
+                local button = makeItemButton(demo)
+                if not previousButton then
+                    button:SetPoint("TOPLEFT", 112, -2)
+                else
+                    button:SetPoint("TOPLEFT", previousButton, "TOPRIGHT", 2, 0)
+                end
+                button:SetItem(itemID)
+                ns.UpdateButtonFromItem(button, Item:CreateFromItemID(itemID), "character")
+                demoButtons[itemID] = button
+                previousButton = button
+            end
+            demo:SetScript("OnShow", nil)
+        end)
+
+        local title = makeTitle(frame, APPEARANCE_LABEL)
+        -- title:SetPoint("TOPLEFT", frame)
+        title:SetPoint("TOPLEFT", demo, "BOTTOMLEFT", 0, -4)
+
+        local fonts = {}
+        for k,v in pairs(ns.Fonts) do
+            fonts[k] = k
+        end
+        local font = makeDropdown(frame, "font", "字體", fonts, refresh)
+        font:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
+
+        local positions = {}
+        for k,v in pairs(ns.PositionOffsets) do
+            positions[k] = k
+        end
+        local position = makeDropdown(frame, "position", "物品等級的位置", positions, refresh)
+        position:SetPoint("TOPLEFT", font, "BOTTOMLEFT", 0, -4)
+        local positionup = makeDropdown(frame, "positionup", "升級提示的位置", positions, refresh)
+        positionup:SetPoint("TOPLEFT", position, "BOTTOMLEFT", 0, -4)
+
+        local positionmissing = makeDropdown(frame, "positionmissing", "缺少提示的位置", positions, refresh)
+        positionmissing:SetPoint("TOPLEFT", positionup, "BOTTOMLEFT", 0, -4)
+        local scaleup = makeSlider(frame, "scaleup", "升級提示的大小", 0.5, 3, 0.1, nil, refresh, true)
+        scaleup:SetPoint("TOPLEFT", positionmissing, "BOTTOMLEFT", 0, -4)
+
+        local positionbound = makeDropdown(frame, "positionbound", "靈魂綁定提示的位置", positions, refresh)
+        positionbound:SetPoint("TOPLEFT", scaleup, "BOTTOMLEFT", 0, -4)
+        local scalebound = makeSlider(frame, "scalebound", "靈魂綁定提示的大小", 0.5, 3, 0.1, nil, refresh, true)
+        scalebound:SetPoint("TOPLEFT", positionbound, "BOTTOMLEFT", 0, -4)
+
+        makeCheckboxList(frame, {
+            {false, DISPLAY_HEADER},
+            {"itemlevel", SHOW_ITEM_LEVEL, "你確定要停用這個插件的核心功能"},
+            {"upgrades", ("升級物品的提示 (%s)"):format(ns.upgradeString)},
+            {"missinggems", ("物品沒有寶石的提示 (%s)"):format(ns.gemString)},
+            {"missingenchants", ("物品沒有附魔的提示 (%s)"):format(ns.enchantString)},
+            {"missingcharacter", "...只在自己的角色視窗顯示缺少寶石/附魔?"},
+            {"bound", ("%s的提示 (%s)"):format(ITEM_SOULBOUND, CreateAtlasMarkup(ns.soulboundAtlas)), "只有你能控制的物品才會顯示，像是背包和角色視窗。"},
+            {"color", "用品質顏色顯示物品等級"},
+        }, scalebound, refresh)
+    end
 end
 
 -- Quick config:
@@ -413,12 +414,6 @@ SlashCmdList[myname:upper()] = function(msg)
         return ns.Print(msg, '=', ns.db[msg] and YES or NO)
     end
     if msg == "" then
-        if Settings.OpenToCategory then -- 自行修改
-			Settings.OpenToCategory(myname)
-		else
-            InterfaceOptionsFrame_Show()
-            InterfaceOptionsFrame_OpenToCategory(myfullname)
-            InterfaceOptionsFrame_OpenToCategory(APPEARANCE_LABEL)            
-        end
+        Settings.OpenToCategory(myname)
     end
 end
