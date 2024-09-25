@@ -1,4 +1,4 @@
-local lib, oldMinor = LibStub:NewLibrary("LibAppropriateItems-1.0", 1)
+local lib, oldMinor = LibStub:NewLibrary("LibAppropriateItems-1.0", 2)
 if not lib then return end
 
 local _, playerclass = UnitClass("player")
@@ -13,7 +13,7 @@ end
 -- TODO: class-restricted items, offhand-restricted items?
 function lib:IsAppropriate(item, class)
     class = class or playerclass
-    local slot, _, itemclass, itemsubclass = select(4, GetItemInfoInstant(item))
+    local slot, _, itemclass, itemsubclass = select(4, C_Item.GetItemInfoInstant(item))
     if slot == 'INVTYPE_CLOAK' then
         -- Cloaks are cloth, technically. But everyone can wear them.
         return true
