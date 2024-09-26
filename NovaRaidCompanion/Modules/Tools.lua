@@ -25,6 +25,7 @@ local C_Timer = C_Timer;
 local strmatch = strmatch;
 local UnitName = UnitName;
 local UnitGUID = UnitGUID;
+local pairs, ipairs = pairs, ipairs;
 
 --Accepts both types of RGB.
 function NRC:RGBToHex(r, g, b)
@@ -971,9 +972,24 @@ end
 function NRC:sendGroupComm(msg)
 	if (IsInRaid()) then
 		NRC:sendComm("RAID", msg);
-	elseif (IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+	elseif (LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
         NRC:sendComm("INSTANCE_CHAT", msg);
 	elseif (IsInGroup()) then
 		NRC:sendComm("PARTY", msg);
 	end
+end
+
+--local GetClassColor = GetClassColor;
+function NRC.getClassColor(class)
+	if (not class) then
+		--Class can be missing in NRC:updateRaidCooldowns() if some cooldown spells are cast on self.
+		--Easier just to quick fix the error here for now, it doesn't effect much if a cooldown doesnt show target.
+		return GetClassColor();
+	end
+	--Won't show blue shamans in options caus they load first but all the other UI's should, will reload options after this one day.
+	if (strlower(class) == "shaman" and NRC.db and NRC.db.global.blueShamans) then
+		return 0.00, 0.44, 0.87, "ff0070dd";
+	end
+	local r, g, b, hex = GetClassColor(class);
+	return r, g, b, hex;
 end

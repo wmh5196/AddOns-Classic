@@ -836,6 +836,7 @@ function NRC:createGridFrame(name, width, height, x, y, borderSpacing)
 	frame:SetBackdropBorderColor(1, 1, 1, 0.2);
 	frame.descFrame = CreateFrame("Frame", name .. "Desc", frame, "BackdropTemplate");
 	frame.descFrame:SetSize(width, 25);
+	frame.descFrame.defaultWidth = width;
 	frame.descFrame:SetPoint("TOP", frame, "BOTTOM", 0, 0);
 	frame.descFrame:SetBackdrop({
 		bgFile = "Interface\\Buttons\\WHITE8x8",
@@ -1135,7 +1136,7 @@ function NRC:createGridFrame(name, width, height, x, y, borderSpacing)
 				if (columnCount == 1) then
 					subFrame:SetWidth(data.firstV);
 					x = data.firstV / 2;
-					if (not frame.readyCheckRunnig) then
+					if (not frame.readyCheckRunning) then
 						subFrame.fs:SetPoint("LEFT", 5, 0);
 					end
 				--elseif (data.columns[columnCount].customWidth) then

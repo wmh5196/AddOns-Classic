@@ -329,7 +329,7 @@ local function tallyTricks(name)
 			if (NRC.config.tricksShowMySelf and not sentMe) then
 				local targetString = target;
 				if (data.targetClass) then
-					local _, _, _, classHex = GetClassColor(data.targetClass);
+					local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 					targetString = "|c" .. classHex .. target .. "|r";
 				end
 				NRC:print(string.format(L["meTransferedThreatTricks"], "|cFF00C800" .. NRC:commaValue(total) .. "|r", targetString or "unknown"));
@@ -358,7 +358,7 @@ local function tallyTricks(name)
 			if (NRC.config.tricksShowOthersSelf and not sentMe) then
 				local targetString = target;
 				if (data.targetClass) then
-					local _, _, _, classHex = GetClassColor(data.targetClass);
+					local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 					targetString = "|c" .. classHex .. target .. "|r";
 				end
 				NRC:print(string.format(L["otherTransferedThreatTricks"], "|cFFAAD372" .. name .. "|r",
@@ -443,7 +443,7 @@ local function tallyDamage(name)
 			else
 				local targetString = target;
 				if (data.targetClass) then
-					local _, _, _, classHex = GetClassColor(data.targetClass);
+					local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 					targetString = "|c" .. classHex .. target .. "|r";
 				end
 				C_Timer.After(1, function()
@@ -455,7 +455,7 @@ local function tallyDamage(name)
 		if (NRC.config.tricksSendDamagePrint and sourceMe and not sentMe) then
 			local targetString = target;
 			if (data.targetClass) then
-				local _, _, _, classHex = GetClassColor(data.targetClass);
+				local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 				targetString = "|c" .. classHex .. target .. "|r";
 			end
 			C_Timer.After(1, function()
@@ -471,7 +471,7 @@ local function tallyDamage(name)
 			else
 				local targetString = target;
 				if (data.targetClass) then
-					local _, _, _, classHex = GetClassColor(data.targetClass);
+					local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 					targetString = "|c" .. classHex .. target .. "|r";
 				end
 				C_Timer.After(1, function()
@@ -484,7 +484,7 @@ local function tallyDamage(name)
 			printOther = true;
 			local targetString = target;
 			if (data.targetClass) then
-				local _, _, _, classHex = GetClassColor(data.targetClass);
+				local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 				targetString = "|c" .. classHex .. target .. "|r";
 			end
 			C_Timer.After(1, function()
@@ -767,7 +767,7 @@ local function combatLogEventUnfiltered(...)
 					NRC:sendGroup(msg);
 				end
 				local inInstance = IsInInstance();
-				if (inInstance and NRC.config.tricksSendMyCastGroup) then
+				if (inInstance and NRC.config.tricksSendMyCastSay) then
 					SendChatMessage(msg, "SAY");
 				end
 			elseif (inOurGroup) then

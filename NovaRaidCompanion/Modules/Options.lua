@@ -6,7 +6,6 @@
 
 local addonName, NRC = ...;
 local L = LibStub("AceLocale-3.0"):GetLocale("NovaRaidCompanion");
-local GetAddOnMetadata = GetAddOnMetadata or C_AddOns.GetAddOnMetadata;
 NRC.maxCooldownFrameCount = 5;
 
 local spellWidth, mergedWidth, frameWidth = 0.8, 0.8, 0.5;
@@ -90,7 +89,7 @@ NRC.options = {
 	args = {
 		titleText = {
 			type = "description",
-			name = "        " .. NRC.prefixColor .. "NovaRaidCompanion (v" .. GetAddOnMetadata("NovaRaidCompanion", "Version") .. ")",
+			name = "        " .. NRC.prefixColor .. "NovaRaidCompanion (v" .. NRC.version .. ")",
 			fontSize = "large",
 			order = 1,
 		},
@@ -202,14 +201,6 @@ NRC.options = {
 					get = "getAutoCombatLog",
 					set = "setAutoCombatLog",
 				},
-				cauldronMsg = {
-					type = "toggle",
-					name = L["cauldronMsgTitle"],
-					desc = L["cauldronMsgDesc"],
-					order = 9,
-					get = "getCauldronMsg",
-					set = "setCauldronMsg",
-				},
 				checkMetaGem = {
 					type = "toggle",
 					name = L["checkMetaGemTitle"],
@@ -218,11 +209,35 @@ NRC.options = {
 					get = "getCheckMetaGem",
 					set = "setCheckMetaGem",
 				},
+				showTrainset = {
+					type = "toggle",
+					name = L["showTrainsetTitle"],
+					desc = L["showTrainsetDesc"],
+					order = 10,
+					get = "getShowTrainset",
+					set = "setShowTrainset",
+				},
+				cauldronMsg = {
+					type = "toggle",
+					name = L["cauldronMsgTitle"],
+					desc = L["cauldronMsgDesc"],
+					order = 11,
+					get = "getCauldronMsg",
+					set = "setCauldronMsg",
+				},
+				cauldronMsgOther = {
+					type = "toggle",
+					name = L["cauldronMsgOtherTitle"],
+					desc = L["cauldronMsgOtherDesc"],
+					order = 12,
+					get = "getCauldronMsgOther",
+					set = "setCauldronMsgOther",
+				},
 				feastLeaderMsg = {
 					type = "toggle",
 					name = L["feastLeaderMsgTitle"],
 					desc = L["feastLeaderMsgDesc"],
-					order = 10,
+					order = 13,
 					get = "getFeastLeaderMsg",
 					set = "setFeastLeaderMsg",
 				},
@@ -238,7 +253,7 @@ NRC.options = {
 						[1] = "RAID",
 						[2] = "RAID_WARNING",
 					},
-					order = 11,
+					order = 14,
 					get = "getFeastLeaderChannel",
 					set = "setFeastLeaderChannel",
 				},
@@ -246,7 +261,7 @@ NRC.options = {
 					type = "toggle",
 					name = L["repairLeaderMsgTitle"],
 					desc = L["repairLeaderMsgDesc"],
-					order = 12,
+					order = 15,
 					get = "getRepairLeaderMsg",
 					set = "setRepairLeaderMsg",
 				},
@@ -262,7 +277,7 @@ NRC.options = {
 						[1] = "RAID",
 						[2] = "RAID_WARNING",
 					},
-					order = 13,
+					order = 16,
 					get = "getRepairLeaderChannel",
 					set = "setRepairLeaderChannel",
 				},
@@ -274,13 +289,21 @@ NRC.options = {
 					get = "getReleaseWarning",
 					set = "setReleaseWarning",
 				},
-				showTrainset = {
-					type = "toggle",
-					name = L["showTrainsetTitle"],
-					desc = L["showTrainsetDesc"],
-					order = 21,
-					get = "getShowTrainset",
-					set = "setShowTrainset",
+				timeStampFormat = {
+					type = "select",
+					name = L["timeStampFormatTitle"],
+					desc = L["timeStampFormatDesc"],
+					values = {
+						[12] = "12 hour",
+						[24] = "24 hour",
+					},
+					sorting = {
+						[1] = 12,
+						[2] = 24,
+					},
+					order = 20,
+					get = "getTimeStampFormat",
+					set = "setTimeStampFormat",
 				},
 				autoInv = {
 					type = "toggle",
@@ -298,21 +321,13 @@ NRC.options = {
 					set = "setAutoInvKeyword",
 					order = 113,
 				},
-				timeStampFormat = {
-					type = "select",
-					name = L["timeStampFormatTitle"],
-					desc = L["timeStampFormatDesc"],
-					values = {
-						[12] = "12 hour",
-						[24] = "24 hour",
-					},
-					sorting = {
-						[1] = 12,
-						[2] = 24,
-					},
-					order = 20,
-					get = "getTimeStampFormat",
-					set = "setTimeStampFormat",
+				blueShamans = {
+					type = "toggle",
+					name = L["blueShamansTitle"],
+					desc = L["blueShamansDesc"],
+					get = "getBlueShamans",
+					set = "setBlueShamans",
+					order = 114,
 				},
 			},
 		},
@@ -2901,6 +2916,14 @@ NRC.options = {
 					get = "getSreShowDpsPotions",
 					set = "setSreShowDpsPotions",
 				},
+				sreShowProtectionPotions = {
+					type = "toggle",
+					name = L["sreShowProtectionPotionsTitle"],
+					desc = L["sreShowProtectionPotionsDesc"],
+					order = 57,
+					get = "getSreShowProtectionPotions",
+					set = "setSreShowProtectionPotions",
+				},
 				sreShowMagePortals = {
 					type = "toggle",
 					name = L["sreShowMagePortalsTitle"],
@@ -4680,6 +4703,7 @@ NRC.optionDefaults = {
 		prefixColorR = 1, prefixColorG = 0.4117647058823529, prefixColorB = 0,
 		middleColorR = 1, middleColorG = 0.96, middleColorB = 0.41,
 		mmColorR = 1, mmColorG = 1, mmColorB = 1,
+		blueShamans = false,
 		detectSameInstance = true,
 		raidCooldownsBackdropAlpha = 0.4,
 		raidCooldownsBorderAlpha = 0.2,
@@ -4862,6 +4886,7 @@ NRC.optionDefaults = {
 		raidCooldownsBresCountPosition = 1,
 		autoCombatLog = false,
 		cauldronMsg = true,
+		cauldronMsgOther = false,
 		sreEnabled = true,
 		sreEnabledEverywhere = false,
 		sreEnabledRaid = true,
@@ -4889,6 +4914,7 @@ NRC.optionDefaults = {
 		sreShowCauldrons = true,
 		sreShowSoulstoneRes = false,
 		sreShowDpsPotions = false,
+		sreShowProtectionPotions = false,
 		sreShowManaPotions = false,
 		sreShowHealthPotions = false,
 		sreShowMagePortals = true,
@@ -5306,7 +5332,7 @@ local function loadAllCooldownOptions()
 		if (v.color) then
 			color = "|c" .. v.color;
 		else
-			local _, _, _, classHex = GetClassColor(v.class);
+			local _, _, _, classHex = NRC.getClassColor(v.class);
 			if (classHex) then
 				color = "|c" .. classHex;
 			end
@@ -5483,15 +5509,18 @@ local function loadNewVersionFrame()
 	frame.scrollChild.fs:SetText("|cFFFFFF00Nova Raid Companion");
 	frame.scrollChild.fs2:SetText("|cFFFFFF00New in version|r |cFFFF6900" .. string.format("%.2f", NRC.version));
 	frame:Hide();
-	linesVersion = 1.48;
+	linesVersion = 1.52;
 	local lines = {
 		--"|cFF00FF00[General Changes]|r",
-		"|cFF33FF33In Testing:|r Added a new Battle Res counter during cata raid bosses to show you how many remaining can be cast (3 for 25m bosses and 1 for 10m bosses), this attaches to the top of cooldowns frame and appears when a boss fight starts. Can be changed to different cooldown lists in config. The ingame Blizzard API to track battle res doesn't seem to work properly in cata so a custom system had to be made, please let me know of any bugs or wrong bres counts.",
-		"Fixed players in raid that swap specs still showing talent only cooldowns like PI, also fixed removing non-healer spec swaps from healer mana display.",
-		"Cleaned up the test mode and dragging of the frames, new test/config buttons added.",
-		"Fixed a bug where you couldn't hide the raid mana frame if you left it in the default position middle of the screen.",
-		"Added max rank flag to +90 expertise food.",
-		"Removed spirit buff column as an option in cata as the buff no longer exists.",
+		"Added option to show protection potions in scrolling raid events (Greater Fire Protection Potion etc).",
+		"Added option to /say when other people drop a repair bot/feast/couldron etc (there was always an option to /say when it was yourself, but now you can announce others, off by default).",
+		"Added option to display shamans as blue in this addon.",
+		"Added missing textures in raid log for SoD world bosses.",
+		"Added world buffs to the buff snapshots in the raid log.",
+		"The raid status flasks column can now show up to 4 flasks/elixirs at once in classic era, all are combined since they stack there.",
+		"Fixed the talents frame not showing when you inspect people if you had certain other addons installed.",
+		"Fixed an issue with readycheck making player names keep moving left and right in the raid status frame.",
+		"Fixed a bunch of other small bugs.",
 	};
 	local text = "";
 	--Seperator lines couldn't be used because the wow client won't render 1 pixel frames if they are in certain posotions.
@@ -5529,7 +5558,7 @@ function NRC:checkNewVersion()
 	--loadNewVersionFrame();
 	if (NRC.version and NRC.version ~= 9999) then
 		if (not NRC.db.global.versions[NRC.version]) then
-			if (NRC.isCata) then
+			if (NRC.isClassic) then
 				loadNewVersionFrame();
 			end
 			--NRC:setLockAllFrames(nil, false);
@@ -6965,6 +6994,15 @@ function NRC:getCauldronMsg(info)
 	return self.config.cauldronMsg;
 end
 
+--Cauldron msg other.
+function NRC:setCauldronMsgOther(info, value)
+	self.config.cauldronMsgOther = value;
+end
+
+function NRC:getCauldronMsgOther(info)
+	return self.config.cauldronMsgOther;
+end
+
 --Check meta gem.
 function NRC:setCheckMetaGem(info, value)
 	self.config.checkMetaGem = value;
@@ -7008,6 +7046,15 @@ end
 
 function NRC:getAutoInvKeyword(info)
 	return self.config.autoInvKeyword;
+end
+
+--Blue shamans.
+function NRC:setBlueShamans(info, value)
+	self.db.global.blueShamans = value;
+end
+
+function NRC:getBlueShamans(info)
+	return self.db.global.blueShamans;
 end
 
 --Colorize raid status groups.
@@ -7454,6 +7501,16 @@ end
 
 function NRC:getSreShowDpsPotions(info)
 	return self.config.sreShowDpsPotions;
+end
+
+--SRE show protection pots.
+function NRC:setSreShowProtectionPotions(info, value)
+	self.config.sreShowProtectionPotions = value;
+	NRC:sreUpdateSettings();
+end
+
+function NRC:getSreShowProtectionPotions(info)
+	return self.config.sreShowProtectionPotions;
 end
 
 --SRE show mage portals.
@@ -8020,6 +8077,7 @@ function NRC:startTestAllFrames()
 end
 
 function NRC:stopTestAllFrames()
+	NRC.allFramesTestRunning = nil;
 	NRC:stopRaidCooldownsTest();
 	NRC:stopSreTest();
 	NRC:stopRaidManaTest();

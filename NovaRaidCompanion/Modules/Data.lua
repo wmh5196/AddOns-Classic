@@ -240,7 +240,6 @@ function NRC:sendComm(distribution, string, target)
 	if ((UnitInBattleground("player") or NRC:isInArena()) and distribution ~= "GUILD") then
 		return;
 	end
-	--print(string)
 	if (distribution == "CHANNEL") then
 		--Get channel ID number.
 		local addonChannelId = GetChannelName(target);
@@ -918,7 +917,9 @@ f:SetScript('OnEvent', function(self, event, ...)
 	elseif (event == "GROUP_LEFT") then
 		NRC.durability = {};
 		NRC.resistances = {};
+		NRC:checkMyRes(true);
 		NRC.weaponEnchants = {};
+		NRC:checkMyEnchants(true);
 		--NRC.talents = {};
 		--NRC:stopRaidCacheTicker();
 	elseif (event == "PLAYER_REGEN_ENABLED") then
@@ -943,6 +944,9 @@ end)
 
 function NRC:sendRes()
 	if (not IsInGroup()) then
+		return;
+	end
+	if (not GetWeaponEnchantInfo) then
 		return;
 	end
 	local me = UnitName("player");
@@ -975,7 +979,7 @@ function NRC:receivedRes(data, sender, distribution)
 end
 
 function NRC:checkMyRes(setDataOnly)
-	if (NRC.isRetail) then
+	if (NRC.isRetail or not UnitResistance) then
 		return;
 	end
 	if (InCombatLockdown() and not setDataOnly) then
@@ -990,12 +994,10 @@ function NRC:checkMyRes(setDataOnly)
 		local _, total = UnitResistance("player", i);
 		temp[i] = total;
 	end
+	myRes = temp;
+	NRC.resistances[me] = temp;
 	if (setDataOnly) then
 		--Just set our data, no sharing.
-		myRes = temp;
-		if (IsInGroup()) then
-			NRC.resistances[me] = myRes;
-		end
 		return;
 	end
 	if (not next(myRes)) then
@@ -1030,6 +1032,9 @@ function NRC:sendEnchants()
 	if (not IsInGroup()) then
 		return;
 	end
+	if (not GetWeaponEnchantInfo) then
+		return;
+	end
 	local me = UnitName("player");
 	if (next(myEnchants)) then
 		NRC.weaponEnchants[me] = myEnchants;
@@ -1060,33 +1065,45 @@ function NRC:receivedEnchants(data, sender, distribution)
 	NRC.weaponEnchants[sender] = raidData;
 end
 
+--EnchantIDs.
+NRC.enchantIgnoreList = {
+	--Windfury totem.
+	[1783] = true,
+	[563] = true,
+	[564] = true,
+	[2638] = true,
+	[2639] = true,
+	--Wild strikes SoD.
+	[6858] = true,
+	[7141] = true,
+};
+
 function NRC:checkMyEnchants(setDataOnly)
+	if (not GetWeaponEnchantInfo) then
+		return;
+	end
 	local me = UnitName("player");
 	local temp = {};
 	local mh, mhTime, _, mhID, oh, ohTime, _, ohID = GetWeaponEnchantInfo();
 	if (mh) then
 		--Ignore windfury totems.
-		if (mhID ~= 1783 and mhID ~= 563 and mhID ~= 564 and mhID ~= 2638 and mhID ~= 2639) then
+		if (not NRC.enchantIgnoreList[mhID]) then
 			temp[1] = mhID;
 			temp[2] = GetServerTime() + math.floor(mhTime/1000);
 		end
 	end
 	if (oh) then
-		if (ohID ~= 1783 and ohID ~= 563 and ohID ~= 564 and ohID ~= 2638 and ohID ~= 2639) then
+		if (not NRC.enchantIgnoreList[ohID]) then
 			temp[3] = ohID;
 			temp[4] = GetServerTime() + math.floor(ohTime / 1000);
 		end
 	end
+	if (next(temp)) then
+		NRC.weaponEnchants[me] = temp;
+	else
+		NRC.weaponEnchants[me] = nil;
+	end
 	if (setDataOnly) then
-		--Just set our data, no sharing.
-		myEnchants = temp;
-		if (IsInGroup() and next(myEnchants)) then
-			if (next(myEnchants)) then
-				NRC.weaponEnchants[me] = myEnchants;
-			else
-				NRC.weaponEnchants[me] = nil;
-			end
-		end
 		return;
 	end
 	if (not myEnchants) then
@@ -1114,13 +1131,13 @@ function NRC:checkMyEnchants(setDataOnly)
 		NRC:sendEnchants();
 	else
 		myEnchants = temp;
-		if (IsInGroup()) then
+		--if (IsInGroup()) then
 			if (next(myEnchants)) then
 				NRC.weaponEnchants[me] = myEnchants;
 			else
 				NRC.weaponEnchants[me] = nil;
 			end
-		end
+		--end
 	end
 end
 

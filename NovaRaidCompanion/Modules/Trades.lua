@@ -124,8 +124,8 @@ end
 
 function NRC:doTrade()
 	local traded, pMoney, tMoney, pItems, tItems, pItemsEnchant, tItemsEnchant;
-	local _, _, _, classColorHex = GetClassColor(string.upper(tradeWhoClass));
-	--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+	local _, _, _, classColorHex = NRC.getClassColor(string.upper(tradeWhoClass));
+	--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 	if (not classColorHex and string.upper(tradeWhoClass) == "SHAMAN") then
 		classColorHex = "ff0070dd";
 	elseif (not classColorHex) then

@@ -717,6 +717,9 @@ L["autoCombatLogDesc"]= "Turn on combat logging whenever you enter a raid so it 
 L["cauldronMsgTitle"] = "Feast/Repair /say";
 L["cauldronMsgDesc"] = "Put a msg in /say when you drop a feast/repair bot/cauldron in raid?";
 
+L["cauldronMsgOtherTitle"] = "Feast/Repair Others";
+L["cauldronMsgOtherDesc"] = "Put a msg in /say when other people drop a feast/repair bot/cauldron in raid? This could be spammy if many people in the raid have it enabled.";
+
 L["sreMainTextDesc"] = "Scroll down to add Custom Spells."
 L["sreCustomSpellsHeaderDesc"] = "Custom Spells To Display";
 
@@ -781,7 +784,10 @@ L["sreShowHealthPotionsTitle"] = "Health Potions/Stones";
 L["sreShowHealthPotionsDesc"] = "Show Health potion usage.";
 
 L["sreShowDpsPotionsTitle"] = "Dps/Armor Potions";
-L["sreShowDpsPotionsDesc"] = "Show dps and armor/protection option usage. This includes things like destruction/haste/ironshield/invisibilty potions.";
+L["sreShowDpsPotionsDesc"] = "Show dps and armor/protection usage. This includes things like destruction/haste/ironshield/invisibilty potions.";
+
+L["sreShowProtectionPotionsTitle"] = "Protection Potions";
+L["sreShowProtectionPotionsDesc"] = "Show protection potion usage (Greater Fire Protection Potion etc).";
 
 L["sreShowMagePortalsTitle"] = "Mage Portals";
 L["sreShowMagePortalsDesc"]	= "Show mage portal casts, be tricked no more by those pesky mages!";
@@ -1236,3 +1242,6 @@ L["raidStatusWorldBuffsDesc"]= "Display a World Buffs column on the Raid Status 
 L["raidCooldownsMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33Raid wise cooldowns tracking.|r\nYou can choose which spells for each class to display in |cFFFFFF00/nrc config|r.\nYou can also enable more of these lists (up to 5 max)\nand assign each cooldown to show on a separate list.";
 L["raidManaMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33Group mana tracker.|r\nDisplays mana percentages for your healers\nor any class you choose in |cFFFFFF00/nrc config|r.";
 L["raidScrollingMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33Scrolling raid events.|r\nDisplays many different type of events during your raid.\nCooldowns/Interrupts/Dispels/MD/Tricks/Ressurections/Portals/Feasts etc and more.\nSelect which events to show in |cFFFFFF00/nrc config|r.";
+
+L["blueShamansTitle"] = "Blue Shamans";
+L["blueShamansDesc"] = "Show shamans as blue on this addon in classic.";

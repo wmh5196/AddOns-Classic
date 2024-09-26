@@ -8,7 +8,7 @@
 --local NRC = addon.a;
 local addonName, NRC = ...;
 _G["NRC"] = NRC;
-local GetAddOnMetadata = GetAddOnMetadata or C_AddOns.GetAddOnMetadata;
+local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata;
 NRC.expansionNum = 1;
 local _, _, _, tocVersion = GetBuildInfo();
 if (WOW_PROJECT_ID == WOW_PROJECT_CLASSIC) then
@@ -76,6 +76,7 @@ NRC.prefixColor = "|cFFFF6900";
 NRC.groupCache = {};
 NRC.groupSettings = {};
 NRC.healerCache = {};
+NRC.specialHealers = {};
 NRC.isResurrecting = {};
 NRC.unitMap = {};
 NRC.durability = {};
@@ -226,14 +227,15 @@ function NRC:openConfig()
 		InterfaceOptionsFrame:Hide();
 	else
 		--Opening the frame needs to be run twice to avoid a bug.
-		InterfaceOptionsFrame_OpenToCategory("NovaRaidCompanion");
+		--[[InterfaceOptionsFrame_OpenToCategory("NovaRaidCompanion");
 		--Hack to fix the issue of interface options not opening to menus below the current scroll range.
 		--This addon name starts with N and will always be closer to the middle so just scroll to the middle when opening.
 		local min, max = InterfaceOptionsFrameAddOnsListScrollBar:GetMinMaxValues();
 		if (min < max) then
 			InterfaceOptionsFrameAddOnsListScrollBar:SetValue(math.floor(max/2));
 		end
-		InterfaceOptionsFrame_OpenToCategory("NovaRaidCompanion");
+		InterfaceOptionsFrame_OpenToCategory("NovaRaidCompanion");]]
+		Settings.OpenToCategory("NovaRaidCompanion");
 		NRC.acr:NotifyChange("NovaRaidCompanion");
 	end
 end
@@ -338,7 +340,7 @@ function NRC:updateMinimapButton(tooltip, frame)
 				for char, charData in NRC:pairsByKeys(v) do
 					if (IsShiftKeyDown() or char == me) then
 						local found2;
-						local _, _, _, classColorHex = GetClassColor(charData.englishClass);
+						local _, _, _, classColorHex = NRC.getClassColor(charData.englishClass);
 						local text = "|c" .. classColorHex .. char .. "|r";
 						if (charData.savedInstances) then
 							local instances = {};

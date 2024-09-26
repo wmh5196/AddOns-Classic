@@ -86,7 +86,7 @@ function NRC:updateTalentFrame(name, talentString, frame, talentString2, showOff
 	local specID, talentCount, specName, specIcon, specIconPath, treeData = NRC:getSpecFromTalentString(displayTalentString);
 	trees = {strsplit("-", trees, 4)};
 	talentFrame.disableAllTalentFrames();
-	local _, _, _, classHex = GetClassColor(classEnglish);
+	local _, _, _, classHex = NRC.getClassColor(classEnglish);
 	local text = "|c" .. classHex .. name .. "|r";
 	if (not specName) then
 		specName = "No Spec"

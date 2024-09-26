@@ -41,6 +41,32 @@ local dmfBuffs = {
 	[23736] = L["Sayge's Dark Fortune of Agility"],
 };
 
+--Unbooned buffs no don't give the correct max duration from API, but instead the duration left when it was unbooned.
+--We only need boonable buffs here.
+
+local customDurations = {
+	[355366] = 3600, --Warchief's Blessing.		
+	[355363] = 7200, --Rallying Cry of the Dragonslayer.		
+	[355365] = 7200, --Spirit of Zandalar.			
+	[22818] = 7200, --Mol'dar's Moxie.		
+	[22817] = 7200, --Fengus' Ferocity.		
+	[22820] = 7200, --Slip'kik's Savvy.		
+	[15366] = 3600, --Songflower Serenade.		
+	[430947] = 7200, --Boon of Blackfathom.		
+	[438536] = 7200, --Spark of Inspiration.		
+	[438537] = 7200, --Spark of Inspiration.		
+	[446695] = 7200, --Fervor of the Temple Explorer.	
+	[446698] = 7200, --Fervor of the Temple Explorer.
+	[23768] = 7200, --Sayge's Dark Fortune of Damage.
+	[23769] = 7200, --Sayge's Dark Fortune of Resistance.
+	[23767] = 7200, --Sayge's Dark Fortune of Armor.
+	[23766] = 7200, --Sayge's Dark Fortune of Intelligence.
+	[23738] = 7200, --Sayge's Dark Fortune of Spirit.
+	[23737] = 7200, --Sayge's Dark Fortune of Stamina.
+	[23735] = 7200, --Sayge's Dark Fortune of Strength.
+	[23736] = 7200, --Sayge's Dark Fortune of Agility.
+};
+
 local function updateChronodata(guid, buffData)
 	--Chronoboon.
 	local data = {};
@@ -96,7 +122,7 @@ local function unitAura(...)
 					name = name,
 					--endTime = serverTime + (expirationTime - GetTime()),
 					--source = source,
-					duration = duration,
+					duration = customDurations[spellID] or duration,
 					icon = icon,
 					buff = true,
 				};
@@ -189,7 +215,7 @@ function NRC:aurasScanGroup()
 							name = name,
 							--endTime = serverTime + (expirationTime - GetTime()),
 							--source = source,
-							duration = duration,
+							duration = customDurations[spellID] or duration,
 							icon = icon,
 							buff = true,
 						};
@@ -247,7 +273,7 @@ function NRC:aurasScanGroup()
 				name = name,
 				endTime = serverTime + (expirationTime - GetTime()),
 				--source = source,
-				duration = duration,
+				duration = customDurations[spellID] or duration,
 				icon = icon,
 				buff = true,
 			};

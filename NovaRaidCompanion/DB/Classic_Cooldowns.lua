@@ -46,6 +46,15 @@ NRC.cooldowns = {
 			[9863] = "Tranquility", --Rank 4.
 		},
 	},
+	["Barkskin"] = {
+		class = "DRUID",
+		icon = "Interface\\Icons\\spell_nature_stoneclawtotem",
+		cooldown = 60,
+		minLevel = 44,
+		spellIDs = {
+			[22812] = "Barkskin", --Rank 1.
+		},
+	},
 	--Hunter.
 	--No misdirection in classic.
 	--Mage.
