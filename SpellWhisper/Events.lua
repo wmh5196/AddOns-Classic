@@ -26,6 +26,8 @@ local UnitIsGroupLeader = UnitIsGroupLeader
 local UnitIsGroupAssistant = UnitIsGroupAssistant
 local UnitIsPlayer = UnitIsPlayer
 local UnitIsFriend = UnitIsFriend
+local UnitIsEnemy = UnitIsEnemy
+local UnitExists = UnitExists
 local UnitIsUnit = UnitIsUnit
 local UnitInBattleground = UnitInBattleground
 local UnitName = UnitName
@@ -306,6 +308,42 @@ function Addon:IsPlayerMuted()
 	return true
 end
 
+--跟随函数
+function Addon:FollowTargetUnit(FollowUnitGUID, WhisperText)
+	local t, u = Addon:GetTargetUnit(FollowUnitGUID) -- 根据密语对象GUID判断是否为团队/小队成员
+	if t == "group" then
+		if Config.StartFollow ~= "" and WhisperText == Config.StartFollow then --跟随
+			if not CheckInteractDistance(u, 4) then
+				if Addon.Followed.FromWhisper then
+					SendChatMessage(L["SPELLWHISPER_TEXT_FOLLOWFAILED_OUTOFRANGE"], "whisper", nil, GetUnitName(u, true))
+				end
+			else
+				FollowUnit(u)
+				Addon.Followed.UnitIndex = u
+				Addon.Followed.GUID = FollowUnitGUID
+				Addon.Followed.StartTime = GetTime()
+				if Addon.Followed.FromWhisper then
+					SendChatMessage(L["SPELLWHISPER_TEXT_FOLLOWREPLY"], "whisper", nil, GetUnitName(u, true))
+				end
+			end
+		elseif Config.StopFollow ~= "" and WhisperText == Config.StopFollow then --停止跟随
+			FollowUnit("player")
+			Addon.Followed.UnitIndex = "player"
+			Addon.Followed.GUID = ""
+			SendChatMessage(L["SPELLWHISPER_TEXT_STOPFOLLOWREPLY"], "whisper", nil, GetUnitName(u, true))
+		elseif Config.CombatFollowSwitchKey ~= "" and WhisperText == Config.CombatFollowSwitchKey then
+			if Config.CombatFollow then
+				Config.CombatFollow = false
+				SendChatMessage(L["SPELLWHISPER_TEXT_CHANGEFOLLOWMODEOFF"], "whisper", nil, GetUnitName(u, true))
+			else
+				Config.CombatFollow = true
+				SendChatMessage(L["SPELLWHISPER_TEXT_CHANGEFOLLOWMODEON"], "whisper", nil, GetUnitName(u, true))
+			end
+			Addon.ScrollFrame:ConfigRefresh()
+		end
+	end
+end
+
 --发送版本检查通知
 function Addon:SendVerCheck()
 	if not Config.IsEnable then
@@ -377,34 +415,29 @@ function Addon:AddToThreatList(MobUnit)
 					if IsTanking and Status == 3 and RaidUnit ~= ThreatList[i].TargetUnit and NowTime - ThreatList[i].Time >= 4 then
 						ThreatList[i].TargetUnit = RaidUnit
 						ThreatList[i].Time = NowTime
-						local MobName = (UnitName(MobUnit))
-						local TargetName = (UnitName(RaidUnit))
-						local MobIconIndex = GetRaidTargetIndex(MobUnit) or 0
-						local TargetIconIndex = GetRaidTargetIndex(RaidUnit) or 0
-						Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconIndex)
+						Addon:SendThreatAnnounce((UnitName(MobUnit)), GetRaidTargetIndex(MobUnit) or 0, (UnitName(RaidUnit)), GetRaidTargetIndex(RaidUnit) or 0)
 					end
 				end
 				break
 			end
 		end
 		if not IsExists then
-			local TempThreat = {}
-			TempThreat["GUID"] = MobGUID
-			TempThreat["MobUnit"] = MobUnit
-			TempThreat["Time"] = NowTime
-			for j = 1, GetNumGroupMembers() do
-				local RaidUnit = "raid" .. j
+			local TempThreat = {
+				["GUID"] = MobGUID,
+				["MobUnit"] = MobUnit,
+				["Time"] = NowTime,
+				["TargetUnit"] = nil,
+			}
+			for i = 1, GetNumGroupMembers() do
+				local RaidUnit = "raid" .. i
 				local IsTanking, Status = UnitDetailedThreatSituation(RaidUnit, MobUnit)
 				if IsTanking and Status == 3 then
 					TempThreat["TargetUnit"] = RaidUnit
-					local MobName = (UnitName(MobUnit))
-					local TargetName = (UnitName(RaidUnit))
-					local MobIconIndex = GetRaidTargetIndex(MobUnit) or 0
-					local TargetIconIndex = GetRaidTargetIndex(RaidUnit) or 0
-					Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconIndex)
 				end
 			end
-			t_insert(ThreatList, TempThreat)
+			if TempThreat.TargetUnit then
+				t_insert(ThreatList, TempThreat)
+			end
 		end
 	elseif IsInGroup() then
 		for i = #ThreatList, 1, -1 do
@@ -415,57 +448,43 @@ function Addon:AddToThreatList(MobUnit)
 					if IsTanking and Status == 3 and ThreatList[i].TargetUnit ~= "player" and NowTime - ThreatList[i].Time >= 4 then
 						ThreatList[i].TargetUnit = "player"
 						ThreatList[i].Time = NowTime
-						local MobName = (UnitName(MobUnit))
-						local TargetName = (UnitName("player"))
-						local MobIconIndex = GetRaidTargetIndex(MobUnit) or 0
-						local TargetIconIndex = GetRaidTargetIndex("player") or 0
-						Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconIndex)
+						Addon:SendThreatAnnounce((UnitName(MobUnit)), GetRaidTargetIndex(MobUnit) or 0, (UnitName("player")), GetRaidTargetIndex("player") or 0)
 					end
 				end
-				for j = 1, GetNumGroupMembers() do
+				for j = 1, GetNumGroupMembers() - 1 do
 					local PartyUnit = "party" .. j
 					local IsTanking, Status = UnitDetailedThreatSituation(PartyUnit, MobUnit)
 					if IsTanking and Status == 3 and PartyUnit ~= ThreatList[i].TargetUnit and NowTime - ThreatList[i].Time >= 4 then
 						ThreatList[i].TargetUnit = PartyUnit
 						ThreatList[i].Time = NowTime
-						local MobName = (UnitName(MobUnit))
-						local TargetName = (UnitName(PartyUnit))
-						local MobIconIndex = GetRaidTargetIndex(MobUnit) or 0
-						local TargetIconIndex = GetRaidTargetIndex(PartyUnit) or 0
-						Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconIndex)
+						Addon:SendThreatAnnounce((UnitName(MobUnit)), GetRaidTargetIndex(MobUnit) or 0, (UnitName(PartyUnit)), GetRaidTargetIndex(PartyUnit) or 0)
 					end
 				end
 			end
 		end
 		if not IsExists then
-			local TempThreat = {}
-			TempThreat["GUID"] = MobGUID
-			TempThreat["MobUnit"] = MobUnit
-			TempThreat["Time"] = NowTime
+			local TempThreat = {
+				["GUID"] = MobGUID,
+				["MobUnit"] = MobUnit,
+				["Time"] = NowTime,
+				["TargetUnit"] = nil,
+			}
 			do
 				local IsTanking, Status = UnitDetailedThreatSituation("player", MobUnit)
 				if IsTanking and Status == 3 and TempThreat.TargetUnit ~= "player" then
-					TempThreat.TargetUnit = "player"
-					local MobName = (UnitName(MobUnit))
-					local TargetName = (UnitName("player"))
-					local MobIconIndex = GetRaidTargetIndex(MobUnit) or 0
-					local TargetIconIndex = GetRaidTargetIndex("player") or 0
-					Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconIndex)
+					TempThreat["TargetUnit"] = "player"
 				end
 			end
-			for j = 1, GetNumGroupMembers() do
-				local PartyUnit = "party" .. j
+			for i = 1, GetNumGroupMembers() - 1 do
+				local PartyUnit = "party" .. i
 				local IsTanking, Status = UnitDetailedThreatSituation(PartyUnit, MobUnit)
 				if IsTanking and Status == 3 then
 					TempThreat["TargetUnit"] = PartyUnit
-					local MobName = (UnitName(MobUnit))
-					local TargetName = (UnitName(PartyUnit))
-					local MobIconIndex = GetRaidTargetIndex(MobUnit) or 0
-					local TargetIconIndex = GetRaidTargetIndex(PartyUnit) or 0
-					Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconIndex)
 				end
 			end
-			t_insert(ThreatList, TempThreat)
+			if TempThreat.TargetUnit then
+				t_insert(ThreatList, TempThreat)
+			end
 		end
 	end
 end
@@ -518,7 +537,6 @@ function Addon:SendHealingMessage(SpellName, TargetName, FailedReason)
 		SendChatMessage(msg, "whisper", nil, TargetName)
 	end
 end
-
 --战场信息输出（专用）
 function Addon:SendBGMessage(SpellName, CasterName, TargetName)
 	if not Config.IsBGWarningEnable or Config.OutputChannel == "off" then
@@ -538,7 +556,6 @@ function Addon:SendBGMessage(SpellName, CasterName, TargetName)
 		SendChatMessage(msg, "instance_chat")
 	end
 end
-
 --仇恨目标改变通告
 function Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconIndex)
 	if Config.OutputChannel == "off" or UnitInBattleground("player") then
@@ -548,7 +565,7 @@ function Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconI
 	if IsInRaid() and not (UnitIsGroupAssistant("player") or UnitIsGroupLeader("player")) and channel == "raid_warning" then
 		channel = "raid"
 	elseif IsInGroup() and not IsInRaid() and (channel == "raid" or channel == "raid_warning") then
-		channel = "party"
+		channel = "instance_chat"
 	end
 	local msg = Addon:FormatMessage(
 		Config["SpellOutput"]["SPELLWHISPER_TEXT_THREAT"] and Config["SpellOutput"]["SPELLWHISPER_TEXT_THREAT"] or L["SPELLWHISPER_TEXT_THREAT"],
@@ -559,7 +576,7 @@ function Addon:SendThreatAnnounce(MobName, MobIconIndex, TargetName, TargetIconI
 	)
 	if msg ~= L["NONE"] then
 		if channel == "hud" then
-			Warning:AddMessage("|cFFFF143C"..msg.."|r")
+			Warning:AddMessage(msg)
 		elseif channel == "self" then
 			print("|cFFFF143C"..msg.."|r")
 		elseif not Addon:IsPlayerMuted() then
@@ -576,8 +593,6 @@ function Addon:SendWarningMessage(WarningType, CasterName, SpellName, TargetName
 		return
 	end
 	local channel = Config.OutputChannel
-	-- CasterName = Addon:GetShortName(CasterName)
-	-- TargetName = Addon:GetShortName(TargetName)
 	if IsInRaid() and not (UnitIsGroupAssistant("player") or UnitIsGroupLeader("player")) and channel == "raid_warning" then
 		channel = "raid"
 	elseif IsInGroup() and not IsInRaid() and (channel == "raid" or channel == "raid_warning") then
@@ -596,7 +611,7 @@ function Addon:SendWarningMessage(WarningType, CasterName, SpellName, TargetName
 				["#caster#"] = CasterName,
 				["#spell#"] = SpellName,
 				["#target#"] = (TargetIconIndex ~= 0 and RaidIconList[TargetIconIndex] or "") .. TargetName,
-				["#spell_2#"] = OtherInfo
+				["#spell_2#"] = OtherInfo,
 			}
 		)
 		BreakTable[TargetUnitGUID] = math.floor(GetTime()*10)/10
@@ -607,7 +622,16 @@ function Addon:SendWarningMessage(WarningType, CasterName, SpellName, TargetName
 				["#caster#"] = CasterName,
 				["#spell#"] = SpellName,
 				["#target#"] = (TargetIconIndex ~= 0 and RaidIconList[TargetIconIndex] or "") .. TargetName,
-				["#spell_2#"] = OtherInfo
+				["#spell_2#"] = OtherInfo,
+			}
+		)
+	elseif WarningType == "STOLEN" then --打断
+		msg = Addon:FormatMessage(
+			Config["SpellOutput"]["SPELLWHISPER_TEXT_STOLEN"] and Config["SpellOutput"]["SPELLWHISPER_TEXT_STOLEN"] or L["SPELLWHISPER_TEXT_STOLEN"],
+			{
+				["#caster#"] = CasterName,
+				["#spell#"] = SpellName,
+				["#target#"] = (TargetIconIndex ~= 0 and RaidIconList[TargetIconIndex] or "") .. TargetName,
 			}
 		)
 	elseif WarningType == "MISSED" then --抵抗/失误
@@ -617,7 +641,7 @@ function Addon:SendWarningMessage(WarningType, CasterName, SpellName, TargetName
 				["#caster#"] = CasterName,
 				["#spell#"] = SpellName,
 				["#target#"] = (TargetIconIndex ~= 0 and RaidIconList[TargetIconIndex] or "") .. TargetName,
-				["#reason#"] = OtherInfo
+				["#reason#"] = OtherInfo,
 			}
 		)
 	elseif WarningType == "DISPEL" then --驱散
@@ -627,13 +651,22 @@ function Addon:SendWarningMessage(WarningType, CasterName, SpellName, TargetName
 				["#caster#"] = CasterName,
 				["#spell#"] = SpellName,
 				["#target#"] = (TargetIconIndex ~= 0 and RaidIconList[TargetIconIndex] or "") .. TargetName,
-				["#spell_2#"] = OtherInfo
+				["#spell_2#"] = OtherInfo,
+			}
+		)
+	elseif WarningType == "REFLECT" then --反射
+		msg = Addon:FormatMessage(
+			Config["SpellOutput"]["SPELLWHISPER_TEXT_REFLECT"] and Config["SpellOutput"]["SPELLWHISPER_TEXT_REFLECT"] or L["SPELLWHISPER_TEXT_REFLECT"],
+			{
+				["#caster#"] = CasterName,
+				["#spell#"] = SpellName,
+				["#target"] = (TargetIconIndex ~= 0 and RaidIconList[TargetIconIndex] or "") .. TargetName,
 			}
 		)
 	end
 	if not Addon:CompareOutputCache(msg) and msg ~= L["NONE"] then
 		if channel == "hud" then
-			Warning:AddMessage("|cFFFF143C"..msg.."|r")
+			Warning:AddMessage(msg)
 		elseif channel == "self" then
 			print("|cFFFF143C"..msg.."|r")
 		elseif not Addon:IsPlayerMuted() then
@@ -666,7 +699,7 @@ function Addon:SendAnnounceMessage(AnnounceChannel, AnnounceReason, AnnounceType
 			if channel == "off" then
 				return
 			elseif channel == "hud" then
-				Addon.Warning:AddMessage("|cFFFF143C"..msg.."|r")
+				Addon.Warning:AddMessage(msg)
 			elseif channel == "self" then
 				print("|cFFFF143C"..msg.."|r")
 			else
@@ -688,7 +721,7 @@ function Addon:SendAnnounceMessage(AnnounceChannel, AnnounceReason, AnnounceType
 			if channel == "off" then
 				return
 			elseif channel == "hud" then
-				Warning:AddMessage("|cFFFF143C"..msg.."|r")
+				Warning:AddMessage(msg)
 			elseif channel == "self" then
 				print("|cFFFF143C"..msg.."|r")
 			else
@@ -765,12 +798,24 @@ function Addon:SendAnnounceMessage(AnnounceChannel, AnnounceReason, AnnounceType
 		return
 	end
 end
+--保存变量
+function Addon:SaveVariables()
+	-- 将数据存入SpellWhisperDB（保存文件）
+	Config.HUDPos[1], _, Config.HUDPos[3], Config.HUDPos[4], Config.HUDPos[5] = Addon.Warning:GetPoint()
+	SpellWhisperDB = {
+		["Config"] = {},
+		["SpellList"] = {},
+	}
+	Addon:UpdateTable(SpellWhisperDB.Config, Config)
+	Addon:UpdateTable(SpellWhisperDB.SpellList, Addon.RunTime)
+end
 
 --Register Events 注册事件
 --装载和退出
 Frame:RegisterEvent("ADDON_LOADED")
 Frame:RegisterEvent("PLAYER_LOGOUT")
 Frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+Frame:RegisterEvent("PLAYER_LOGOUT")
 --战斗信息处理
 Frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 Frame:RegisterEvent("UNIT_THREAT_LIST_UPDATE")
@@ -900,7 +945,7 @@ function Frame:ADDON_LOADED(Name)
 		ConsoleExec("profanityFilter 0")
 		ConsoleExec("overrideArchive 0")
 	end
-	--[[ 登入時不要顯示訊息
+	--[[
 	local msg = string.format(L["|cFFBA55D3SpellWhisper|r v%s|cFFB0C4DE is Loaded.|r"], Addon.Version)
 	if Config.IsEnable then
 		print(msg .. L["Now is |cFF00FFFFEnabled|r."])
@@ -912,7 +957,10 @@ function Frame:ADDON_LOADED(Name)
 end
 
 -- 进入世界
-function Frame:PLAYER_ENTERING_WORLD()
+function Frame:PLAYER_ENTERING_WORLD(isLogin, isReload)
+	if not isLogin and not isReload then
+		return
+	end
 	if Addon.LDB and Addon.LDBIcon and ((IsAddOnLoaded("TitanClassic")) or (IsAddOnLoaded("Titan"))) then
 		Addon.MinimapIcon:InitBroker()
 	else
@@ -937,14 +985,10 @@ end
 
 -- 退出游戏
 function Frame:PLAYER_LOGOUT()
-	-- 将数据存入SpellWhisperDB（保存文件）
-	Config.HUDPos[1], _, Config.HUDPos[3], Config.HUDPos[4], Config.HUDPos[5] = Addon.Warning:GetPoint()
-	SpellWhisperDB = {
-		["Config"] = {},
-		["SpellList"] = {},
-	}
-	Addon:UpdateTable(SpellWhisperDB.Config, Config)
-	Addon:UpdateTable(SpellWhisperDB.SpellList, Addon.RunTime)
+	Addon:SaveVariables()
+end
+function Frame:PLAYER_LEAVING_WORLD()
+	Addon:SaveVariables()
 end
 
 --确定发言等级
@@ -1020,35 +1064,8 @@ function Frame:CHAT_MSG_WHISPER(...) --接收密语--arg[1]对话内容，arg[12
 		return
 	end
 	local arg = {...}
-
-	local t, u = Addon:GetTargetUnit(arg[12]) -- 根据密语对象GUID判断是否为团队/小队成员
-	if t == "group" then
-		if Config.StartFollow ~= "" and arg[1] == Config.StartFollow then --跟随
-			if not CheckInteractDistance(u, 4) then
-				SendChatMessage(L["SPELLWHISPER_TEXT_FOLLOWFAILED_OUTOFRANGE"], "whisper", nil, GetUnitName(u, true))
-			else
-				FollowUnit(u)
-				Addon.Followed.UnitIndex = u
-				Addon.Followed.GUID = arg[12]
-				Addon.Followed.StartTime = GetTime()
-				SendChatMessage(L["SPELLWHISPER_TEXT_FOLLOWREPLY"], "whisper", nil, GetUnitName(u, true))
-			end
-		elseif Config.StopFollow ~= "" and arg[1] == Config.StopFollow then --停止跟随
-			FollowUnit("player")
-			Addon.Followed.UnitIndex = "player"
-			Addon.Followed.GUID = ""
-			SendChatMessage(L["SPELLWHISPER_TEXT_STOPFOLLOWREPLY"], "whisper", nil, GetUnitName(u, true))
-		elseif Config.CombatFollowSwitchKey ~= "" and arg[1] == Config.CombatFollowSwitchKey then
-			if Config.CombatFollow then
-				Config.CombatFollow = false
-				SendChatMessage(L["SPELLWHISPER_TEXT_CHANGEFOLLOWMODEOFF"], "whisper", nil, GetUnitName(u, true))
-			else
-				Config.CombatFollow = true
-				SendChatMessage(L["SPELLWHISPER_TEXT_CHANGEFOLLOWMODEON"], "whisper", nil, GetUnitName(u, true))
-			end
-			Addon.ScrollFrame:ConfigRefresh()
-		end
-	end
+	Addon.Followed.FromWhisper = true
+	Addon:FollowTargetUnit(arg[12], arg[1])
 end
 
 function Frame:CHAT_MSG_WHISPER_INFORM(NewMessage, TargetName) --发送密语--arg[1]对话内容，arg[2]发送对象
@@ -1144,9 +1161,9 @@ end
 -- COMBAT_LOG_EVENT_UNFILTERED 战斗信息处理
 function Frame:COMBAT_LOG_EVENT_UNFILTERED(...)
 
-	-- if not Config.IsEnable or not IsInGroup() then
-	-- 	return
-	-- end
+	if not Config.IsEnable or not IsInGroup() then
+		return
+	end
 
 	local arg = { CombatLogGetCurrentEventInfo() } --COMBAT_LOG_EVENT_UNFILTERED 事件参数Payload
 
@@ -1154,7 +1171,7 @@ function Frame:COMBAT_LOG_EVENT_UNFILTERED(...)
 	local TypeHelpHarm = nil
 	local InstanceType = select(2, IsInInstance())
 
-	if arg[2] == "SPELL_CAST_FAILED" and arg[4] == PlayerGUID and (InstanceType == "party" or InstanceType == "raid") then --治疗法术失败提示
+	if arg[2] == "SPELL_CAST_FAILED" and arg[4] == PlayerGUID and (InstanceType == "party" or InstanceType == "raid" or InstanceType == "arena") then --治疗法术失败提示
 		local FailedReason = nil
 		for k in pairs(FailReason) do
 			if arg[15] == FailReason[k] then
@@ -1163,72 +1180,37 @@ function Frame:COMBAT_LOG_EVENT_UNFILTERED(...)
 			end
 		end
 		if FailedReason then
-			for k in pairs(RunTime.Healing) do
-				if arg[13] == RunTime.Healing[k] then
-					SpellName = arg[13] --失败法术arg[13]
-					break
+			if RunTime.Healing[arg[13]] then
+				local CurrentTarget = nil
+				if UnitExists("mouseover") and UnitIsPlayer("mouseover") and UnitIsFriend("player", "mouseover") then
+					CurrentTarget = "mouseover"
+				elseif UnitExists("target") and UnitIsPlayer("target") and UnitIsFriend("player", "target") then
+					CurrentTarget = "target"
+				elseif UnitExists("targettarget") and UnitIsPlayer("targettarget") and UnitIsEnemy("player", "target") and UnitIsFriend("player", "targettarget") then
+					CurrentTarget = "targettarget"
 				end
-			end
-			local CurrentTarget = nil
-			if SpellName and (UnitName("mouseover")) and UnitIsPlayer("mouseover") and UnitIsFriend("player", "mouseover") then
-				CurrentTarget = "mouseover"
-			elseif SpellName and (UnitName("target")) and UnitIsPlayer("target") and UnitIsFriend("player", "target") then
-				CurrentTarget = "target"
-			elseif
-				SpellName and (UnitName("targettarget")) and UnitIsPlayer("targettarget") and not UnitIsFriend("player", "target") and UnitIsFriend("player", "targettarget") then
-				CurrentTarget = "targettarget"
-			end
-			if CurrentTarget then
-				local WhisperTargetName, WhisperTargetServer = UnitName(CurrentTarget)
-				if WhisperTargetServer then
-					WhisperTargetName = WhisperTargetName .. "-" .. WhisperTargetServer
+				if CurrentTarget then
+					Addon:SendHealingMessage(GetSpellLink(arg[12]), GetUnitName(CurrentTarget, true), FailedReason)
 				end
-				Addon:SendHealingMessage(SpellName, WhisperTargetName, FailedReason)
 			end
 		end
-	elseif arg[2] == "SPELL_MISSED" and (InstanceType == "party" or InstanceType == "raid") then --法术未成功通告
-		local CasterType = Addon:GetTargetUnit(arg[4])
-		if CasterType == "group" or CasterType == "pet" or arg[4] == PlayerGUID then
+	elseif arg[2] == "SPELL_MISSED" then --法术未成功通告
+		local CasterType, CasterUnit = Addon:GetTargetUnit(arg[4])
+		if CasterType and (CasterType == "group" or CasterType == "pet" or arg[4] == PlayerGUID) and (InstanceType == "party" or InstanceType == "raid") then
 			local MissedReason = nil
-			for k in pairs(MissReason) do
-				if arg[15] == k then
-					MissedReason = MissReason[k]
-					break
-				end
-			end
-			if MissedReason then
-				if not SpellName then
-					for k in pairs(RunTime.Other) do --是否为其他需要通告的技能
-						if arg[13] == RunTime.Other[k] then
-							SpellName = arg[13]
-							break
-						end
-					end
-				end
-				if not SpellName then
-					for k in pairs(RunTime.CastHarm) do --是否为施法控制技能
-						if arg[13] == RunTime.CastHarm[k] then
-							SpellName = arg[13]
-							break
-						end
-					end
-				end
-				if not SpellName then
-					for k in pairs(RunTime.InstantHarm) do --是否为瞬发控制技能
-						if arg[13] == RunTime.InstantHarm[k] then
-							SpellName = arg[13]
-							break
-						end
-					end
-				end
-				if SpellName then
+			if MissReason[arg[15]] then
+				MissedReason = MissReason[arg[15]]
+				if RunTime.Other[arg[13]] or RunTime.CastHarm[arg[13]] or RunTime.InstantHarm[arg[13]] then
 					local t, u = Addon:GetTargetUnit(arg[8]) --获取miss对象的Unit代码
 					if t == "target" and u then
 						local RaidTargetIcon = GetRaidTargetIndex(u) or 0
-						Addon:SendWarningMessage("MISSED", arg[5], SpellName, arg[9], MissedReason, RaidTargetIcon, nil) --arg[5]施法者名字，arg[9]目标名字
+						Addon:SendWarningMessage("MISSED", arg[5], GetSpellLink(arg[12]), arg[9], MissedReason, RaidTargetIcon, nil) --arg[5]施法者名字，arg[9]目标名字
 					end
 				end
 			end
+		elseif CasterType == "target" and UnitIsEnemy("player", CasterUnit) and arg[15] == "REFLECT" then -- 反射提示
+			local RaidTargetIcon = GetRaidTargetIndex(CasterUnit) or 0
+			Addon:SendWarningMessage("REFLECT", arg[5], GetSpellLink(arg[12]), arg[9], nil, RaidTargetIcon, nil) -- arg[5]施法者，arg[13]被反射技能，arg[9]目標
 		end
 	elseif arg[2] == "SPELL_INTERRUPT" then --打断通告
 		local CasterType = Addon:GetTargetUnit(arg[4])
@@ -1236,7 +1218,16 @@ function Frame:COMBAT_LOG_EVENT_UNFILTERED(...)
 			local t, u = Addon:GetTargetUnit(arg[8]) --获取miss对象的Unit代码
 			if t == "target" and u and not UnitIsFriend("player", u) then
 				local RaidTargetIcon = GetRaidTargetIndex(u) or 0
-				Addon:SendWarningMessage("INTERRUPT", arg[5], arg[13], arg[9], arg[16], RaidTargetIcon, nil) --arg[5]打断者名字，arg[13]打断技能，arg[9]被打断者名字，arg[16]被打断的技能
+				Addon:SendWarningMessage("INTERRUPT", arg[5], GetSpellLink(arg[12]), arg[9], GetSpellLink(arg[15]), RaidTargetIcon, nil) --arg[5]打断者名字，arg[13]打断技能，arg[9]被打断者名字，arg[16]被打断的技能
+			end
+		end
+	elseif arg[2] == "SPELL_STOLEN" then --偷取通告
+		local CasterType = Addon:GetTargetUnit(arg[4])
+		if CasterType == "group" or CasterType == "pet" or arg[4] == PlayerGUID then
+			local t, u = Addon:GetTargetUnit(arg[8]) --获取miss对象的Unit代码
+			if t == "target" and u and not UnitIsFriend("player", u) then
+				local RaidTargetIcon = GetRaidTargetIndex(u) or 0
+				Addon:SendWarningMessage("STOLEN", arg[5], GetSpellLink(arg[15]), arg[9], nil, RaidTargetIcon, nil) --arg[5]打断者名字，arg[13]打断技能，arg[9]被打断者名字，arg[16]被打断的技能
 			end
 		end
 	elseif arg[2] == "SPELL_DISPEL" and (InstanceType == "party" or InstanceType == "raid") then --进攻驱散提示
@@ -1245,48 +1236,36 @@ function Frame:COMBAT_LOG_EVENT_UNFILTERED(...)
 			local t, u = Addon:GetTargetUnit(arg[8]) --被驱散对象的Unit代码
 			if t == "target" and u and not UnitIsFriend("player", u) then
 				local RaidTargetIcon = GetRaidTargetIndex(u) or 0
-				Addon:SendWarningMessage("DISPEL", arg[5], arg[13], arg[9], arg[16], RaidTargetIcon, nil)
+				Addon:SendWarningMessage("DISPEL", arg[5], GetSpellLink(arg[12]), arg[9], GetSpellLink(arg[15]), RaidTargetIcon, nil)
 			end
 		end
 	elseif (arg[2] == "SPELL_AURA_BROKEN_SPELL" or arg[2] == "SPELL_AURA_BROKEN") and (InstanceType == "party" or InstanceType == "raid") then --破控警告
-		local CasterType = Addon:GetTargetUnit(arg[4])
-		if CasterType == "group" or CasterType == "pet" or arg[4] == PlayerGUID then
-			if not arg[16] then --SWING模式下arg补全
-				arg[16] = L["SPELLWHISPER_TEXT_SWINGATTACK"]
-			end
-			local t, u = Addon:GetTargetUnit(arg[8]) --获取破除控制对象的Unit代码
-			if t == "target" and u and not UnitIsFriend("player", u) then --arg[5]破控者名字，arg[16]破控技能, arg[9]失去控制对象名字，arg[13]被打破的控制技能
-				local RaidTargetIcon = GetRaidTargetIndex(u) or 0
-				Addon:SendWarningMessage("BROKEN", arg[5], arg[16], arg[9], arg[13], RaidTargetIcon, arg[8])
+		if not RunTime.Notips[arg[13]] then
+			local CasterType = Addon:GetTargetUnit(arg[4])
+			if CasterType == "group" or CasterType == "pet" or arg[4] == PlayerGUID then
+				if not arg[16] then --SWING模式下arg补全
+					arg[16] = L["SPELLWHISPER_TEXT_SWINGATTACK"]
+				end
+				local t, u = Addon:GetTargetUnit(arg[8]) --获取破除控制对象的Unit代码
+				if t == "target" and u and not UnitIsFriend("player", u) then --arg[5]破控者名字，arg[16]破控技能, arg[9]失去控制对象名字，arg[13]被打破的控制技能
+					local RaidTargetIcon = GetRaidTargetIndex(u) or 0
+					Addon:SendWarningMessage("BROKEN", arg[5], GetSpellLink(arg[15]), arg[9], GetSpellLink(arg[12]), RaidTargetIcon, arg[8])
+				end
 			end
 		end
 	elseif arg[2] == "SPELL_CAST_START" and arg[4] == PlayerGUID then
 		local IsIgnoreSpell = false
 		TargetGUID = nil
-		if not SpellName then
-			for k in pairs(RunTime.CastHelp) do --监控有益施法法术
-				if arg[13] == RunTime.CastHelp[k] then
-					SpellName = arg[13]
-					TypeHelpHarm = "help"
-					break
-				end
-			end
-		end
-		if not SpellName then
-			for k in pairs(RunTime.CastHarm) do --监控有害施法法术
-				if arg[13] == RunTime.CastHarm[k] then
-					SpellName = arg[13]
-					TypeHelpHarm = "harm"
-					break
-				end
-			end
+		if RunTime.CastHelp[arg[13]] then
+			SpellName = arg[13]
+			TypeHelpHarm = "help"
+		elseif RunTime.CastHarm[arg[13]] then
+			SpellName = arg[13]
+			TypeHelpHarm = "harm"
 		end
 		if SpellName then
-			for k in pairs(RunTime.Ignore) do --排除忽略列表
-				if SpellName == RunTime.Ignore[k] then
-					IsIgnoreSpell = true
-					break
-				end
+			if RunTime.Ignore[arg[13]] then
+				IsIgnoreSpell = true
 			end
 			local CurrentTarget = nil
 			if TypeHelpHarm == "harm" then
@@ -1313,37 +1292,20 @@ function Frame:COMBAT_LOG_EVENT_UNFILTERED(...)
 				end
 				local RaidTargetIcon = GetRaidTargetIndex(CurrentTarget) or 0
 				if TypeHelpHarm == "harm" and (InstanceType == "party" or InstanceType == "raid") or TypeHelpHarm == "help" then
-					Addon:SendAnnounceMessage("group", "start", TypeHelpHarm, SpellName, GetUnitName(CurrentTarget, true), RaidTargetIcon)
+					Addon:SendAnnounceMessage("group", "start", TypeHelpHarm, GetSpellLink(arg[12]), GetUnitName(CurrentTarget, true), RaidTargetIcon)
 				end
 				if CurrentTarget and not IsIgnoreSpell then
 					if TypeHelpHarm == "help" and UnitIsPlayer(CurrentTarget) then
 						-- Addon:SendAnnounceMessage("whisper", "start", TypeHelpHarm, SpellName, GetUnitName(CurrentTarget, true), RaidTargetIcon)
 					elseif TypeHelpHarm == "harm" and (InstanceType == "party" or InstanceType == "raid") then
-						Addon:SendAnnounceMessage("whisper", "start", TypeHelpHarm, SpellName, GetUnitName(CurrentTarget, true), RaidTargetIcon)
+						Addon:SendAnnounceMessage("whisper", "start", TypeHelpHarm, GetSpellLink(arg[12]), GetUnitName(CurrentTarget, true), RaidTargetIcon)
 					end
 				end
 			end
 		end
 	elseif arg[2] == "SPELL_CAST_SUCCESS" and arg[4] == PlayerGUID then --增益通告:arg[4]施法者GUID，arg[9]目标名字，arg[8]目标GUID(不再使用GUID)
-		if not SpellName then
-			for k in pairs(RunTime.InstantHelp) do --遍历，寻找瞬发增益
-				if arg[13] == RunTime.InstantHelp[k] then
-					SpellName = arg[13]
-					TypeHelpHarm = "help"
-					break
-				end
-			end
-		end
-		if not SpellName then
-			for k in pairs(RunTime.CastHelp) do --遍历，寻找施法增益
-				if arg[13] == RunTime.CastHelp[k] then
-					SpellName = arg[13]
-					TypeHelpHarm = "help"
-					break
-				end
-			end
-		end
-		if SpellName then
+		if RunTime.InstantHelp[arg[13]] or RunTime.CastHelp[arg[13]] then
+			TypeHelpHarm = "help"
 			local NowGUID = nil
 			if arg[9] then
 				NowGUID = arg[8]
@@ -1353,50 +1315,30 @@ function Frame:COMBAT_LOG_EVENT_UNFILTERED(...)
 			local u = select(2, Addon:GetTargetUnit(NowGUID))
 			if UnitIsPlayer(u) and UnitIsFriend(u, "player") then
 				local RaidTargetIcon = GetRaidTargetIndex(u) or 0
-				Addon:SendAnnounceMessage("group", "done", TypeHelpHarm, SpellName, GetUnitName(u, true), RaidTargetIcon)
-				Addon:SendAnnounceMessage("whisper", "done", TypeHelpHarm, SpellName, GetUnitName(u, true), RaidTargetIcon)
+				Addon:SendAnnounceMessage("group", "done", TypeHelpHarm, GetSpellLink(arg[12]), GetUnitName(u, true), RaidTargetIcon)
+				Addon:SendAnnounceMessage("whisper", "done", TypeHelpHarm, GetSpellLink(arg[12]), GetUnitName(u, true), RaidTargetIcon)
 			end
 		end
-	elseif arg[2] == "SPELL_AURA_APPLIED" and (arg[4] == PlayerGUID and not InstanceType == "scenario" or arg[8] == PlayerGUID and (InstanceType == "pvp" or InstanceType == "arena")) then
-		if not SpellName then
-			for k in pairs(RunTime.InstantHarm) do
-				if arg[13] == RunTime.InstantHarm[k] then
-					SpellName = RunTime.InstantHarm[k]
-					TypeHelpHarm = "harm"
-					break
-				end
-			end
-		end
-		if not SpellName then
-			for k in pairs(RunTime.CastHarm) do
-				if arg[13] == RunTime.CastHarm[k] then
-					SpellName = RunTime.CastHarm[k]
-					TypeHelpHarm = "harm"
-					break
-				end
-			end
-		end
-		if not SpellName then
-			for k in pairs(RunTime.SelfBuff) do
-				if arg[13] == RunTime.SelfBuff[k] then
-					SpellName = RunTime.SelfBuff[k]
-					TypeHelpHarm = "help"
-					break
-				end
-			end
+	elseif arg[2] == "SPELL_AURA_APPLIED" and (arg[4] == PlayerGUID or arg[8] == PlayerGUID and (InstanceType == "pvp" or InstanceType == "arena")) then
+		if RunTime.InstantHarm[arg[13]] or RunTime.CastHarm[arg[13]] then
+			SpellName = arg[13]
+			TypeHelpHarm = "harm"
+		elseif RunTime.SelfBuff[arg[13]] then
+			SpellName = arg[13]
+			TypeHelpHarm = "help"
 		end
 		if SpellName then
 			local t, u = Addon:GetTargetUnit(arg[8]) --arg[8] 受影响对象的GUID
 			if arg[4] == PlayerGUID and t and u then
 				local RaidTargetIcon = GetRaidTargetIndex(u) or 0
 				if t == "target" and not UnitIsFriend("player", u) or t == "player" then
-					Addon:SendAnnounceMessage("group", "done", TypeHelpHarm, SpellName, arg[9], RaidTargetIcon)
+					Addon:SendAnnounceMessage("group", "done", TypeHelpHarm, GetSpellLink(arg[12]), arg[9], RaidTargetIcon)
 				end
 			elseif UnitInBattleground("player") and t == "player" then
 				if not arg[5] then
 					arg[5] = L["SPELLWHISPER_TEXT_UNKNOWN"]
 				end
-				Addon:SendBGMessage(SpellName, arg[5], arg[9])
+				Addon:SendBGMessage(GetSpellLink(arg[12]), arg[5], arg[9])
 			end
 		end
 	elseif arg[2] == "UNIT_DIED" and (InstanceType == "party" or InstanceType == "raid") then
@@ -1417,7 +1359,7 @@ end
 function Frame:AUTOFOLLOW_END()
 	if Addon.Followed.UnitIndex ~= "player" then
 		if CheckInteractDistance(Addon.Followed.UnitIndex, 4) then
-			if math.floor(GetTime() * 10) / 10 - Addon.Followed.StartTime > 0.1 then
+			if math.floor(GetTime() * 100) / 100 - Addon.Followed.StartTime > 0.15 then
 				SendChatMessage(L["SPELLWHISPER_TEXT_STOPFOLLOW_MANUALLY"], "whisper", nil, GetUnitName(Addon.Followed.UnitIndex, true))
 				Addon.Followed.UnitIndex = "player"
 				Addon.Followed.GUID = ""

@@ -18,12 +18,12 @@ L["Feedback & Update Link"] = "https://www.curseforge.com/wow/addons/spellwhispe
 local locale = GetLocale()
 
 if locale == "enUS" then
-	--频道名称
+	--[[频道名称
     L["off"] = true
     L["say"] = true
     L["party"] = true
     L["raid"] = true
-	L["self"] = true
+	L["self"] = true]]
 	--Tips
 	L["SPELLWHISPER TIPS"] = "|cFFBA55D3SpellWhisper|r Tips:Use |cFF00BFFF/spellwhisper|r |cFFFF4500gui|r or |cFF00BFFF/sw|r |cFFFF4500gui|r open Option Interface, Use |cFF00BFFF/spellwhisper|r |cFFFF0000in|r or |cFF00BFFF/sw|r |cFFFF0000in|r for Delay Task."
 	--输出格式化字符串
@@ -33,20 +33,22 @@ if locale == "enUS" then
 	L["SPELLWHISPER_TEXT_SENTTOPLAYERDONE"] = "<Succeed>#spell#"
 	L["SPELLWHISPER_TEXT_SENTTOPLAYERTARGETTHETARGET"] = "<Warning>Try to #spell#->[#target#], Change Target!"
 	L["SPELLWHISPER_TEXT_BROKEN"] = "<Broken>[#caster#] #spell#->[#target#] #spell_2#"
-	L["SPELLWHISPER_TEXT_INTERRUPT"] = "<Interrupt>[#caster#] #spell#->[#target#] #spell_2#"
-	L["SPELLWHISPER_TEXT_MISSED"] = "<Failed>[#caster#] #spell#->[#target#] #spell_2#"
-	L["SPELLWHISPER_TEXT_DISPEL"] = "<Dispal>[#caster#] #spell#->[#target#]#spell_2#"
+	L["SPELLWHISPER_TEXT_INTERRUPT"] = "<Interrupt>[#caster#]#spell#->[#target#] #spell_2#"
+	L["SPELLWHISPER_TEXT_STOLEN"] = "<Stolen>[#caster#]->[#target#] #spell#"
+	L["SPELLWHISPER_TEXT_MISSED"] = "<Failed>[#caster#]#spell#->[#target#] Failed by [#reason#] "
+	L["SPELLWHISPER_TEXT_DISPEL"] = "<Dispal>[#caster#]#spell#->[#target#]#spell_2#"
+	L["SPELLWHISPER_TEXT_REFLECT"] = "<Reflect>[#caster#]#spell#->[#target#] was [reflected]"
 	L["SPELLWHISPER_TEXT_HEALINGFAILED"] = "<Attention>#spell# to you was failed cause by #spell_2#"
-	L["SPELLWHISPER_TEXT_BGWARNING"] = "<Controlled>[#caster#] #spell#->[#target#]，Pos: [#pos#]"
+	L["SPELLWHISPER_TEXT_BGWARNING"] = "<Controlled>[#caster#]#spell#->[#target#], Pos:[#pos#]"
 	L["SPELLWHISPER_TEXT_THREAT"] = "<Threat>[%s]->[%s]"
-	--Trades
+	--[[Trades
 	L["SPELLWHISPER_TEXT_TRADE_ERROR"] = "Trade with %s was failed, caused by %s."
 	L["SPELLWHISPER_TEXT_TRADE_SUCCEED"] = "Trade with %s was succeed."
 	L["SPELLWHISPER_TEXT_TRADE_ITEMS_RECEIVE"] = " Received #num# item(s), included #item# (#quantity#)."
 	L["SPELLWHISPER_TEXT_TRADE_ITEMS_GIVE"] = " Gave #num# item(s), included #item# (#quantity#)."
 	L["SPELLWHISPER_TEXT_TRADE_MONEY_RECEIVE"] = " Received %s."
 	L["SPELLWHISPER_TEXT_TRADE_MONEY_GIVE"] = " Gave %s."
-	L["SPELLWHISPER_TEXT_TRADE_ENCHANTMENT"] = " Item %s got Enchantment %s."
+	L["SPELLWHISPER_TEXT_TRADE_ENCHANTMENT"] = " Item %s got Enchantment %s."]]
 	--补全
 	L["SPELLWHISPER_TEXT_SWINGATTACK"] = "Swing"
 	L["SPELLWHISPER_TEXT_UNKNOWN"] = "Unknown"
@@ -57,11 +59,6 @@ if locale == "enUS" then
 	L["SPELLWHISPER_TEXT_CHANGEFOLLOWMODEON"] = "Done, Combat Follow Mode turned On."
 	L["SPELLWHISPER_TEXT_CHANGEFOLLOWMODEOFF"] = "Done, Combat Follow Mode turned Off."
 	L["SPELLWHISPER_TEXT_STOPFOLLOW_MANUALLY"] = "Stopped following."
-
-	-- 自行加入
-	L["SpellWhisper"] = "SpellWhisper"
-	L["Spell Whisper"] = "SpellWhisper"
-
 	--英文客户端下直接返回key值
 	--[[
 	--法术技能失败原因
@@ -196,6 +193,7 @@ elseif locale == "zhCN" then
 	L["Cast Help"] = "复活/召唤"
 	L["Self Buff"] = "自体增益"
 	L["Other"] = "失误通报"
+	L["Ignore"] = "忽略列表"
 	--输出格式化字符串
 	L["SPELLWHISPER_TEXT_THREAT"] = "<仇恨>[#mob#]->[#target#]"
     L["SPELLWHISPER_TEXT_SENTTOGROUPSTART"] = "<开始>#spell#->[#target#]"
@@ -205,19 +203,21 @@ elseif locale == "zhCN" then
 	L["SPELLWHISPER_TEXT_SENTTOPLAYERTARGETTHETARGET"] = "<警告>正在#spell#->[#target#]，请切换目标！"
 	L["SPELLWHISPER_TEXT_BROKEN"] = "<破控>[#caster#]的#spell#->[#target#]的#spell_2#"
 	L["SPELLWHISPER_TEXT_INTERRUPT"] = "<打断>[#caster#]的#spell#->[#target#]的#spell_2#"
+	L["SPELLWHISPER_TEXT_STOLEN"] = "<偷取>[#caster#]->[#target#]#spell#"
 	L["SPELLWHISPER_TEXT_MISSED"] = "<失败>[#caster#]的#spell#->[#target#]被[#reason#]"
 	L["SPELLWHISPER_TEXT_DISPEL"] = "<驱散>[#caster#]的#spell#->[#target#]的#spell_2#"
+	L["SPELLWHISPER_TEXT_REFLECT"] = "<反射>[#caster#]的#spell#->[#target#]被[反射]"
 	L["SPELLWHISPER_TEXT_HEALINGFAILED"] = "<注意>对你的#spell#因[#reason#]<失败>"
 	L["SPELLWHISPER_TEXT_BGWARNING"] = "<被控>[#caster#]的#spell#->[#target#]，地点[#pos#]"
 	L["NONE"] = "不提示"
-	--交易
+	--[[交易
 	L["SPELLWHISPER_TEXT_TRADE_ERROR"] = "与<%s>的交易失败了，因为<%s>。"
 	L["SPELLWHISPER_TEXT_TRADE_SUCCEED"] = "与<%s>的交易成功了。"
 	L["SPELLWHISPER_TEXT_TRADE_MONEY_RECEIVE"] = "收入%s。"
 	L["SPELLWHISPER_TEXT_TRADE_MONEY_GIVE"] = "付出%s。"
 	L["SPELLWHISPER_TEXT_TRADE_ITEMS_RECEIVE"] = "获得#item#(#quantity#)等#num#件物品。"
 	L["SPELLWHISPER_TEXT_TRADE_ITEMS_GIVE"] = "给予#item#(#quantity#)等#num#件物品。"
-	L["SPELLWHISPER_TEXT_TRADE_ENCHANTMENT"] = "物品%s获得了附魔<%s>。"
+	L["SPELLWHISPER_TEXT_TRADE_ENCHANTMENT"] = "物品%s获得了附魔<%s>。"]]
 	--补全
 	L["SPELLWHISPER_TEXT_SWINGATTACK"] = "普通攻击"
 	L["SPELLWHISPER_TEXT_UNKNOWN"] = "未知目标"
@@ -251,7 +251,7 @@ elseif locale == "zhCN" then
 	L["Square"] = "{方块}"
 	L["Cross"] = "{十字}"
 	L["Skull"] = "{骷髅}"
-	--法术技能
+	--[[法术技能
 	L["Repentance"] = "忏悔"
 	L["Wyvern Sting"] = "翼龙钉刺"
 	L["Gouge"] = "凿击"
@@ -272,7 +272,7 @@ elseif locale == "zhCN" then
 	L["Hibernate"] = "休眠"
 	L["Shackle Undead"] = "束缚亡灵"
 	L["Banish"] = "放逐术"
-	L["Fear"] = "恐惧术"
+	L["Fear"] = "恐惧"
 	L["Howl of Terror"] = "恐惧嚎叫"
 	L["Entangling Roots"] = "纠缠根须"
 	L["Turn Undead"] = "超度亡灵"
@@ -314,7 +314,7 @@ elseif locale == "zhCN" then
 	L["Tranquilizing Shot"] = "宁神射击"
 	L["Shield Wall"] = "盾墙"
 	L["Last Stand"] = "破釜沉舟"
-	L["Gift of Life"] = "生命赐福"
+	L["Gift of Life"] = "生命赐福"]]
 	--载入提示文字
 	L["|cFFBA55D3SpellWhisper|r v%s|cFFB0C4DE is Loaded.|r"] = "|cFFBA55D3SpellWhisper|r v%s已|cFFB0C4DE成功|r加载！"
     L["Now is |cFF00FFFFEnabled|r."] = "当前已|cFF00FFFF启用|r。"
@@ -333,6 +333,7 @@ elseif locale == "zhCN" then
 	L["<|cFFBA55D3SW|r>The HUD Frame is Unlocked!"] = "<|cFFBA55D3SW|r>HUD信息窗口已解锁！"
 	L["<|cFFBA55D3SW|r>The HUD Frame is Locked!"] = "<|cFFBA55D3SW|r>HUD信息窗口已锁定！"
 	L["<|cFFBA55D3SW|r>The HUD Frame Position is Reset!"] = "<|cFFBA55D3SW|r>HUD信息窗口位置已重置！"
+	L["<|cFFBA55D3SW|r>Start Super Follow <%s>!"] = "<|cFFBA55D3SW|r>启动超级跟随，目标<%s>！"
 	--Config界面文字
 	L["|cFFFFC040By:|r |cFF9382C9Aoikaze|r-|cFFFF66FFZeroZone|r-|cFFDE2910CN|r"] = "|cFFFFC040By:|r |cFF9382C9Aoikaze|r-|cFFFF66FF零界|r-|cFFDE2910CN|r"
 	L["|cFFFF33CCFeedback & Update: |r"] = "|cFFFF33CC反馈与更新：|r"
@@ -374,6 +375,8 @@ elseif locale == "zhCN" then
 	L["Tell Someone To Change His/Her Target"] = "同目标警告提示模板"
 	L["Announce CC Spell Broken"] = "破控提示模板"
 	L["Announce Enemy's Spell Interrupted"] = "打断提示模板"
+	L["Announce Spell Stolen"] = "偷取提示模板"
+	L["Announce Spell Reflect"] = "反射提示模板"
 	L["Announce Spell/Skill Missed"] = "失误提示模板"
 	L["Announce Enemy's Buff Dispelled"] = "驱散提示模板"
 	L["Tell Target Heal Spell Failed"] = "治疗失败提示模板"
@@ -410,6 +413,7 @@ elseif locale == "zhTW" then --Taiwan is a part of China forever
     L["Cast Help"] = "復活/召喚"
     L["Self Buff"] = "自體增益"
     L["Other"] = "失誤通報"
+	L["Ignore"] = "忽略列表"
     --輸出格式化字串
     L["SPELLWHISPER_TEXT_THREAT"] = "<仇恨>[#mob#]->[#target#]"
     L["SPELLWHISPER_TEXT_SENTTOGROUPSTART"] = "<開始>#spell#->[#target#]"
@@ -419,8 +423,10 @@ elseif locale == "zhTW" then --Taiwan is a part of China forever
     L["SPELLWHISPER_TEXT_SENTTOPLAYERTARGETTHETARGET"] = "<警告>正在#spell#->[#target#]，請切換目標！"
     L["SPELLWHISPER_TEXT_BROKEN"] = "<破控>[#caster#]的#spell#->[#target#]的#spell_2#"
     L["SPELLWHISPER_TEXT_INTERRUPT"] = "<打斷>[#caster#]的#spell#->[#target#]的#spell_2#"
+	L["SPELLWHISPER_TEXT_STOLEN"] = "<偷取>[#caster#]->[#target#]#spell#"
     L["SPELLWHISPER_TEXT_MISSED"] = "<失敗>[#caster#]的#spell#->[#target#]被[#reason#]"
     L["SPELLWHISPER_TEXT_DISPEL"] = "<驅散>[#caster#]的#spell#->[#target#]的#spell_2#"
+	L["SPELLWHISPER_TEXT_REFLECT"] = "<反射>[#caster#]#spell#->[#target#]被[反射]"
     L["SPELLWHISPER_TEXT_HEALINGFAILED"] = "<注意>對你的#spell#因[#reason#]<失敗>"
     L["SPELLWHISPER_TEXT_BGWARNING"] = "<被控>[#caster#]的#spell#->[#target#]，地點[#pos#]"
     L["NONE"] = "不提示"
@@ -466,6 +472,7 @@ elseif locale == "zhTW" then --Taiwan is a part of China forever
     L["Cross"] = "{十字}"
     L["Skull"] = "{骷髏}"
     --法術技能
+	--[[
     L["Repentance"] = "懺悔"
     L["Wyvern Sting"] = "翼龍釘刺"
     L["Gouge"] = "鑿擊"
@@ -529,6 +536,7 @@ elseif locale == "zhTW" then --Taiwan is a part of China forever
     L["Shield Wall"] = "盾牆"
     L["Last Stand"] = "破釜沉舟"
     L["Gift of Life"] = "生命賜福"
+	--]]
     --載入提示文字
     L["|cFFBA55D3SpellWhisper|r v%s|cFFB0C4DE is Loaded.|r"] = "|cFFBA55D3Spell技能通報|r v%s已|cFFB0C4DE成功|r載入！"
     L["Now is |cFF00FFFFEnabled|r."] = "當前已|cFF00FFFF啟用|r。"
@@ -547,6 +555,7 @@ elseif locale == "zhTW" then --Taiwan is a part of China forever
 	L["<|cFFBA55D3SW|r>The HUD Frame is Unlocked!"] = "<|cFFBA55D3SW|r>HUD 框架已解鎖！"
 	L["<|cFFBA55D3SW|r>The HUD Frame is Locked!"] = "<|cFFBA55D3SW|r>HUD 框架已鎖定！"
 	L["<|cFFBA55D3SW|r>The HUD Frame Position is Reset!"] = "<|cFFBA55D3SW|r>HUD 框架位置已重置！"
+	L["<|cFFBA55D3SW|r>Start Super Follow <%s>!"] = "<|cFFBA55D3SW|r>啓用超級跟隨，目標<%s>！"
     --Config介面文字
     L["|cFFFFC040By:|r |cFF9382C9Aoikaze|r-|cFFFF66FFZeroZone|r-|cFFDE2910CN|r"] = "|cFFFFC040By:|r |cFF9382C9Aoikaze|r-|cFFFF66FF零界|r-|cFFDE2910CN|r"
     L["|cFFFF33CCFeedback & Update: |r"] = "|cFFFF33CC回饋與更新：|r"
@@ -590,6 +599,8 @@ elseif locale == "zhTW" then --Taiwan is a part of China forever
     L["Announce Enemy's Spell Interrupted"] = "打斷提示範本"
     L["Announce Spell/Skill Missed"] = "失誤提示範本"
     L["Announce Enemy's Buff Dispelled"] = "驅散提示範本"
+	L["Announce Spell Stolen"] = "偷取提示範本"
+	L["Announce Spell Reflect"] = "反射提示範本"
     L["Tell Target Heal Spell Failed"] = "治療失敗提示範本"
     L["Warning Group You Have Be Controlled In BG"] = "戰場被控提示範本"
     L["Announce Mob's First Target Have Changed"] = "怪物切換目標提示範本"
