@@ -111,7 +111,7 @@ function EngraverOptionsFrameMixin:ChangeMultipleSettings(changeFunction)
 end
 
 local function AddEngraverOptionsSetting(self, variable, name, varType)
-	local setting = Settings.RegisterAddOnSetting(self.category, name, variable, varType, DefaultSettings[variable]);
+	local setting = Settings.RegisterAddOnSetting(self.category, variable, variable, EngraverSharedOptions, varType, name, DefaultSettings[variable]);
 	self.engraverOptionsSettings[variable] = setting
 	Settings.SetOnValueChangedCallback(variable, function (engraverOptionsFrame, setting, newValue, ...)
 		Addon:GetOptions()[variable] = newValue;
@@ -146,7 +146,7 @@ function EngraverOptionsFrameMixin:CreateSettingsInitializers()
 	do -- UseCharacterSpecificSettings
 		local variable, name, varType = "UseCharacterSpecificSettings", "角色專用設定", Settings.VarType.Boolean;
 		local tooltip = "勾選時，會使用這個角色專用的設定。\n取消勾選時，會使用共用的設定。\n(更改此選項不會刪除任何設定)。"
-		self.characterSpecificSettingsSetting = Settings.RegisterAddOnSetting(self.category, name, variable, varType);
+		self.characterSpecificSettingsSetting = Settings.RegisterAddOnSetting(self.category, variable, variable, EngraverSharedOptions, varType, name, DefaultEngraverOptions.UseCharacterSpecificSettings);
 		AddInitializer(self, Settings.CreateControlInitializer("EngraverCharacterSpecificControlTemplate", self.characterSpecificSettingsSetting, { optionsFrame = self }, tooltip))
 		Settings.SetOnValueChangedCallback(variable, function (_, _, newValue, ...)
 			EngraverOptions[variable] = newValue;
@@ -173,7 +173,7 @@ function EngraverOptionsFrameMixin:CreateSettingsInitializers()
 			end
 			return container:GetData();
 		end
-		AddInitializer(self, Settings.CreateDropDownInitializer(setting, options, tooltip))
+		AddInitializer(self, Settings.CreateDropdownInitializer(setting, options, tooltip))
 	end -- DisplayMode
 	do -- LayoutDirection
 		local variable, name, tooltip = "LayoutDirection", "版面方向", "符文按鈕要朝哪個方向展開。";
@@ -185,11 +185,11 @@ function EngraverOptionsFrameMixin:CreateSettingsInitializers()
 			end
 			return container:GetData();
 		end
-		AddInitializer(self, Settings.CreateDropDownInitializer(setting, options, tooltip))
+		AddInitializer(self, Settings.CreateDropdownInitializer(setting, options, tooltip))
 	end -- LayoutDirection
 	do -- VisibilityMode
 		local variable, name, tooltip = "VisibilityMode", "何時顯示", "何時要顯示/隱藏一鍵符文。";
-		local setting = AddEngraverOptionsSetting(self, variable, name, Settings.VarType.Number)
+		local setting = AddEngraverOptionsSetting(self, variable, name, Settings.VarType.String)
 		local options = function()
 			local container = Settings.CreateControlTextContainer();
 			for name, mode in pairs(Addon.EngraverVisibilityModes) do
@@ -197,31 +197,31 @@ function EngraverOptionsFrameMixin:CreateSettingsInitializers()
 			end
 			return container:GetData();
 		end
-		AddInitializer(self, Settings.CreateDropDownInitializer(setting, options, tooltip))
+		AddInitializer(self, Settings.CreateDropdownInitializer(setting, options, tooltip))
 	end -- VisibilityMode
 	do -- HideUndiscoveredRunes
-		AddInitializer(self, Settings.CreateCheckBoxInitializer(AddEngraverOptionsSetting(self, "HideUndiscoveredRunes", "隱藏未發現的符文", Settings.VarType.Boolean), nil, "防止劇透 - 隱藏尚未被發現的任何符文。即使符合過濾方式，仍會保持隱藏。"))
+		AddInitializer(self, Settings.CreateCheckboxInitializer(AddEngraverOptionsSetting(self, "HideUndiscoveredRunes", "隱藏未發現的符文", Settings.VarType.Boolean), nil, "防止劇透 - 隱藏尚未被發現的任何符文。即使符合過濾方式，仍會保持隱藏。"))
 	end -- HideUndiscoveredRunes
 	do -- HideTooltip
-		AddInitializer(self, Settings.CreateCheckBoxInitializer(AddEngraverOptionsSetting(self, "HideTooltip", "隱藏浮動提示資訊", Settings.VarType.Boolean), nil, "滑鼠指向符文按鈕時不顯示浮動提示資訊。"))
+		AddInitializer(self, Settings.CreateCheckboxInitializer(AddEngraverOptionsSetting(self, "HideTooltip", "隱藏浮動提示資訊", Settings.VarType.Boolean), nil, "滑鼠指向符文按鈕時不顯示浮動提示資訊。"))
 	end -- HideTooltip
 	do -- HideDragTab
 		local dragTabSetting = AddEngraverOptionsSetting(self, "HideDragTab", "隱藏拖曳標籤頁", Settings.VarType.Boolean)
-		local dragTabInitializer = Settings.CreateCheckBoxInitializer(dragTabSetting, nil, "拖曳標籤頁讓你可以用滑鼠拖曳移動一鍵符文的框架。")
+		local dragTabInitializer = Settings.CreateCheckboxInitializer(dragTabSetting, nil, "拖曳標籤頁讓你可以用滑鼠拖曳移動一鍵符文的框架。")
 		AddInitializer(self, dragTabInitializer)
 		do -- ShowFilterSelector
 			local setting = AddEngraverOptionsSetting(self, "ShowFilterSelector", "顯示過濾方式", Settings.VarType.Boolean)
-			local initializer = Settings.CreateCheckBoxInitializer(setting, nil, "啟用時，拖曳標籤頁會顯示當前的過濾方式。\n標籤頁兩旁的箭頭可以用來切換過濾方式。")
+			local initializer = Settings.CreateCheckboxInitializer(setting, nil, "啟用時，拖曳標籤頁會顯示當前的過濾方式。\n標籤頁兩旁的箭頭可以用來切換過濾方式。")
 			initializer:SetParentInitializer(dragTabInitializer, function() return not dragTabSetting:GetValue() end)
 			initializer.IsParentInitializerInLayout = function() return true; end -- forces indent and small font
 			AddInitializer(self, initializer)
 		end -- ShowFilterSelector
 	end -- HideDragTab
 	do -- HideSlotLabels
-		AddInitializer(self, Settings.CreateCheckBoxInitializer(AddEngraverOptionsSetting(self, "HideSlotLabels", "隱藏欄位文字", Settings.VarType.Boolean)))
+		AddInitializer(self, Settings.CreateCheckboxInitializer(AddEngraverOptionsSetting(self, "HideSlotLabels", "隱藏欄位文字", Settings.VarType.Boolean)))
 	end -- HideSlotLabels
 	do -- EnableRightClickDrag
-		AddInitializer(self, Settings.CreateCheckBoxInitializer(AddEngraverOptionsSetting(self, "EnableRightClickDrag", "啟用右鍵點擊拖曳", Settings.VarType.Boolean), nil, "可以透過右鍵點擊並按住任何符文按鈕來拖曳框架。"))
+		AddInitializer(self, Settings.CreateCheckboxInitializer(AddEngraverOptionsSetting(self, "EnableRightClickDrag", "啟用右鍵點擊拖曳", Settings.VarType.Boolean), nil, "可以透過右鍵點擊並按住任何符文按鈕來拖曳框架。"))
 	end -- EnableRightClickDrag
 	do -- UIScale
 		local variable, name, tooltip = "UIScale", "介面縮放", "調整一鍵符文使用介面的縮放大小。";
@@ -231,7 +231,7 @@ function EngraverOptionsFrameMixin:CreateSettingsInitializers()
 		AddInitializer(self, Settings.CreateSliderInitializer(setting, options, tooltip))
 	end	-- UIScale
 	do -- PreventSpellPlacement
-		AddInitializer(self, Settings.CreateCheckBoxInitializer(AddEngraverOptionsSetting(self, "PreventSpellPlacement", "避免放置法術", Settings.VarType.Boolean), nil, "這將防止自動將法術放到快捷列中。"))
+		AddInitializer(self, Settings.CreateCheckboxInitializer(AddEngraverOptionsSetting(self, "PreventSpellPlacement", "避免放置法術", Settings.VarType.Boolean), nil, "這將防止自動將法術放到快捷列中。"))
 	end -- PreventSpellPlacement
 	do -- FiltersHeader
 		local filtersHeaderData = { 
@@ -382,10 +382,10 @@ end
 -- CharacterSpecificControl --
 ------------------------------
 
-EngraverCharacterSpecificControlMixin = CreateFromMixins(SettingsCheckBoxControlMixin)
+EngraverCharacterSpecificControlMixin = CreateFromMixins(SettingsCheckboxControlMixin)
 
 function EngraverCharacterSpecificControlMixin:OnLoad()
-	SettingsCheckBoxControlMixin.OnLoad(self)
+	SettingsCheckboxControlMixin.OnLoad(self)
 	self.copyText:SetPoint("LEFT", self.CheckBox, "RIGHT", 40, 0)
 	self.copyCharacterButton:SetPoint("BOTTOMLEFT", self.copyText, "RIGHT")
 	self.copyCharacterButton:SetScript("OnClick", function() 
@@ -398,7 +398,7 @@ function EngraverCharacterSpecificControlMixin:OnLoad()
 end
 
 function EngraverCharacterSpecificControlMixin:Init(initializer)
-	SettingsCheckBoxControlMixin.Init(self, initializer)
+	SettingsCheckboxControlMixin.Init(self, initializer)
 	self.optionsFrame = initializer:GetData().options.optionsFrame
 end
 

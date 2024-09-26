@@ -176,6 +176,22 @@ D["Align"] = {
         text = "按一下顯示，再按一下隱藏網格。\n",       
 	},
 };
+D["AppearanceTooltip"] = {
+	defaultEnable = 1,
+	title = "塑形外觀預覽",
+	desc = "滑鼠指向裝備圖示時，會顯示你的角色穿上時的外觀預覽。``設定選項中可以調整縮放大小、自動旋轉、脫光其他部位，以及其他相關設定。`",
+	modifier = "BNS, 彩虹ui",
+	icon = "Interface\\Icons\\inv_chest_leather_20",
+	img = true,
+    {
+        text = "設定選項",
+        callback = function() SlashCmdList["APPEARANCETOOLTIP"]("") end,
+    },
+	{
+		type = "text",
+        text = "旋轉外觀預覽：滾動滑鼠滾輪。",       
+	},
+};
 D["ArenaScreenshot"] = {
 	defaultEnable = 0,
 	tags = { "PVP" },
@@ -1023,6 +1039,12 @@ D["Engraver"] = {
 	title = "一鍵符文",
 	desc = "探索賽季專用的插件。在畫面上顯示你所擁有的符文，點一下立即套用，不用再打開角色視窗，相當於符文的快捷列。`",
 	modifier = "彩虹ui",
+	{
+        text = "設定選項",
+        callback = function(cfg, v, loading) 
+			Settings.OpenToCategory("Engraver")
+		end,
+    },
 	{
 		type = "text",
         text = "套用符文: 點一下符文圖示。\n\n移動面板: 左鍵拖曳標籤頁，或右鍵拖曳符文圖示。\n\n設定選項: 右鍵點標籤頁，或是從 Esc > 選項 > 插件 > 符文。",       
