@@ -706,7 +706,10 @@ L["autoCombatLogTitle"] = "自動開啟戰鬥紀錄";
 L["autoCombatLogDesc"]= "在你進入團隊時開啟戰鬥記錄，以便它可以供戰役記錄等網站使用。";
 
 L["cauldronMsgTitle"] = "施放大鍋提示";
-L["cauldronMsgDesc"] = "在你團隊中放置大鍋時在 /say 中放一條訊息？";
+L["cauldronMsgDesc"] = "當你在團隊中放置大鍋時在 /say 顯示訊息？";
+
+L["cauldronMsgOtherTitle"] = "盛宴/修理-其他人";
+L["cauldronMsgOtherDesc"] = "當其他人在團隊中放置盛宴/修理機器人/大鍋時在 /say 顯示訊息？多人同時啟用此選項時可能會造成洗頻。";
 
 L["sreMainTextDesc"] = "向下捲動來新增自訂法術。";
 L["sreCustomSpellsHeaderDesc"] = "自訂追蹤法術";
@@ -773,6 +776,9 @@ L["sreShowHealthPotionsDesc"] = "顯示治療藥水的使用。";
 
 L["sreShowDpsPotionsTitle"] = "爆發及防護藥水";
 L["sreShowDpsPotionsDesc"] = "顯示爆發和護甲/防護藥水的使用。這包括毀滅/加速/鐵盾/隱形藥水。";
+
+L["sreShowProtectionPotionsTitle"] = "防護藥水";
+L["sreShowProtectionPotionsDesc"] = "顯示防護藥水的使用 (強效火焰防護藥水...等)。";
 
 L["sreShowMagePortalsTitle"] = "法師傳送門";
 L["sreShowMagePortalsDesc"]	= "顯示法師的傳送門，不再被那些煩人的法師騙了！";
@@ -1211,6 +1217,19 @@ L["buffDurationsTooltip"] = "顯示增益持續時間「滑動」效果？";
 
 L["raidStatusLowDurationTimeTitle"] = "增益持續時間低";
 L["raidStatusLowDurationTimeDesc"] = "當增益低於此秒數時，增益會變黃色以警告您持續時間較短。";
+
+L["raidCooldownUniversalDesc"] = "是否要顯示 %s 團隊冷卻時間？";
+L["raidCooldownUniversalCastDetectDesc"] = "是否要顯示 %s 團隊冷卻時間？（此冷卻時間僅在玩家至少施放過一次後才會顯示）";
+
+L["raidStatusWorldBuffsTitle"]= "世界增益";
+L["raidStatusWorldBuffsDesc"]= "是否要在團隊狀態追蹤器上顯示世界增益欄位？為了容納所有世界增益，此欄位可能會比其他欄位寬很多。";
+
+L["raidCooldownsMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33團隊冷卻時間追蹤。|r\n您可以在 |cFFFFFF00/nrc 設定|r 中選擇要為每個職業顯示哪些法術。\n您也可以啟用更多這些列表（最多 5 個）\n並指定每個冷卻時間顯示在單獨的列表上。";
+L["raidManaMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33團隊魔法力追蹤器。|r\n顯示您的治療者\n或您在 |cFFFFFF00/nrc 設定|r 中選擇的任何職業的法力百分比。";
+L["raidScrollingMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33捲動顯示團隊事件。|r\n在您的團隊中顯示許多不同類型的事件。\n冷卻時間/中斷/驅散/法術反制/技巧/復活/傳送門/盛宴等。\n在 |cFFFFFF00/nrc 設定|r 中選擇要顯示的事件。";
+
+L["blueShamansTitle"] = "藍色薩滿";
+L["blueShamansDesc"] = "在經典模式下，在此插件中將薩滿顯示為藍色。";
 
 --
 L["Sources"] = "施放來源"

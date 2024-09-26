@@ -299,6 +299,7 @@ function NRC:checkWeaponsEquipped()
 	end
 end
 
+--spellID -> texture.
 --For wrath we'll just merge feasts into the cauldrons display.
 local cauldrons = {
 	[41498] = 133782,
@@ -333,7 +334,7 @@ local portals = {
 };
 
 if (NRC.isSOD) then
-	cauldrons[429961] = 133662;
+	cauldrons[429961] = 133662; --Sleeping bag.
 end
 
 local trackAnnounce = {};
@@ -372,32 +373,24 @@ local function combatLogEventUnfiltered(...)
 	end]]
 	if (subEvent == "SPELL_CAST_SUCCESS") then
 		--spellID = 54710
-		if (sourceGUID == UnitGUID("player")) then
-			if (trackAnnounce[spellID]) then
-				local mapID = C_Map.GetBestMapForUnit("player");
-				if (mapID == 125 or mapID == 126) then
-					--Not in dal.
-					return;
+		if (trackAnnounce[spellID]) then
+			local inInstance = IsInInstance();
+			if (inInstance) then
+				--Trim the msg a bit for english clients, no need to show it's a major, all cauldrons are.
+				spellName = string.gsub(spellName, "Major ", "");
+				if (spellID == 429961) then
+					spellName = L["Sleeping Bag"];
 				end
-				local inInstance = IsInInstance();
-				if (inInstance) then
-					--Trim the msg a bit for english clients, no need to show it's a major, all cauldrons are.
-					spellName = string.gsub(spellName, "Major ", "");
-					if (spellID == 429961) then
-						spellName = L["Sleeping Bag"];
-					end
-					local msg = spellName .. " placed on the ground.";
-					if (spellName == "Wormhole") then
-						msg = spellName .. " Portal placed on the ground.";
-					end
-					if (NRC.config.cauldronMsg) then
-						SendChatMessage(msg, "SAY");
-					end
-					if (NRC.config.sreShowCauldrons) then
-						--NRC:debug(spellName, 1, "put down");
-						local msg = "|cFFFFAE42" .. spellName .. " put down.";
-						NRC:sreSendEvent(msg, trackAnnounce[spellID], sourceName);
-					end
+				local msg = spellName .. " placed on the ground.";
+				if (spellName == "Wormhole") then
+					msg = spellName .. " Portal placed on the ground.";
+				end
+				if (NRC.config.cauldronMsgOther or (sourceGUID == UnitGUID("player") and NRC.config.cauldronMsg)) then
+					SendChatMessage(msg, "SAY");
+				end
+				if (NRC.config.sreShowCauldrons) then
+					local msg = "|cFFFFAE42" .. spellName .. " put down.";
+					NRC:sreSendEvent(msg, trackAnnounce[spellID], sourceName);
 				end
 			end
 		end
@@ -552,13 +545,13 @@ local function combatLogEventUnfiltered(...)
 			end
 			local _, sourceClass = GetPlayerInfoByGUID(sourceGUID);
 			if (sourceClass) then
-				local _, _, _, classHex = GetClassColor(sourceClass);
+				local _, _, _, classHex = NRC.getClassColor(sourceClass);
 				source = "|c" .. classHex .. source .. "|r";
 			end
 			if (strfind(destGUID, "Player")) then
 				local _, destClass = GetPlayerInfoByGUID(destGUID);
 				if (destClass) then
-					local _, _, _, classHex = GetClassColor(destClass);
+					local _, _, _, classHex = NRC.getClassColor(destClass);
 					dest = "|c" .. classHex .. dest .. "|r";
 				end
 			end

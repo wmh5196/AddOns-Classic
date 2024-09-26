@@ -316,7 +316,7 @@ NRC.instanceTextures = {
 
 --Trash and boss lists taken from wowhead and refined.
 NRC.zones = {
-	--Classic dungeons.
+	--Dungeons (Classic).
 	[33] = {
 		name = L["Shadowfang Keep"],
 		type = "dungeon",
@@ -367,12 +367,22 @@ NRC.zones = {
 		type = "dungeon",
 		expansion = "classic",
 	},
-	[1004] = {
+	[189] = {
 		name = L["Scarlet Monastery"],
 		type = "dungeon",
 		expansion = "classic",
 	},
-	[1007] = {
+	[1004] = { --New retail ID?
+		name = L["Scarlet Monastery"],
+		type = "dungeon",
+		expansion = "classic",
+	},
+	[289] = {
+		name = L["Scholomance"],
+		type = "dungeon",
+		expansion = "classic",
+	},
+	[1007] = { --New retail ID?
 		name = L["Scholomance"],
 		type = "dungeon",
 		expansion = "classic",
@@ -412,7 +422,12 @@ NRC.zones = {
 		type = "dungeon",
 		expansion = "classic",
 	},
-	--Classic raids.
+	[2784] = {
+		name = L["Demon Fall Canyon"],
+		type = "dungeon",
+		expansion = "classic", --SoD.
+	},
+	--Raids (Classic).
 	[249] = {
 		name = L["Onyxia's Lair"],
 		type = "raid",
@@ -450,6 +465,18 @@ NRC.zones = {
 	},
 	[533] = {
 		name = L["Naxxramas"],
+		type = "raid",
+		expansion = "classic",
+		noLockout = true,
+	},
+	[2791] = {
+		name = L["Storm Cliffs"],
+		type = "raid",
+		expansion = "classic", --SoD.
+		noLockout = true,
+	},
+	[2789] = {
+		name = L["The Tainted Scar"],
 		type = "raid",
 		expansion = "classic",
 		noLockout = true,
@@ -546,19 +573,19 @@ NRC.battleElixirs = {
 		name = "Elixir of Greater Intellect",
 		icon = 134721,
 		desc = "+25 Intellect",
-		maxRankSodPhases = {2}, --37.
+		maxRank = true,
 	},
 	[11405] = {
 		name = "Elixir of Giants",
 		icon = 134841,
 		desc = "+25 Strength",
-		maxRankSodPhases = {2}, --38.
+		maxRank = true,
 	},
 	[11334] = {
 		name = "Elixir of Greater Agility",
 		icon = 134873,
 		desc = "+25 Agility",
-		maxRankSodPhases = {2}, --38.
+		maxRank = true,
 	},
 	[11406] = {
 		name = "Elixir of Demonslaying",
@@ -732,27 +759,36 @@ NRC.foods = {
 		name = "Well Fed",
 		icon = 136000,
 		desc = "+8 Spirit, +8 Stamina",
-		maxRankSodPhases = {1}, --20.
 	},
 	[19710] = {
 		name = "Well Fed",
 		icon = 136000,
 		desc = "+12 Spirit, +12 Stamina",
+		maxRank = true,
 	},
 	[19711] = {
 		name = "Well Fed",
 		icon = 136000,
 		desc = "+14 Spirit, +14 Stamina",
+		maxRank = true,
 	},
 	[24799] = {
 		name = "Well Fed",
 		icon = 136000,
 		desc = "+20 Strength",
+		maxRank = true,
+	},
+	[25661] = {
+		name = "Well Fed",
+		icon = 136000,
+		desc = "+25 Stamina",
+		maxRank = true,
 	},
 	[24870] = {
 		name = "Well Fed",
 		icon = 136000,
 		desc = "+25 percent Spirit of level, +25 percent Stamina of level",
+		maxRank = true,
 	},
 	[25694] = {
 		name = "Well Fed",
@@ -763,43 +799,44 @@ NRC.foods = {
 		name = "Well Fed",
 		icon = 136000,
 		desc = "+6 MP5",
+		maxRank = true,
 	},
 	[18191] = {
 		name = "Increased Stamina",
 		icon = 136000,
 		desc = "+10 Stamina",
-		maxRankSodPhases = {2}, --35.
+		maxRank = true,
 	},
 	[18192] = {
 		name = "Increased Agility",
 		icon = 136000,
 		desc = "+10 Agility",
-		maxRankSodPhases = {2}, --35.
+		maxRank = true,
 	},
 	[18193] = {
 		name = "Increased Spirit",
 		icon = 136000,
 		desc = "+10 Spirit",
-		maxRankSodPhases = {2}, --35.
+		maxRank = true,
 	},
 	[18222] = {
 		name = "Health Regeneration",
 		icon = 136000,
 		desc = "Regenerate 6 Health every 5 seconds",
-		maxRankSodPhases = {2}, --35.
+		maxRank = true,
 	},
 	[18194] = {
 		name = "Mana Regeneration",
 		icon = 136000,
 		desc = "Regenerate 8 Mana every 5 seconds",
-		maxRankSodPhases = {2}, --35.
+		maxRank = true,
 	},
 	[22730] = {
 		name = "Increased Intellect",
 		icon = 136000,
 		desc = "+10 Intellect",
-		maxRankSodPhases = {2}, --55.
-	},--
+		maxRank = true,
+	},
 };
 
 --"Food" buffs used in RaidStatus to show player is currently eating buff food, these must match all foods above.
@@ -819,6 +856,7 @@ NRC.eating = {
 	[18233] = "Food", --+8 Mana every 5 seconds, 35.
 	[18234] = "Food", --+10 Stamina, 55, has level 35 equivalent.
 	[22731] = "Food", --+Intellect, 55.
+	[25660] = "Food", --+Stamina, 25.
 };
 
 NRC.scrolls = {
@@ -1274,6 +1312,93 @@ NRC.trackedConsumes = {
 	},
 };
 
+NRC.protectionPotions = {
+	[17549] = {
+		name = "Greater Arcane Protection Potion",
+		icon = 134863,
+		desc = "Absorbs 1950 to 3250 arcane damage. Last 1 hour.",
+		itemID = 13461,
+		quality = 1,
+	},
+	[17543] = {
+		name = "Greater Fire Protection Potion",
+		icon = 134804,
+		desc = "Absorbs 1950 to 3250 fire damage. Last 1 hour.",
+		itemID = 13457,
+		quality = 1,
+	},
+	[17544] = {
+		name = "Greater Frost Protection Potion",
+		icon = 134800,
+		desc = "Absorbs 1950 to 3250 frost damage. Last 1 hour.",
+		itemID = 13456,
+		quality = 1,
+	},
+	[17545] = {
+		name = "Greater Holy Protection Potion",
+		icon = 134720,
+		desc = "Absorbs 1950 to 3250 holy damage. Last 1 hour.",
+		itemID = 13460,
+		quality = 1,
+	},
+	[17546] = {
+		name = "Greater Nature Protection Potion",
+		icon = 134802,
+		desc = "Absorbs 1950 to 3250 nature damage. Last 1 hour.",
+		itemID = 13458,
+		quality = 1,
+	},
+	[17548] = {
+		name = "Greater Shadow Protection Potion",
+		icon = 134803,
+		desc = "Absorbs 1950 to 3250 shadow damage.  Last 1 hour.",
+		itemID = 13459,
+		quality = 1,
+	},
+	[24360] = {
+		name = "Greater Dreamless Sleep Potion",
+		icon = 134863,
+		desc = "Puts the imbiber in a dreamless sleep for 12 sec. During that time the imbiber heals 2100 health and 2100 mana.",
+		itemID = 20002,
+		quality = 1,
+	},
+	[7233] = {
+		name = "Fire Protection Potion",
+		icon = 134787,
+		desc = "Absorbs 975 to 1625 fire damage. Last 1 hour.",
+		itemID = 6049,
+		quality = 1,
+	},
+	[7239] = {
+		name = "Frost Protection Potion",
+		icon = 134754,
+		desc = "Absorbs 1350 to 2250 frost damage. Last 1 hour.",
+		itemID = 6050,
+		quality = 1,
+	},
+	[7245] = {
+		name = "Holy Protection Potion",
+		icon = 134720,
+		desc = "Absorbs 300 to 500 holy damage. Last 1 hour.",
+		itemID = 6051,
+		quality = 1,
+	},
+	[7254] = {
+		name = "Nature Protection Potion",
+		icon = 134717,
+		desc = "Absorbs 1350 to 2250 nature damage. Last 1 hour.",
+		itemID = 6052,
+		quality = 1,
+	},
+	[7242] = {
+		name = "Shadow Protection Potion",
+		icon = 134824,
+		desc = "Absorbs 675 to 1125 shadow damage.  Last 1 hour.",
+		itemID = 6048,
+		quality = 1,
+	},
+};
+
 NRC.racials = {
 	[20572] = {
 		name = "Blood Fury",
@@ -1687,276 +1812,313 @@ NRC.healingPotions = {
 
 NRC.tempEnchants = {
 	--Mapped to enchantID not spellID.
+	--Wild strikes and windfury totem are ignored on purpose so as not to spam comms, such short duration no need to track them.
 	[2713] = {
 		name = "Adamantite Sharpening Stone",
 		icon = 135254,
-		desc = "Increase sharp weapon damage by 12 and add 14 melee critical strike rating for 1 hour.",
+		desc = "Increase sharp weapon damage by 12 and add 14 melee critical strike rating.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2955] = {
 		name = "Adamantite Weightstone",
 		icon = 135261,
-		desc = "Increase blunt weapon damage by 12 and add 14 critical hit rating for 1 hour.",
+		desc = "Increase blunt weapon damage by 12 and add 14 critical hit rating.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2640] = {
 		name = "Anesthetic Poison",
 		icon = 136093,
 		desc = "Each strike has a 20% chance of poisoning the enemy which instantly inflicts 134 to 172 Nature damage, but causes no additional threat.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[3265] = {
 		name = "Blessed Weapon Coating",
 		icon = 134723,
 		desc = "Chance to regain 165 mana on each spell cast. Only functions on the Isle of Quel'Danas.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2685] = {
 		name = "Blessed Wizard Oil",
 		icon = 134806,
 		desc = "Increases spell damage against undead by up to 60.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2629] = {
 		name = "Brilliant Mana Oil",
 		icon = 134722,
 		desc = "Restores 12 mana to the caster every 5 seconds and increases the effect of healing spells by up to 25.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2628] = {
 		name = "Brilliant Wizard Oil",
 		icon = 134727,
 		desc = "Increases spell damage by up to 36 and increases spell critical strike rating by 14.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[13] = {
 		name = "Coarse Sharpening Stone",
 		icon = 135249,
-		desc = "Increase sharp weapon damage by 3 for 1 hour.",
+		desc = "Increase sharp weapon damage by 3.",
+		duration = 1800,
 	},
 	[20] = {
 		name = "Coarse Weightstone",
 		icon = 135256,
-		desc = "Increase the damage of a blunt weapon by 3 for 1 hour.",
+		desc = "Increase the damage of a blunt weapon by 3.",
+		duration = 1800,
 	},
 	[2684] = {
 		name = "Consecrated Sharpening Stone",
 		icon = 135249,
 		desc = "Increases attack power against undead by 100.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[22] = {
 		name = "Crippling Poison",
 		icon = 132274,
 		desc = "Each strike has a 30% chance of poisoning the enemy, slowing their movement speed by 50% for 12 sec.",
+		duration = 1800,
 	},
 	[603] = {
 		name = "Crippling Poison II",
 		icon = 132274,
 		desc = "Each strike has a 30% chance of poisoning the enemy, slowing their movement speed by 70% for 12 sec.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[7] = {
 		name = "Deadly Poison",
 		icon = 132290,
 		desc = "Each strike has a 30% chance of poisoning the enemy for 36 Nature damage over 12 sec. Stacks up to 5 times on a single target.",
+		duration = 1800,
 	},
 	[8] = {
 		name = "Deadly Poison II",
 		icon = 132290,
 		desc = "Each strike has a 30% chance of poisoning the enemy for 52 Nature damage over 12 sec. Stacks up to 5 times on a single target.",
+		duration = 1800,
 	},
 	[626] = {
 		name = "Deadly Poison III",
 		icon = 132290,
 		desc = "Each strike has a 30% chance of poisoning the enemy for 80 Nature damage over 12 sec. Stacks up to 5 times on a single target.",
+		duration = 1800,
 	},
 	[627] = {
 		name = "Deadly Poison IV",
 		icon = 132290,
 		desc = "Each strike has a 30% chance of poisoning the enemy for 108 Nature damage over 12 sec. Stacks up to 5 times on a single target.",
+		duration = 1800,
 	},
 	[2630] = {
 		name = "Deadly Poison V",
 		icon = 132290,
 		desc = "Each strike has a 30% chance of poisoning the enemy for 136 Nature damage over 12 sec.  Stacks up to 5 times on a single target.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[1643] = {
 		name = "Dense Sharpening Stone",
 		icon = 135252,
-		desc = "Increase sharp weapon damage by 8 for 1 hour.",
+		desc = "Increase sharp weapon damage by 8.",
+		duration = 1800,
+		maxRank = true,
 	},
 	[1703] = {
 		name = "Dense Weightstone",
 		icon = 135259,
-		desc = "Increase the damage of a blunt weapon by 8 for 1 hour.",
+		desc = "Increase the damage of a blunt weapon by 8.",
+		duration = 1800,
+		maxRank = true,
 	},
 	[2506] = {
 		name = "Elemental Sharpening Stone",
 		icon = 135228,
-		desc = "Increase the critical strike rating on a melee weapon by 28 for 1 hour.",
+		desc = "Increase the critical strike rating on a melee weapon by 28.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[26] = {
 		name = "Frost Oil",
 		icon = 134800,
 		desc = "10% chance of casting Frostbolt at the opponent when it hits.",
+		duration = 1800,
 	},
 	[14] = {
 		name = "Heavy Sharpening Stone",
 		icon = 135250,
-		desc = "Increase sharp weapon damage by 4 for 1 hour.",
+		desc = "Increase sharp weapon damage by 4.",
+		duration = 1800,
 	},
 	[21] = {
 		name = "Heavy Weightstone",
 		icon = 135257,
-		desc = "Increase the damage of a blunt weapon by 4 for 1 hour.",
+		desc = "Increase the damage of a blunt weapon by 4.",
+		duration = 1800,
 	},
 	[323] = {
 		name = "Instant Poison",
 		icon = 132273,
 		desc = "Each strike has a 20% chance of poisoning the enemy which instantly inflicts 19 to 25 Nature damage.",
+		duration = 1800,
 	},
 	[324] = {
 		name = "Instant Poison II",
 		icon = 132273,
 		desc = "Each strike has a 20% chance of poisoning the enemy which instantly inflicts 30 to 38 Nature damage.",
+		duration = 1800,
 	},
 	[325] = {
 		name = "Instant Poison III",
 		icon = 132273,
 		desc = "Each strike has a 20% chance of poisoning the enemy which instantly inflicts 44 to 56 Nature damage.",
+		duration = 1800,
 	},
 	[623] = {
 		name = "Instant Poison IV",
 		icon = 132273,
 		desc = "Each strike has a 20% chance of poisoning the enemy which instantly inflicts 67 to 85 Nature damage.",
+		duration = 1800,
 	},
 	[624] = {
 		name = "Instant Poison V",
 		icon = 132273,
 		desc = "Each strike has a 20% chance of poisoning the enemy which instantly inflicts 92 to 118 Nature damage.",
+		duration = 1800,
 	},
 	[625] = {
 		name = "Instant Poison VI",
 		icon = 132273,
 		desc = "Each strike has a 20% chance of poisoning the enemy which instantly inflicts 112 to 148 Nature damage.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2625] = {
 		name = "Lesser Mana Oil",
 		icon = 134879,
 		desc = "While applied to target weapon it restores 8 mana to the caster every 5 seconds.",
+		duration = 1800,
+		maxRankSodPhases = {4, 5}, --Will ZG higher oils come in phase 5 or 6?
 	},
-	--[[[2781] = {
-		name = "Lesser Rune of Warding",
-		icon = 134424,
-		desc = "Enchant chest armor so it has a 25% chance per hit of giving you 200 points of physical damage absorption. 90 sec cooldown.",
-	},
-	[2719] = {
-		name = "Lesser Ward of Shielding",
-		icon = 134425,
-		desc = "Applies the Lesser Ward of Shielding to your shield.  This ward absorbs up to 1000 points of damage before it fails.",
-	},]]
 	[2626] = {
 		name = "Lesser Wizard Oil",
 		icon = 134725,
 		desc = "While applied to target weapon it increases spell damage by up to 16.",
+		duration = 1800,
 	},
 	[35] = {
 		name = "Mind-numbing Poison",
 		icon = 136066,
 		desc = "Each strike has a 20% chance of poisoning the enemy, increasing their casting time by 40% for 10 sec.",
+		duration = 1800,
 	},
 	[23] = {
 		name = "Mind-numbing Poison II",
 		icon = 136066,
 		desc = "Each strike has a 20% chance of poisoning the enemy, increasing their casting time by 50% for 12 sec.",
+		duration = 1800,
 	},
 	[643] = {
 		name = "Mind-numbing Poison III",
 		icon = 136066,
 		desc = "Each strike has a 20% chance of poisoning the enemy, increasing their casting time by 60% for 14 sec.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2624] = {
 		name = "Minor Mana Oil",
 		icon = 134878,
 		desc = "While applied to target weapon it restores 4 mana to the caster every 5 seconds.",
+		duration = 1800,
 	},
 	[2623] = {
 		name = "Minor Wizard Oil",
 		icon = 134711,
 		desc = "While applied to target weapon it increases spell damage by up to 8.",
-	},
-	[3266] = {
-		name = "Righteous Weapon Coating",
-		icon = 134723,
-		desc = "While applied to target weapon, wielder has a chance to gain 300 attack power on every melee or ranged attack for 10 sec. Only functions on the Isle of Quel'Danas.",
-		maxRank = true,
+		duration = 1800,
 	},
 	[40] = {
 		name = "Rough Sharpening Stone",
 		icon = 135248,
-		desc = "Increase sharp weapon damage by 2 for 1 hour.",
+		desc = "Increase sharp weapon damage by 2.",
+		duration = 1800,
 	},
 	[19] = {
 		name = "Rough Weightstone",
 		icon = 135255,
-		desc = "Increase the damage of a blunt weapon by 2 for 1 hour.",
+		desc = "Increase the damage of a blunt weapon by 2.",
+		duration = 1800,
 	},
 	[25] = {
 		name = "Shadow Oil",
 		icon = 134803,
 		desc = "15% chance of casting Shadow Bolt (Rank 3) at the opponent when it hits.",
+		duration = 1800,
 	},
 	[483] = {
 		name = "Solid Sharpening Stone",
 		icon = 135251,
-		desc = "Increase sharp weapon damage by 6 for 1 hour.",
+		desc = "Increase sharp weapon damage by 6.",
+		duration = 1800,
 	},
 	[484] = {
 		name = "Solid Weightstone",
 		icon = 135258,
-		desc = "Increase the damage of a blunt weapon by 6 for 1 hour.",
+		desc = "Increase the damage of a blunt weapon by 6.",
+		duration = 1800,
 	},
 	[2677] = {
 		name = "Superior Mana Oil",
 		icon = 134723,
 		desc = "Restores 14 mana to the caster every 5 seconds.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2678] = {
 		name = "Superior Wizard Oil",
 		icon = 134767,
 		desc = "Increases spell damage by up to 42.",
+		duration = 1800,
 		maxRank = true,
 	},
 	[2627] = {
 		name = "Wizard Oil",
 		icon = 134726,
 		desc = "Increases spell damage by up to 24.",
+		duration = 1800,
+		maxRankSodPhases = {4, 5}, --Will ZG higher oils come in phase 5 or 6?
 	},
 	[703] = {
 		name = "Wound Poison",
 		icon = 134197,
 		desc = "Each strike has a 30% chance of poisoning the enemy, causing 17 Nature damage and reducing all healing effects used on them by 10% for 15 sec.",
+		duration = 1800,
 	},
 	[704] = {
 		name = "Wound Poison II",
 		icon = 134197,
 		desc = "Each strike has a 30% chance of poisoning the enemy, causing 25 Nature damage and reducing all healing effects used on them by 10% for 15 sec.",
+		duration = 1800,
 	},
 	[705] = {
 		name = "Wound Poison III",
 		icon = 134197,
 		desc = "Each strike has a 30% chance of poisoning the enemy, causing 38 Nature damage and reducing all healing effects used on them by 10% for 15 sec.",
+		duration = 1800,
 	},
 	[706] = {
 		name = "Wound Poison IV",
 		icon = 134197,
 		desc = "Each strike has a 30% chance of poisoning the enemy, causing 53 Nature damage and reducing all healing effects used on them by 10% for 15 sec.",
+		duration = 1800,
 		maxRank = true,
 	},
 	--Shaman self weapon enchants.
@@ -1964,114 +2126,171 @@ NRC.tempEnchants = {
 		name = "Flametongue Weapon 1",
 		icon = 135814,
 		desc = "Each hit causes 6 to 18 additional Fire damage, based on the speed of the weapon.",
+		duration = 300,
 	},
 	[4] = {
 		name = "Flametongue Weapon 2",
 		icon = 135814,
 		desc = "Each hit causes 9 to 26 additional Fire damage, based on the speed of the weapon.",
+		duration = 300,
 	},
 	[3] = {
 		name = "Flametongue Weapon 3",
 		icon = 135814,
 		desc = "Each hit causes 22 to 69 additional Fire damage, based on the speed of the weapon.",
+		duration = 300,
 	},
 	[523] = {
 		name = "Flametongue Weapon 4",
 		icon = 135814,
 		desc = "Each hit causes 6 to 18 additional Fire damage, based on the speed of the weapon.",
+		duration = 300,
 	},
 	[1665] = {
 		name = "Flametongue Weapon 5",
 		icon = 135814,
 		desc = "Each hit causes 31 to 95 additional Fire damage, based on the speed of the weapon.",
+		duration = 300,
 	},
 	[1666] = {
 		name = "Flametongue Weapon 6",
 		icon = 135814,
 		desc = "Each hit causes 40 to 124 additional Fire damage, based on the speed of the weapon.",
+		duration = 300,
+		maxRank = true,
+	},
+	[7567] = { --SoD 1h buff.
+		name = "Flametongue Weapon 6",
+		icon = 135814,
+		desc = "Each hit causes 40 to 124 additional Fire damage, based on the speed of the weapon.",
+		duration = 3600,
 		maxRank = true,
 	},
 	[2] = {
 		name = "Frostbrand Weapon 1",
 		icon = 135847,
 		desc = "Each hit has a chance of causing 48 additional Frost damage and slowing the target's movement speed by 25% for 8 sec.",
+		duration = 300,
 	},
 	[12] = {
 		name = "Frostbrand Weapon 2",
 		icon = 135847,
 		desc = "Each hit has a chance of causing 77 additional Frost damage and slowing the target's movement speed by 25% for 8 sec.",
+		duration = 300,
 	},
 	[524] = {
 		name = "Frostbrand Weapon 3",
 		icon = 135847,
 		desc = "Each hit has a chance of causing 124 additional Frost damage and slowing the target's movement speed by 25% for 8 sec.",
+		duration = 300,
 	},
 	[1667] = {
 		name = "Frostbrand Weapon 4",
 		icon = 135847,
 		desc = "Each hit has a chance of causing 166 additional Frost damage and slowing the target's movement speed by 25% for 8 sec.",
+		duration = 300,
 	},
 	[1668] = {
 		name = "Frostbrand Weapon 5",
 		icon = 135847,
 		desc = "Each hit has a chance of causing 215 additional Frost damage and slowing the target's movement speed by 25% for 8 sec.",
+		duration = 300,
+		maxRank = true,
+	},
+	[7566] = { --SoD 1h buff.
+		name = "Frostbrand Weapon 5",
+		icon = 135847,
+		desc = "Each hit has a chance of causing 215 additional Frost damage and slowing the target's movement speed by 25% for 8 sec.",
+		duration = 3600,
 		maxRank = true,
 	},
 	[29] = {
 		name = "Rockbiter Weapon 1",
 		icon = 136086,
 		desc = "Increase weapon damage per second by 2.",
+		duration = 300,
 	},
 	[6] = {
 		name = "Rockbiter Weapon 2",
 		icon = 136086,
 		desc = "Increase weapon damage per second by 4.",
+		duration = 300,
 	},
 	[1] = {
 		name = "Rockbiter Weapon 3",
 		icon = 136086,
 		desc = "Increase weapon damage per second by 6.",
+		duration = 300,
 	},
 	[503] = {
 		name = "Rockbiter Weapon 4",
 		icon = 136086,
 		desc = "Increase weapon damage per second by 9.",
+		duration = 300,
 	},
 	[1663] = {
 		name = "Rockbiter Weapon 5",
 		icon = 136086,
 		desc = "Increase weapon damage per second by 15.",
+		duration = 300,
 	},
 	[683] = {
 		name = "Rockbiter Weapon 6",
 		icon = 136086,
 		desc = "Increase weapon damage per second by 28.",
+		duration = 300,
 	},
 	[1664] = {
 		name = "Rockbiter Weapon 7",
 		icon = 136086,
 		desc = "Increase weapon damage per second by 40.",
+		duration = 300,
+		maxRank = true,
+	},
+	[7568] = { --SoD 1h buff.
+		name = "Rockbiter Weapon 7",
+		icon = 136086,
+		desc = "Increase weapon damage per second by 40.",
+		duration = 3600,
 		maxRank = true,
 	},
 	[283] = {
 		name = "Windfury Weapon 1",
 		icon = 136018,
 		desc = "Each hit has a 20% chance of dealing additional damage equal to two extra attacks with 104 extra attack power.",
+		duration = 300,
 	},
 	[284] = {
 		name = "Windfury Weapon 2",
 		icon = 136018,
 		desc = "Each hit has a 20% chance of dealing additional damage equal to two extra attacks with 222 extra attack power.",
+		duration = 300,
 	},
 	[525] = {
 		name = "Windfury Weapon 3",
 		icon = 136018,
 		desc = "Each hit has a 20% chance of dealing additional damage equal to two extra attacks with 316 extra attack power.",
+		duration = 300,
 	},
 	[1669] = {
 		name = "Windfury Weapon 4",
 		icon = 136018,
 		desc = "Each hit has a 20% chance of dealing additional damage equal to two extra attacks with 433 extra attack power.",
+		duration = 300,
+		maxRank = true,
+	},
+	[7569] = { --SoD 1h buff.
+		name = "Windfury Weapon 4",
+		icon = 136018,
+		desc = "Each hit has a 20% chance of dealing additional damage equal to two extra attacks with 433 extra attack power.",
+		duration = 3600,
+		maxRank = true,
+	},
+	[7602] = {
+		name = "Conductive Shield Coating",
+		icon = 134722,
+		desc = "While applied to target shield it increases spell damage and healing by up to 24.",
+		duration = 1800,
 		maxRank = true,
 	},
 };
@@ -2081,6 +2300,24 @@ NRC.healingSpecs = {
 	["Restoration"] = true,
 	["Holy"] = true,
 	["Discipline"] = true,
+};
+
+NRC.specialHealingSpells = {
+	[401417] = { --Mage rune regeneration.
+		specName = "Arcane",
+		icon = "Interface\\Icons\\Spell_Holy_MagicalSentry",
+		class = "MAGE",
+	},
+	[412510] = { --Mage rune mass regeneration.
+		specName = "Arcane",
+		icon = "Interface\\Icons\\Spell_Holy_MagicalSentry",
+		class = "MAGE",
+	},
+	--[[[412510] = { --Chronostatic Preservation, not sure if only healing mages take this?
+		specName = "Arcane",
+		icon = "Interface\\Icons\\spell_arcane_arcane02",
+		class = "MAGE",
+	},]]
 };
 
 ---These buff tables below are wiped after being loaded locally in RaidStatus.
@@ -2787,11 +3024,20 @@ if (NRC.isSOD) then
 	NRC.encounters[2956] = {"1026", "Avatar of Hakkar", "", 8053, 607548, 9, 1, 109};
 	NRC.encounters[2955] = {"1028", "Dreamscythe and Weaver", "", 7553, 608311, 9, 1, 109};
 	NRC.encounters[2958] = {"1028", "Morphaz and Hazzas", "", 7533, 608311, 9, 1, 109};
+	
+	--World boss raids.
+	NRC.encounters[3027] = {"1094", "Azuregos", "", 26752, 1385753, 9, 1, 109};
+	NRC.encounters[3026] = {"3334", "Lord Kazzak", "", 64119, 1134508, 9, 1, 109};
     
     --Change Sod dungs to a raid.
     NRC.zones[48].type = "raid"; --BRD.
 	NRC.zones[90].type = "raid"; --Gnomeregan.
 	NRC.zones[109].type = "raid"; --Sunken Temple.
+	
+	--Raid textures.
+	NRC.instanceTextures[2791] = {"Storm Cliffs", "", 26752, 1385753, 1396589, 329121, 0};
+	NRC.instanceTextures[2789] = {"The Tainted Scar", "", 64119, 1134508, 1396592, 136361, 0, 9};
+	--NRC.instanceTextures[2789] = {"The Tainted Scar", "", 1396466, 1396511, 1396592, 136361, 0, 9};
 	
 	--Add hunter kings buff to paladin table.
 	NRC.pal[409583] = {

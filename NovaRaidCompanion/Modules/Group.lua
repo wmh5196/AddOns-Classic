@@ -425,6 +425,18 @@ function NRC:updateHealerCache(func)
 			end
 		end
 	end
+	if (NRC.specialHealers) then
+		for k, v in pairs(NRC.specialHealers) do
+			local t = {
+				name = k,
+				specName = v.specName,
+				icon = v.icon,
+				class = v.class,
+			};
+			tinsert(NRC.healerCache, t);
+		end
+	end
+	
 	for k, v in pairs(NRC.healerCache) do
 		local found;
 		for kk, vv in pairs(oldHealerCache) do
@@ -489,6 +501,18 @@ f:SetScript('OnEvent', function(self, event, ...)
 				local guid = UnitGUID(unit);
 				if (guid) then
 					NRC:inspect(guid);
+				end
+			end
+			if (NRC.specialHealingSpells and NRC.specialHealingSpells[spellID]) then
+				local name = UnitName(unit);
+				local specialHealingSpells = NRC.specialHealingSpells[spellID];
+				if (not NRC.specialHealers[name]) then
+					NRC.specialHealers[name] = {
+						specName = specialHealingSpells.specName,
+						icon = specialHealingSpells.icon,
+						class = specialHealingSpells.class,
+					};
+					NRC:updateHealerCache("UNIT_SPELLCAST_SUCCEEDED");
 				end
 			end
 		end
@@ -1015,6 +1039,10 @@ f:SetScript('OnEvent', function(self, event, ...)
 			NRC:updateGroupCache();
 		end);
 		NRC.logonTime = GetServerTime();
+		--If an addon loads the Blizzard_InspectUI before us then we load it with a hook instead of an ADDON_LOADED event.
+		if (InspectFrame) then
+			NRC:hookTalentsFrame();
+		end
 	elseif (event == "UNIT_CONNECTION") then
 		local unit = ...;
 		if (strfind(unit, "party") or strfind(unit, "raid")) then

@@ -161,7 +161,7 @@ function SlashCmdList.NRCBADGESCMD(msg, editBox)
 		if (next(badges)) then
 			for i = 1, GetNumGroupMembers() do
 				local name, _, _, _, _, classEnglish = GetRaidRosterInfo(i);
-				local _, _, _, classHex = GetClassColor(classEnglish);
+				local _, _, _, classHex = NRC.getClassColor(classEnglish);
 				local colorizedName = "|c" .. classHex .. name .. "|r";
 				local realm;
 				if (name and not badges[name]) then
@@ -310,6 +310,9 @@ function NRC:encounterStartRD(...)
 			--No need to store this data for log lookup in wrath.
 			encounter.resCache = NRC:tableCopy(NRC.resistances);
 			encounter.weaponEnchantCache = NRC:tableCopy(NRC.weaponEnchants);
+		end
+		if (NRC.isClassic) then
+			encounter.chronoCache = NRC:tableCopy(NRC.chronoCache);
 		end
 		--Check if talents have changed and only record if they are different.
 		--We don't want to record talent cache for every boss to save load times.
@@ -1695,8 +1698,8 @@ end
 function NRC:buildRaidLogLineFrameString(v, logID)
 	local player = v.playerName;
 	--local data = NRC.db.global.instances[logID];
-	local _, _, _, classColorHex = GetClassColor(v.classEnglish);
-	--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+	local _, _, _, classColorHex = NRC.getClassColor(v.classEnglish);
+	--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 	if (not classColorHex and v.classEnglish == "SHAMAN") then
 		classColorHex = "ff0070dd";
 	elseif (not classColorHex) then
@@ -1955,12 +1958,14 @@ function NRC:loadRaidLogInstance(logID)
 				NRC.raidStatusCache = {};
 				NRC.raidStatusCache.auraCache = v.auraCache;
 				NRC.raidStatusCache.resCache = v.resCache;
+				NRC.raidStatusCache.chronoCache = v.chronoCache;
 				NRC.raidStatusCache.weaponEnchantCache = v.weaponEnchantCache;
 				NRC.raidStatusCache.talentCache = v.talentCache;
 				NRC.raidStatusCache.group = data.group;
 				NRC.raidStatusCache.logID = logID;
 				NRC.raidStatusCache.encounterID = v.encounterID;
 				NRC.raidStatusCache.success = v.success;
+				NRC.raidStatusCache.startTime = v.startTime;
 				NRC:openRaidStatusFrame(true, true, attemptID);
 			end)
 			frame.button3:SetScript("OnClick", function(self, arg)
@@ -2335,8 +2340,8 @@ function NRC:loadRaidLogDeaths(logID)
 				dmgText = dmgText .. " " .. TEXT_MODE_A_STRING_RESULT_CRUSHING;
 			end
 		end
-		local _, _, _, classColorHex = GetClassColor(v.class);
-		--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+		local _, _, _, classColorHex = NRC.getClassColor(v.class);
+		--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 		if (not classColorHex and v.class == "SHAMAN") then
 			classColorHex = "ff0070dd";
 		elseif (not classColorHex) then
@@ -2442,7 +2447,7 @@ function NRC:loadRenameLootFrame(logID, lootID, lineFrameCount, displayNum, fram
 					or a.class == b.class and strcmputf8i(a.name, b.name) < 0;
 			end)
 			for k, v in ipairs(options) do
-				local _, _, _, classHex = GetClassColor(v.class);
+				local _, _, _, classHex = NRC.getClassColor(v.class);
 				local name = "|c" .. classHex .. v.name .. "|r";
 				local info = NRC.DDM:UIDropDownMenu_CreateInfo();
 				info.text = name;
@@ -2460,12 +2465,12 @@ function NRC:loadRenameLootFrame(logID, lootID, lineFrameCount, displayNum, fram
 			end
 			local text = "Select Character";
 			if (data.loot[lootID].override) then
-				local _, _, _, classHex = GetClassColor(data.loot[lootID].overrideClass);
+				local _, _, _, classHex = NRC.getClassColor(data.loot[lootID].overrideClass);
 				text = "|c" .. classHex .. data.loot[lootID].override;
 			elseif (looter) then
 				for k, v in ipairs(options) do
 					if (looter == v.name) then
-						local _, _, _, classHex = GetClassColor(v.class);
+						local _, _, _, classHex = NRC.getClassColor(v.class);
 						text = "|c" .. classHex .. v.name;
 					end
 				end
@@ -2506,7 +2511,7 @@ function NRC:loadRenameLootFrame(logID, lootID, lineFrameCount, displayNum, fram
 			currentLootData[lineFrameCount].overrideClass = class;
 			--lootRenameFrame.input:SetText("");
 			--lootRenameFrame.input:ClearFocus();
-			local _, _, _, classHex = GetClassColor(class);
+			local _, _, _, classHex = NRC.getClassColor(class);
 			NRC:print(string.format(L["renamedLootEntry"], "|cFF9CD6DE" .. displayNum .. "|r", "|c" .. classHex .. name .. "|r", itemLink) .. ".");
 			local encounterText = "";
 			local lootText = "";
@@ -2528,8 +2533,8 @@ function NRC:loadRenameLootFrame(logID, lootID, lineFrameCount, displayNum, fram
 					lootText = lootText .. "x" .. v.amount;
 				end
 			end
-			local _, _, _, classColorHex = GetClassColor(getClass(v.name, logID));
-			--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+			local _, _, _, classColorHex = NRC.getClassColor(getClass(v.name, logID));
+			--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 			if (not classColorHex and getClass(v.name, logID) == "SHAMAN") then
 				classColorHex = "ff0070dd";
 			elseif (not classColorHex) then
@@ -2542,8 +2547,8 @@ function NRC:loadRenameLootFrame(logID, lootID, lineFrameCount, displayNum, fram
 			end
 			if (v.override) then
 				if (v.overrideClass) then
-					_, _, _, classColorHex = GetClassColor(v.overrideClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.overrideClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.overrideClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2554,8 +2559,8 @@ function NRC:loadRenameLootFrame(logID, lootID, lineFrameCount, displayNum, fram
 				text = "|cFFA1A1A1" .. NRC:getTimeFormat(v.time or v.timer, nil, true, true, true) .. "|r  |c" .. classColorHex .. v.override .. "|r|cFF00C800*|r  |cFFcccccc" .. lootText .. "|r " .. encounterText .. goldString;
 			elseif (v.traded) then
 				if (v.tradedClass) then
-					_, _, _, classColorHex = GetClassColor(v.tradedClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.tradedClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.tradedClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2706,8 +2711,8 @@ function NRC:loadRaidLogLoot(logID)
 					lootText = lootText .. "x" .. v.amount;
 				end
 			end
-			local _, _, _, classColorHex = GetClassColor(getClass(v.name, logID));
-			--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+			local _, _, _, classColorHex = NRC.getClassColor(getClass(v.name, logID));
+			--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 			if (not classColorHex and getClass(v.name, logID) == "SHAMAN") then
 				classColorHex = "ff0070dd";
 			elseif (not classColorHex) then
@@ -2720,8 +2725,8 @@ function NRC:loadRaidLogLoot(logID)
 			end
 			if (v.override) then
 				if (v.overrideClass) then
-					_, _, _, classColorHex = GetClassColor(v.overrideClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.overrideClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.overrideClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2732,8 +2737,8 @@ function NRC:loadRaidLogLoot(logID)
 				text = "|cFFA1A1A1" .. NRC:getTimeFormat(v.time or v.timer, nil, true, true, true) .. "|r  |c" .. classColorHex .. v.override .. "|r|cFF00C800*|r  |cFFcccccc" .. lootText .. "|r " .. encounterText .. goldString;
 			elseif (v.traded) then
 				if (v.tradedClass) then
-					_, _, _, classColorHex = GetClassColor(v.tradedClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.tradedClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.tradedClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2779,8 +2784,8 @@ function NRC:loadRaidLogLoot(logID)
 					lootText = lootText .. "x" .. v.amount;
 				end
 			end
-			local _, _, _, classColorHex = GetClassColor(getClass(v.name, logID));
-			--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+			local _, _, _, classColorHex = NRC.getClassColor(getClass(v.name, logID));
+			--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 			if (not classColorHex and getClass(v.name, logID) == "SHAMAN") then
 				classColorHex = "ff0070dd";
 			elseif (not classColorHex) then
@@ -2793,8 +2798,8 @@ function NRC:loadRaidLogLoot(logID)
 			end
 			if (v.override) then
 				if (v.overrideClass) then
-					_, _, _, classColorHex = GetClassColor(v.overrideClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.overrideClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.overrideClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2805,8 +2810,8 @@ function NRC:loadRaidLogLoot(logID)
 				text = "|cFFA1A1A1" .. NRC:getTimeFormat(v.time or v.timer, nil, true, true, true) .. "|r  |c" .. classColorHex .. v.override .. "|r|cFF00C800*|r  |cFFcccccc" .. lootText .. "|r " .. encounterText .. goldString;	
 			elseif (v.traded) then
 				if (v.tradedClass) then
-					_, _, _, classColorHex = GetClassColor(v.tradedClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.tradedClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.tradedClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2852,8 +2857,8 @@ function NRC:loadRaidLogLoot(logID)
 					lootText = lootText .. "x" .. v.amount;
 				end
 			end
-			local _, _, _, classColorHex = GetClassColor(getClass(v.name, logID));
-			--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+			local _, _, _, classColorHex = NRC.getClassColor(getClass(v.name, logID));
+			--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 			if (not classColorHex and getClass(v.name, logID) == "SHAMAN") then
 				classColorHex = "ff0070dd";
 			elseif (not classColorHex) then
@@ -2866,8 +2871,8 @@ function NRC:loadRaidLogLoot(logID)
 			end
 			if (v.override) then
 				if (v.overrideClass) then
-					_, _, _, classColorHex = GetClassColor(v.overrideClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.overrideClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.overrideClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2878,8 +2883,8 @@ function NRC:loadRaidLogLoot(logID)
 				text = "|cFFA1A1A1" .. NRC:getTimeFormat(v.time or v.timer, nil, true, true, true) .. "|r  |c" .. classColorHex .. v.override .. "|r|cFF00C800*|r  |cFFcccccc" .. lootText .. "|r " .. encounterText .. goldString;
 			elseif (v.traded) then
 				if (v.tradedClass) then
-					_, _, _, classColorHex = GetClassColor(v.tradedClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.tradedClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.tradedClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2925,9 +2930,9 @@ function NRC:loadRaidLogLoot(logID)
 					lootText = lootText .. "x" .. v.amount;
 				end
 			end
-			local _, _, _, classColorHex = GetClassColor(getClass(v.name, logID));
-			--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
-			if (not classColorHex and GetClassColor(getClass(v.name, logID)) == "SHAMAN") then
+			local _, _, _, classColorHex = NRC.getClassColor(getClass(v.name, logID));
+			--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
+			if (not classColorHex and NRC.getClassColor(getClass(v.name, logID)) == "SHAMAN") then
 				classColorHex = "ff0070dd";
 			elseif (not classColorHex) then
 				classColorHex = "ffffffff";
@@ -2939,8 +2944,8 @@ function NRC:loadRaidLogLoot(logID)
 			end
 			if (v.override) then
 				if (v.overrideClass) then
-					_, _, _, classColorHex = GetClassColor(v.overrideClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.overrideClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.overrideClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -2951,8 +2956,8 @@ function NRC:loadRaidLogLoot(logID)
 				text = "|cFFA1A1A1" .. NRC:getTimeFormat(v.time or v.timer, nil, true, true, true) .. "|r  |c" .. classColorHex .. v.override .. "|r|cFF00C800*|r  |cFFcccccc" .. lootText .. "|r " .. encounterText;
 			elseif (v.traded) then
 				if (v.tradedClass) then
-					_, _, _, classColorHex = GetClassColor(v.tradedClass);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					_, _, _, classColorHex = NRC.getClassColor(v.tradedClass);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.tradedClass == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -3049,8 +3054,8 @@ function NRC:loadRaidBossLoot(logID, encounterID, encounterName, attemptID)
 				lootText = lootText .. "x" .. v.amount;
 			end
 		end
-		local _, _, _, classColorHex = GetClassColor(getClass(v.name, logID));
-		--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+		local _, _, _, classColorHex = NRC.getClassColor(getClass(v.name, logID));
+		--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 		if (not classColorHex and getClass(v.name, logID) == "SHAMAN") then
 			classColorHex = "ff0070dd";
 		elseif (not classColorHex) then
@@ -3118,7 +3123,7 @@ function NRC:loadRaidTalents(logID, encounterID, encounterName, attemptID)
 		local class, classEnglish = GetClassInfo(classID);
 		local specID, talentCount, specName, specIcon, specIconPath, treeData = NRC:getSpecFromTalentString(talentString);
 		trees = {strsplit("-", trees, 4)};
-		local _, _, _, classHex = GetClassColor(classEnglish);
+		local _, _, _, classHex = NRC.getClassColor(classEnglish);
 		local colorizedName = "|c" .. classHex .. k .. "|r";
 		local icon = "|T" .. specIconPath .. ":17:17:0:-1|t";
 		local treeString = "|cFF9CD6DE(" .. treeData[1] .. "/" .. treeData[2] .. "/" .. treeData[3] .. ")|r";
@@ -3613,7 +3618,7 @@ function NRC:loadRaidLogConsumes(logID, encounterID, encounterName, attemptID, g
 					or a.class == b.class and strcmputf8i(a.name, b.name) < 0;
 			end)
 			for k, v in ipairs(options) do
-				local _, _, _, classHex = GetClassColor(v.class);
+				local _, _, _, classHex = NRC.getClassColor(v.class);
 				local name = "|c" .. classHex .. v.name .. "|r";
 				local info = NRC.DDM:UIDropDownMenu_CreateInfo()
 				info.text = name;
@@ -3848,8 +3853,8 @@ function NRC:loadRaidLogConsumes(logID, encounterID, encounterName, attemptID, g
 			else
 				encounterText = L["Trash"];
 			end
-			local _, _, _, classColorHex = GetClassColor(v.class);
-			--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+			local _, _, _, classColorHex = NRC.getClassColor(v.class);
+			--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 			if (not classColorHex and v.class == "SHAMAN") then
 				classColorHex = "ff0070dd";
 			elseif (not classColorHex) then
@@ -3969,8 +3974,8 @@ function NRC:loadRaidLogConsumes(logID, encounterID, encounterName, attemptID, g
 		for id, charData in NRC:pairsByKeys(countData) do
 			text = "";
 			count = count + 1;
-			local _, _, _, classColorHex = GetClassColor(charData.class);
-				--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+			local _, _, _, classColorHex = NRC.getClassColor(charData.class);
+				--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 			if (not classColorHex and charData.class == "SHAMAN") then
 				classColorHex = "ff0070dd";
 			elseif (not classColorHex) then
@@ -4267,14 +4272,14 @@ function NRC:loadTrades(logID, raidID, open, filterUpdate)
 				
 				local msg = "";
 				local tooltip = "|cFF9CD6DE";
-				local _, _, _, classColorHex = GetClassColor(v.tradeWhoClass);
-				--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+				local _, _, _, classColorHex = NRC.getClassColor(v.tradeWhoClass);
+				--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 				if (not classColorHex and v.tradeWhoClass == "SHAMAN") then
 					classColorHex = "ff0070dd";
 				elseif (not classColorHex) then
 					classColorHex = "ffffffff";
 				end
-				local _, _, _, classColorHexMe = GetClassColor(v.meClass);
+				local _, _, _, classColorHexMe = NRC.getClassColor(v.meClass);
 				if (not classColorHexMe and v.meClass == "SHAMAN") then
 					classColorHexMe = "ff0070dd";
 				elseif (not classColorHexMe) then
@@ -5139,7 +5144,7 @@ function NRC:recalcLockoutsFrame()
 			if (k == "myChars") then
 				for char, charData in pairs(v) do
 					local found2;
-					local _, _, _, classColorHex = GetClassColor(charData.englishClass);
+					local _, _, _, classColorHex = NRC.getClassColor(charData.englishClass);
 					local text2 = "\n|c" .. classColorHex .. char .. "|r";
 					if (charData.savedInstances) then
 						for instance, instanceData in pairs(charData.savedInstances) do
@@ -5236,7 +5241,7 @@ function SlashCmdList.NRCGHECMD(msg, editBox)
 			LeaveParty();
 		end)
 	else
-		NRC:print("This only works inside an instance and while not in a group.");
+		print("|cFFFFFF00This only works inside an instance and while not in a group.");
 	end
 end
 

@@ -20,7 +20,7 @@ local UnitName = UnitName;
 local UnitBuff = UnitBuff;
 local strfind = strfind;
 local tostring = tostring;
-local GetClassColor = GetClassColor;
+local getClassColor = NRC.getClassColor;
 local floor = floor;
 local UnitIsDead = UnitIsDead;
 local UnitIsGhost = UnitIsGhost;
@@ -291,6 +291,9 @@ function NRC:loadTrackedManaChars(func)
 						if (NRC.talents[k]) then
 							_, _, specName, specIcon = NRC:getSpecFromTalentString(NRC.talents[k]);
 						end
+						if (v.class and not specIcon) then
+							specIcon = "Interface\\Icons\\classicon_" .. strlower(v.class);
+						end
 						local t = {
 							name = k,
 							specName = specName,
@@ -424,8 +427,8 @@ function NRC:updateManaFrame()
 					count = count + 1;
 					--Create line frame.
 					local lineFrame = raidManaFrame:getLineFrame(count);
-					local _, _, _, classColorHex = GetClassColor(v.class);
-					--Safeguard for weakauras/addons that like to overwrite and break the GetClassColor() function.
+					local _, _, _, classColorHex = NRC.getClassColor(v.class);
+					--Safeguard for weakauras/addons that like to overwrite and break the NRC.getClassColor() function.
 					if (not classColorHex and v.class == "SHAMAN") then
 						classColorHex = "ff0070dd";
 					elseif (not classColorHex) then
@@ -477,7 +480,7 @@ function NRC:updateManaFrame()
 					if (showRes and isResurrecting[name]) then
 						local data = isResurrecting[name];
 						if (data.destClass) then
-							local _, _, _, classHex = GetClassColor(data.destClass);
+							local _, _, _, classHex = NRC.getClassColor(data.destClass);
 							local destName = "|c" .. classHex .. data.destName .. "|r";
 							if (resurrectionDir == 1) then
 								lineFrame.fs3:ClearAllPoints();
@@ -724,6 +727,9 @@ function NRC:startRaidManaTest(quiet)
 end
 
 function NRC:stopRaidManaTest()
+	if (not raidManaFrame) then
+		return;
+	end
 	if (testRunningTimer) then
 		testRunningTimer:Cancel();
 	end

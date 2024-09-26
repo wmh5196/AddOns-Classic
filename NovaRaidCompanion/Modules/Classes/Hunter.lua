@@ -251,7 +251,7 @@ local function tallyMisdirection(name)
 				if (NRC.config.mdShowMySelf and not sentMe) then
 					local targetString = target;
 					if (data.targetClass) then
-						local _, _, _, classHex = GetClassColor(data.targetClass);
+						local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 						targetString = "|c" .. classHex .. target .. "|r";
 					end
 					NRC:print(string.format(L["meTransferedThreatMD"], "|cFF00C800" .. NRC:commaValue(total) .. "|r", targetString or "unknown"));
@@ -280,7 +280,7 @@ local function tallyMisdirection(name)
 				if (NRC.config.mdShowOthersSelf and not sentMe) then
 					local targetString = target;
 					if (data.targetClass) then
-						local _, _, _, classHex = GetClassColor(data.targetClass);
+						local _, _, _, classHex = NRC.getClassColor(data.targetClass);
 						targetString = "|c" .. classHex .. target .. "|r";
 					end
 					NRC:print(string.format(L["otherTransferedThreatMD"], "|cFFAAD372" .. name .. "|r",

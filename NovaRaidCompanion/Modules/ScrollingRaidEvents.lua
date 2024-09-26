@@ -88,7 +88,7 @@ function NRC:openScrollingRaidEventsFrame()
 	end
 end
 
-local dpsPotions, manaPotions, healingPotions = {}, {}, {};
+local dpsPotions, manaPotions, healingPotions, protectionPotions = {}, {}, {}, {};
 function NRC:sreLoadSpellList()
 	spellList = {};
 	dpsPotions, manaPotions, healingPotions = {}, {}, {};
@@ -139,6 +139,18 @@ function NRC:sreLoadSpellList()
 		end
 		for k, v in pairs(NRC.healingPotions) do
 			healingPotions[k] = {
+				spellName = v.name,
+				icon = v.icon,
+			};
+			spellList[k] = {
+				spellName = v.name,
+				icon = v.icon,
+			};
+		end
+	end
+	if (NRC.config.sreShowProtectionPotions and NRC.protectionPotions) then
+		for k, v in pairs(NRC.protectionPotions) do
+			protectionPotions[k] = {
 				spellName = v.name,
 				icon = v.icon,
 			};
@@ -311,7 +323,7 @@ function NRC:sreSpellSuccessEvent(spellID, spellName, icon, sourceName, sourceCl
 	if (isSourceNpc) then
 		name = "|cFFFFAE42" .. sourceName .. "|r";
 	else
-		local _, _, _, classHex = GetClassColor(sourceClass);
+		local _, _, _, classHex = NRC.getClassColor(sourceClass);
 		name = "|c" .. classHex .. sourceName .. "|r";
 	end
 	local iconText = "";
@@ -323,7 +335,7 @@ function NRC:sreSpellSuccessEvent(spellID, spellName, icon, sourceName, sourceCl
 		if (isDestNpc) then
 			destName = "|cFFFFAE42" .. destName .. "|r";
 		else
-			local _, _, _, classHex = GetClassColor(destClass);
+			local _, _, _, classHex = NRC.getClassColor(destClass);
 			destName = "|c" .. classHex .. destName .. "|r";
 		end
 		text = text .. " -> " .. destName;
@@ -335,7 +347,7 @@ function NRC:sreSpellSuccessEvent(spellID, spellName, icon, sourceName, sourceCl
 end
 
 function NRC:srePortalEvent(spellID, spellName, icon, sourceName, sourceClass)
-	local _, _, _, classHex = GetClassColor(sourceClass);
+	local _, _, _, classHex = NRC.getClassColor(sourceClass);
 	local name = "|c" .. classHex .. sourceName .. "|r";
 	local text = "|T" .. icon .. ":" .. lineFrameHeight .. ":" .. lineFrameHeight .. "|t" .. name;
 	local spellName = GetSpellInfo(spellID);
@@ -348,7 +360,7 @@ function NRC:srePortalEvent(spellID, spellName, icon, sourceName, sourceClass)
 end
 
 function NRC:sreCooldownResetEvent(spellID, spellName, icon, sourceName, sourceClass)
-	local _, _, _, classHex = GetClassColor(sourceClass);
+	local _, _, _, classHex = NRC.getClassColor(sourceClass);
 	local name = "|c" .. classHex .. sourceName .. "|r";
 	local text = name .. " " .. spellName .. " |cFF9CD6DE" .. L["Ready"] .. "!|r";
 	NRC:sreSendEvent(text, icon, sourceName);
@@ -358,7 +370,7 @@ function NRC:sreOnlineStatusEvent(sourceName, sourceClass, isOnline)
 	if (NRC:isPvp() or NRC.isRetail) then
 		return;
 	end
-	local _, _, _, classHex = GetClassColor(sourceClass);
+	local _, _, _, classHex = NRC.getClassColor(sourceClass);
 	local name = "|c" .. classHex .. sourceName .. "|r";
 	if (GetServerTime() - NRC.logonTime > 10) then
 		if (isOnline) then
@@ -374,7 +386,7 @@ function NRC:srePotionEvent(spellID, spellName, icon, sourceName, sourceClass, d
 	if (isSourceNpc) then
 		name = "|cFFFFAE42" .. sourceName .. "|r";
 	else
-		local _, _, _, classHex = GetClassColor(sourceClass);
+		local _, _, _, classHex = NRC.getClassColor(sourceClass);
 		name = "|c" .. classHex .. sourceName .. "|r";
 	end
 	if (spellList[spellID] and spellList[spellID].icon) then
@@ -395,11 +407,11 @@ function NRC:sreResurrectionEvent(spellID, spellName, icon, sourceName, sourceCl
 		--This will cause it to fire only on spell finished casting not start like other res spells, which is fine.
 		return;
 	end 
-	local _, _, _, classHex = GetClassColor(sourceClass);
+	local _, _, _, classHex = NRC.getClassColor(sourceClass);
 	local name = "|c" .. classHex .. sourceName .. "|r";
 	local text = "|T" .. icon .. ":" .. lineFrameHeight .. ":" .. lineFrameHeight .. "|t" .. name;
 	if (destName) then
-		local _, _, _, classHex = GetClassColor(destClass);
+		local _, _, _, classHex = NRC.getClassColor(destClass);
 		destName = "|c" .. classHex .. destName .. "|r";
 		text = text .. " -> " .. destName;
 	end
@@ -414,14 +426,14 @@ function NRC:sreInterruptEvent(spellID, spellName, destSpellName, icon, destIcon
 	if (isSourceNpc) then
 		name = "|cFFFFAE42" .. sourceName .. "|r";
 	else
-		local _, _, _, classHex = GetClassColor(sourceClass);
+		local _, _, _, classHex = NRC.getClassColor(sourceClass);
 		name = "|c" .. classHex .. sourceName .. "|r";
 	end
 	if (destName) then
 		if (isDestNpc) then
 			destName = "|cFFFFAE42" .. destName .. "|r";
 		else
-			local _, _, _, classHex = GetClassColor(destClass);
+			local _, _, _, classHex = NRC.getClassColor(destClass);
 			destName = "|c" .. classHex .. destName .. "|r";
 		end
 	end
@@ -443,14 +455,14 @@ function NRC:sreDispelEvent(spellID, spellName, destSpellName, icon, destIcon, s
 	if (isSourceNpc) then
 		name = "|cFFFFAE42" .. sourceName .. "|r";
 	else
-		local _, _, _, classHex = GetClassColor(sourceClass);
+		local _, _, _, classHex = NRC.getClassColor(sourceClass);
 		name = "|c" .. classHex .. sourceName .. "|r";
 	end
 	if (destName) then
 		if (isDestNpc) then
 			destName = "|cFFFFAE42" .. destName .. "|r";
 		else
-			local _, _, _, classHex = GetClassColor(destClass);
+			local _, _, _, classHex = NRC.getClassColor(destClass);
 			destName = "|c" .. classHex .. destName .. "|r";
 		end
 	end
@@ -468,7 +480,7 @@ function NRC:sreDispelEvent(spellID, spellName, destSpellName, icon, destIcon, s
 end
 
 function NRC:sreDeathEvent(destName, destClass)
-	local _, _, _, classHex = GetClassColor(destClass);
+	local _, _, _, classHex = NRC.getClassColor(destClass);
 	local name = "|c" .. classHex .. destName .. "|r";
 	local icon = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8";
 	local text = name .. " " .. L["has died"] .. ".";
@@ -480,7 +492,7 @@ function NRC:sreMisdirectionEvent(sourceName, destName, destClass, total)
 	local icon = "|T132180:" .. lineFrameHeight .. ":" .. lineFrameHeight .. "|t";
 	local target = destName;
 	if (destClass) then
-		local _, _, _, classHex = GetClassColor(destClass);
+		local _, _, _, classHex = NRC.getClassColor(destClass);
 		target = "|c" .. classHex .. target .. "|r";
 	end
 	local text = "|cFFFFAE42" .. L["Threat"] ..  " " .. NRC:commaValue(total) .. ":|r " .. icon .. " |cFFAAD372" .. sourceName .. "|r -> " .. target;
@@ -492,7 +504,7 @@ function NRC:sreTricksEvent(sourceName, destName, destClass, total)
 	local icon = "|T236283:" .. lineFrameHeight .. ":" .. lineFrameHeight .. "|t";
 	local target = destName;
 	if (destClass) then
-		local _, _, _, classHex = GetClassColor(destClass);
+		local _, _, _, classHex = NRC.getClassColor(destClass);
 		target = "|c" .. classHex .. target .. "|r";
 	end
 	local text = "|cFFFFAE42" .. L["Threat"] ..  " " .. NRC:commaValue(total) .. ":|r " .. icon .. " |cFFAAD372" .. sourceName .. "|r -> " .. target;
@@ -609,7 +621,7 @@ local function combatLogEventUnfiltered(...)
 					_, destClass = GetPlayerInfoByGUID(destGUID);
 				end
 				--Config for these are done when the spellList{} table is created.
-				if (dpsPotions[spellID] or manaPotions[spellID] or healingPotions[spellID]) then
+				if (dpsPotions[spellID] or manaPotions[spellID] or healingPotions[spellID]  or protectionPotions[spellID]) then
 					NRC:srePotionEvent(spellID, spellName, icon, sourceName, sourceClass, destName, destClass, isSourceNpc, isDestNpc);
 				else
 					NRC:sreSpellSuccessEvent(spellID, spellName, icon, sourceName, sourceClass, destName, destClass, isSourceNpc, isDestNpc);
@@ -628,7 +640,7 @@ local function combatLogEventUnfiltered(...)
 		--[[elseif (subEvent == "UNIT_DIED") then
 			if (destGUID and strfind(destGUID, "Player")) then
 				local _, classEnglish  = GetPlayerInfoByGUID(destGUID);
-				local _, _, _, classHex = GetClassColor(classEnglish);
+				local _, _, _, classHex = NRC.getClassColor(classEnglish);
 				destName = "|c" .. classHex .. destName .. "|r";
 				local icon = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_8";
 				local text = "|T" .. icon .. ":" .. lineFrameHeight .. ":" .. lineFrameHeight .. "|t" .. destName .. " has died.";

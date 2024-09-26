@@ -1160,7 +1160,7 @@ local function sendClick(button, name, class, timeLeft, spell)
 	if (spellID and class) then
 		if (not ignoreList[spell]) then
 			local type;
-			local _, _, _, classHex = GetClassColor(class);
+			local _, _, _, classHex = NRC.getClassColor(class);
 			local colorizedName = "|c" .. classHex .. name .. "|r";
 			if (button == "LeftButton") then
 				if (IsShiftKeyDown()) then
@@ -1305,7 +1305,7 @@ function NRC:updateRaidCooldowns()
 						name = strsub(name, 1, 12);
 					end
 					if (charData.class) then
-						local _, _, _, classHex = GetClassColor(charData.class);
+						local _, _, _, classHex = NRC.getClassColor(charData.class);
 						name = "|c" .. classHex .. name .. "|r";
 					end
 					lineSubFrame.fs:SetText(name);
@@ -1353,12 +1353,12 @@ function NRC:updateRaidCooldowns()
 					if (timeLeft > 0) then
 						if (charData.destName) then
 							destName = charData.destName;
-							local _, _, _, classHex = GetClassColor(charData.destClass);
+							local _, _, _, classHex = NRC.getClassColor(charData.destClass);
 							destName = "|c" .. classHex .. destName .. "|r";
 						elseif (NRC.data.raidCooldowns[guid] and NRC.data.raidCooldowns[guid][spellData.spellName]
 								and NRC.data.raidCooldowns[guid][spellData.spellName].destName) then
 							destName = NRC.data.raidCooldowns[guid][spellData.spellName].destName;
-							local _, _, _, classHex = GetClassColor(NRC.data.raidCooldowns[guid][spellData.spellName].destClass);
+							local _, _, _, classHex = NRC.getClassColor(NRC.data.raidCooldowns[guid][spellData.spellName].destClass);
 							destName = "|c" .. classHex .. destName .. "|r";
 						end
 						if (destName) then
@@ -1369,7 +1369,7 @@ function NRC:updateRaidCooldowns()
 						if (castCache[guid] and castCache[guid][spellData.spellName] and castCache[guid][spellData.spellName].name) then
 							local class = castCache[guid][spellData.spellName].class;
 							if (class) then
-								local _, _, _, classHex = GetClassColor(class);
+								local _, _, _, classHex = NRC.getClassColor(class);
 								destName = "|c" .. classHex .. castCache[guid][spellData.spellName].name .. "|r";
 							else
 								destName = castCache[guid][spellData.spellName].name;
@@ -1382,7 +1382,7 @@ function NRC:updateRaidCooldowns()
 						for ssGuid, ssTime in pairs(NRC.data.hasSoulstone) do
 							local _, classEnglish, _, _, _, name = GetPlayerInfoByGUID(ssGuid);
 							if (name) then
-								local _, _, _, classHex = GetClassColor(classEnglish);
+								local _, _, _, classHex = NRC.getClassColor(classEnglish);
 								name = "|c" .. classHex .. name .. "|r";
 								local timeLeft = NRC:getTimeString(ssTime - GetServerTime(), true, "short");
 								text = text .. "\n" .. name .. " " .. timeLeft .. " " .. L["left"] .. ".";
@@ -1403,8 +1403,8 @@ function NRC:updateRaidCooldowns()
 				--Shorten name if it's long.
 				--local spellName = strsub(spell, 1, 15);
 				local spellName = strsub(spellData.spellName, 1, 15);
-				local classHex = spellData.color or select(4, GetClassColor(spellData.class));
-				--local _, _, _, classHex = GetClassColor(spellData.class);
+				local classHex = spellData.color or select(4, NRC.getClassColor(spellData.class));
+				--local _, _, _, classHex = NRC.getClassColor(spellData.class);
 				if (spellData.title) then
 					spellName = strsub(spellData.title, 1, 15);
 				elseif (spellData.localizedName and spellData.localizedName ~= "Soulstone Resurrection") then
@@ -1531,7 +1531,7 @@ function NRC:updateRaidCooldowns()
 					end
 					local classHex;
 					if (charData.class) then
-						_, _, _, classHex = GetClassColor(charData.class);
+						_, _, _, classHex = NRC.getClassColor(charData.class);
 						name = "|c" .. classHex .. name .. "|r";
 					end
 					lineFrame.fs:SetText(name);
@@ -1594,12 +1594,12 @@ function NRC:updateRaidCooldowns()
 					if (timeLeft > 0) then
 						if (charData.destName) then
 							destName = charData.destName;
-							local _, _, _, classHex = GetClassColor(charData.destClass);
+							local _, _, _, classHex = NRC.getClassColor(charData.destClass);
 							destName = "|c" .. classHex .. destName .. "|r";
 						elseif (NRC.data.raidCooldowns[guid] and NRC.data.raidCooldowns[guid][spell]
 								and NRC.data.raidCooldowns[guid][spell].destName) then
 							destName = NRC.data.raidCooldowns[guid][spell].destName;
-							local _, _, _, classHex = GetClassColor(NRC.data.raidCooldowns[guid][spell].destClass);
+							local _, _, _, classHex = NRC.getClassColor(NRC.data.raidCooldowns[guid][spell].destClass);
 							destName = "|c" .. classHex .. destName .. "|r";
 						end
 						if (destName) then
@@ -1610,7 +1610,7 @@ function NRC:updateRaidCooldowns()
 						if (castCache[guid] and castCache[guid][spellData.spellName] and castCache[guid][spellData.spellName].name) then
 							local class = castCache[guid][spellData.spellName].class;
 							if (class) then
-								local _, _, _, classHex = GetClassColor(class);
+								local _, _, _, classHex = NRC.getClassColor(class);
 								destName = "|c" .. classHex .. castCache[guid][spellData.spellName].name .. "|r";
 							else
 								destName = castCache[guid][spellData.spellName].name;
@@ -1623,7 +1623,7 @@ function NRC:updateRaidCooldowns()
 						for ssGuid, ssTime in pairs(NRC.data.hasSoulstone) do
 							local _, classEnglish, _, _, _, name = GetPlayerInfoByGUID(ssGuid)
 							if (name) then
-								local _, _, _, classHex = GetClassColor(classEnglish);
+								local _, _, _, classHex = NRC.getClassColor(classEnglish);
 								name = "|c" .. classHex .. name .. "|r";
 								local timeLeft = NRC:getTimeString(ssTime - GetServerTime(), true, "short");
 								text = text .. "\n" .. name .. " " .. timeLeft .. " " .. L["left"] .. ".";
@@ -1658,14 +1658,14 @@ function NRC:updateRaidCooldowns()
 end
 
 local function soulstoneDead(guid)
+	if (raidEncounterActive) then
+		bresPending[guid] = true;
+	end
 	if (soulstoneBars[guid] and NRC.config.soulstoneDeathGlow and not soulstoneBars[guid].isDead) then
 		--NRC:debug(guid, "has died with a soulstone.");
 		soulstoneBars[guid].isDead = true;
 		NRC.customGlow.PixelGlow_Start(soulstoneBars[guid], nil, 40, 0.20, 1.5, 2, nil, nil, nil, nil);
 		soulstoneBars[guid].texture:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcon_8");
-	end
-	if (raidEncounterActive) then
-		bresPending[guid] = true;
 	end
 end
 
@@ -1683,7 +1683,7 @@ function NRC:updateSoulstoneFrame(lineFrame)
 				local _, classEnglish, _, _, _, name = GetPlayerInfoByGUID(guid);
 				if (name) then
 					count = count + 1;
-					local _, _, _, classHex = GetClassColor(classEnglish);
+					local _, _, _, classHex = NRC.getClassColor(classEnglish);
 					name = "|c" .. classHex .. name .. "|r";
 					local duration = time - GetServerTime();
 					if (duration > 0) then
@@ -1775,7 +1775,7 @@ function NRC:updateSoulstoneFrameTest(lineFrame)
 				local name, classEnglish = strsplit("-", guid);
 				if (name) then
 					count = count + 1;
-					local _, _, _, classHex = GetClassColor(classEnglish);
+					local _, _, _, classHex = NRC.getClassColor(classEnglish);
 					name = "|c" .. classHex .. name .. "|r";
 					local duration = time - GetServerTime();
 					if (duration > 0) then
@@ -2062,6 +2062,13 @@ local function raidCooldownsUnitFlags(...)
 			--NRC:debug(name, "has died")
 			isGhost[guid] = nil;
 			isDead[guid] = true;
+			--if (raidEncounterActive) then
+			--	if (soulstoneBars[guid]) then
+					--Current bug, soulstone death counts as a bres charge, and so does rezzing.
+					--So dying with a soulstone and rezzing uses 2 charges.
+					--NRC:addBresCast();
+			--	end
+			--end
 			if (soulstoneBars[guid]) then
 				soulstoneDead(guid);
 			end
@@ -2074,7 +2081,7 @@ local function raidCooldownsUnitFlags(...)
 					C_Timer.After(1, function()
 						local isSpirit = NRC:hasBuff(unit, 35618);
 						if (not isSpirit) then
-							local _, _, _, classHex = GetClassColor(class);
+							local _, _, _, classHex = NRC.getClassColor(class);
 							local sourceName = "|c" .. classHex .. name .. "|r";
 							local text = sourceName .. " -> |cFF9CD6DEUsed Soulstone|r";
 							if (NRC.config.sreShowSoulstoneRes) then
@@ -2083,7 +2090,7 @@ local function raidCooldownsUnitFlags(...)
 						end
 					end)
 				else
-					local _, _, _, classHex = GetClassColor(class);
+					local _, _, _, classHex = NRC.getClassColor(class);
 					local sourceName = "|c" .. classHex .. name .. "|r";
 					local text = sourceName .. " -> |cFF9CD6DEUsed Soulstone|r";
 					if (NRC.config.sreShowSoulstoneRes) then
@@ -2288,7 +2295,7 @@ local function raidCooldownsUnitHealth(...)
 				NRC:updateCooldownList(guid, name, nil, nil, nil, 20608, usedReincarnation);
 			end
 			local _, classEnglish  = UnitClass(unit);
-			local _, _, _, classHex = GetClassColor(classEnglish);
+			local _, _, _, classHex = NRC.getClassColor(classEnglish);
 			local name = "|c" .. classHex .. name .. "|r";
 			NRC:sreSendEvent(name .. " " .. L["has reincarnated"] .. ".", 133439, name);
 		end
