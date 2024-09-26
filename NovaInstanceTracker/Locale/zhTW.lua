@@ -17,18 +17,23 @@ L["hour"] = "小時"; --Hour (singular).
 L["hours"] = "小時"; --Hours (plural).
 L["day"] = "天"; --Day (singular).
 L["days"] = "天"; --Days (plural).
+L["year"] = "年"; --Year (singular).
+L["years"] = "年"; --Years (plural).
 L["secondMedium"] = "秒"; --Second (singular).
 L["secondsMedium"] = "秒"; --Seconds (plural).
 L["minuteMedium"] = "分"; --Minute (singular).
 L["minutesMedium"] = "分"; --Minutes (plural).
 L["hourMedium"] = "小時"; --Hour (singular).
 L["hoursMedium"] = "小時"; --Hours (plural).
-L["dayMedium"] = "天"; --Day (singular).
-L["daysMedium"] = "天"; --Days (plural).
+L["dayMedium"] = "年"; --Day (singular).
+L["daysMedium"] = "年"; --Days (plural).
+L["yearMedium"] = "year"; --Day (singular).
+L["yearsMedium"] = "years"; --Days (plural).
 L["secondShort"] = "秒"; --Used in short timers like 1m30s (single letter only, usually the first letter of seconds).
 L["minuteShort"] = "分"; --Used in short timers like 1m30s (single letter only, usually the first letter of minutes).
 L["hourShort"] = "小時"; --Used in short timers like 1h30m (single letter only, usually the first letter of hours).
 L["dayShort"] = "天"; --Used in short timers like 1d8h (single letter only, usually the first letter of days).
+L["yearShort"] = "年"; --Used in short timers like 1d8h (single letter only, usually the first letter of days).
 L["startsIn"] = "在 %s 後開始"; --"Starts in 1hour".
 L["endsIn"] = "在 %s 後結束"; --"Ends in 1hour".
 L["versionOutOfDate"] = "你的<Nova副本追蹤>插件已經過期了，請上https://www.curseforge.com/wow/addons/nova-instance-tracker 更新，或通過twitch客戶端更新。";
@@ -391,6 +396,7 @@ L["Jewelcrafting"] = "珠寶設計";
 L["Inscription"] = "銘文學";
 L["First Aid"] = "急救";
 
+L["Tarnished Undermine Real"] = "黯淡的幽坑城真幣";
 
 L["resetAllInstancesConfirm"] = "是否確定想要刪除所有副本記錄?";
 L["All Instance log data has been deleted."] = "所有副本記錄已經被刪除。";
@@ -430,7 +436,36 @@ L["note"] = "備註:"
 
 L["Dungeon weeklies remaining"] = "地城每週剩餘";
 
-L["currencyGains"] = "貨幣";
+L["Currency"] = "貨幣";
+L["Currencies"] = "貨幣";
+
+L["instanceStatsOutputCurrencyTitle"] = "貨幣";
+L["instanceStatsOutputCurrencyDesc"] = "是否要顯示在地城內可以取得什麼貨幣?";
+
+L["lootReminderDesc"] = "拾取提醒";
+
+L["lootReminderRealTitle"] = "黯淡的幽坑城真幣";
+L["lootReminderRealDesc"] = "在探索服會掉落黯淡的幽坑城真幣的首領死亡時提醒你要記得拾取。 ";
+
+L["lootReminderSizeTitle"] = "文字大小";
+L["lootReminderSizeDesc"] = "提醒文字的顯示大小。";
+
+L["lootReminderXTitle"] = "水平位置";
+L["lootReminderXDesc"] = "調整提醒文字的左/右位置。";
+
+L["lootReminderYTitle"] = "垂直位置";
+L["lootReminderYDesc"] = "調整提醒文字的上/下位置。";
+
+L["Looted"] = "已拾取";
+L["Not Looted"] = "未拾取";
+L["Killed But Not Looted"] = "已擊殺但是還沒有拾取";
+L["Loot the Tarnished Undermine Real"] = "拾取黯淡的幽坑城真幣";
+
+L["Reminder"] = "提醒";
+L["missingArgentDawnTrinket"] = "%s 飾品提醒 %s 尚未裝備。" --Argent Dawn trinket reminder [Rune of the Dawn] isn't equipped.
+
+L["argentDawnTrinketReminderTitle"] = "銀色黎明飾品提醒";
+L["argentDawnTrinketReminderDesc"] = "進入通靈學院/斯坦索姆時，背包中有飾品且未崇拜，則會在聊天中發出銀色黎明飾品提醒。";
 
 --增加
 L["Nova Instance Tracker"] = "Nova 副本進度追蹤";
@@ -460,4 +495,3 @@ L["Short"] = "短";
 L["Lockouts"] = "副本進度";
 L["Raid Lockouts (Including Alts)"] = "副本進度 (包括分身}";
 L["Auto Select (Spec Based)"] = "自動選擇 (根據專精)";
-L["First Aid"] = "急救";

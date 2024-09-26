@@ -30,13 +30,14 @@ if (locale == "deDE" and NIT.expansionNum < 5) then
 end
 
 local L = LibStub("AceLocale-3.0"):GetLocale("NovaInstanceTracker");
-local version = GetAddOnMetadata("NovaInstanceTracker", "Version") or 9999;
+local version = NIT.version;
 local GetContainerNumFreeSlots = GetContainerNumFreeSlots or C_Container.GetContainerNumFreeSlots;
 local GetContainerNumSlots = GetContainerNumSlots or C_Container.GetContainerNumSlots;
 local GetContainerItemCooldown = GetContainerItemCooldown or C_Container.GetContainerItemCooldown;
 local GetContainerItemLink = GetContainerItemLink or C_Container.GetContainerItemLink;
 local IsQuestFlaggedCompleted = IsQuestFlaggedCompleted or C_QuestLog.IsQuestFlaggedCompleted;
 local GetQuestInfo = C_QuestLog.GetQuestInfo or C_QuestLog.GetTitleForQuestID;
+local GetSpellInfo = NIT.GetSpellInfo;
 NIT.currentInstanceID = 0;
 --This is for a system that records before and after honor for bgs honor gained calced.
 --Didn't have to end up using it becaus another way was worked out that didn't work at the start of expansion.
@@ -115,6 +116,8 @@ function NIT:OnCommReceived(commPrefix, string, distribution, sender)
 	elseif (cmd == "instanceResetOther") then
 		--Instance reset from NWB user.
 		NIT:instanceResetOtherComm(data, sender, distribution);
+	elseif (cmd == "douse") then
+		NIT:receivedDouse(data, sender, distribution);
 	end
 	NIT:versionCheck(remoteVersion);
 end
@@ -175,7 +178,7 @@ function NIT:sendVersion(distribution)
 	if (distribution) then
 		NIT:sendComm(distribution, "version " .. version .. " check");
 	else
-		NIT:sendGroupComm("version " .. version .. " check")
+		NIT:sendGroupComm("version " .. version .. " check");
 	end
 end
 
@@ -245,13 +248,15 @@ f:RegisterEvent("TRADE_SKILL_CLOSE");
 f:RegisterEvent("UPDATE_BATTLEFIELD_SCORE");
 f:RegisterEvent("ENCOUNTER_END");
 f:RegisterEvent("CURRENCY_DISPLAY_UPDATE");
+f:RegisterEvent("CHAT_MSG_LOOT");
 if (NIT.isRetail) then
 	f:RegisterEvent("CHALLENGE_MODE_START");
 	f:RegisterEvent("CHALLENGE_MODE_COMPLETED");
 	f:RegisterEvent("CHALLENGE_MODE_MAPS_UPDATE")
-	f:RegisterEvent("CHAT_MSG_LOOT");
 	f:RegisterEvent("ITEM_CHANGED");
 	f:RegisterEvent("WEEKLY_REWARDS_UPDATE");
+	f:RegisterEvent("ACTIVE_DELVE_DATA_UPDATE");
+	f:RegisterEvent("ZONE_CHANGED_NEW_AREA");
 end
 f:RegisterEvent("UPDATE_INSTANCE_INFO");
 f:RegisterEvent("PLAYER_GUILD_UPDATE");
@@ -418,13 +423,15 @@ f:SetScript('OnEvent', function(self, event, ...)
 	elseif (event == "PLAYER_CAMPING") then
 		--Print stats if logging out inside an instance for an offline reset.
 		if (NIT.inInstance) then
-			NIT.data.instances[1]["leftTime"] = GetServerTime();
+			NIT:recordLeftInstanceStats();
 			NIT:showInstanceStats();
 		end
 		NIT:recordLockoutData();
 		NIT:recordQuests();
 	elseif (event == "PLAYER_LOGOUT") then
-		--Print stats if logging out inside an instance for an offline reset.
+		--if (NIT.inInstance) then
+		--	NIT:recordLeftInstanceStats();
+		--end
 		NIT:recordLockoutData();
 		NIT:recordQuests();
 	elseif (event == "TRADE_SKILL_UPDATE" or event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_CLOSE") then
@@ -494,6 +501,16 @@ f:SetScript('OnEvent', function(self, event, ...)
 		end)
 	elseif (event == "PLAYER_GUILD_UPDATE") then
 		NIT:throddleEventByFunc(event, 1, "recordGuildInfo");
+	elseif( event == "ACTIVE_DELVE_DATA_UPDATE") then
+		if (C_PartyInfo and C_PartyInfo.IsDelveInProgress and C_PartyInfo.IsDelveInProgress() and not NIT.inInstance) then
+			NIT:enteredDelve();
+		end
+	elseif (event == "ZONE_CHANGED_NEW_AREA") then
+		if (C_PartyInfo and C_PartyInfo.IsDelveInProgress) then
+			if (NIT.inInstance and NIT.data.instances[1].type == "delve" and not C_PartyInfo.IsDelveInProgress()) then
+				NIT:leftDelve();
+			end
+		end
 	end
 end)
 
@@ -516,6 +533,11 @@ function NIT:trimTrades()
 	end
 end
 
+local lootCurrency = {
+	--SoD.
+    [226404] = "Tarnished Undermine Real",
+};
+
 function NIT:chatMsgLoot(...)
 	local msg = ...;
 	local itemName, itemLink, itemRarity, itemLevel, itemMinLevel, itemType,
@@ -537,6 +559,29 @@ function NIT:chatMsgLoot(...)
 		end
     end
     if (itemLink) then
+    	if (NIT.inInstance) then
+	    	local instance = NIT.data.instances[1];
+	    	local itemID = string.match(itemLink, "item:(%d+)");
+	    	if (itemID) then
+	    		itemID = tonumber(itemID);
+	    		if (lootCurrency[tonumber(itemID)]) then
+		    		local itemName, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(itemID);
+		    		if (not instance.currencies) then
+						instance.currencies = {};
+					end
+					if (not instance.currencies[itemID]) then
+						instance.currencies[itemID] = {
+							count = 0;
+						};
+					end
+					instance.currencies[itemID] = {
+						name = itemName,
+						count = instance.currencies[itemID].count + (amount or 1),
+						icon = icon,
+					};
+				end
+	    	end
+    	end
     	if (string.match(itemLink, "|Hkeystone:(.+)|h") or string.match(itemLink, "item:180653")) then
     		C_Timer.After(1, function()
     			NIT:debug("looted keystone");
@@ -682,17 +727,21 @@ function NIT:chatMsgCombatFactionChange(...)
 			end
 		end
 	end
-	if (not repName or not repAmount) then
-		NIT:debug("Faction error:", text);
-		return;
-	end
-	if (not NIT.data.instances[1].rep[repName]) then
-		NIT.data.instances[1].rep[repName] = 0
-	end
-	if (decrease) then
-		NIT.data.instances[1].rep[repName] = NIT.data.instances[1].rep[repName] - repAmount;
+	if (NIT.data.instances[1].type == "delve") then
+		--Brann XP comes through in the rep event, could track this later.
 	else
-		NIT.data.instances[1].rep[repName] = NIT.data.instances[1].rep[repName] + repAmount;
+		if (not repName or not repAmount) then
+			NIT:debug("Faction error:", text);
+			return;
+		end
+		if (not NIT.data.instances[1].rep[repName]) then
+			NIT.data.instances[1].rep[repName] = 0
+		end
+		if (decrease) then
+			NIT.data.instances[1].rep[repName] = NIT.data.instances[1].rep[repName] - repAmount;
+		else
+			NIT.data.instances[1].rep[repName] = NIT.data.instances[1].rep[repName] + repAmount;
+		end
 	end
 end
 
@@ -785,7 +834,7 @@ function NIT:chatMsgCurrency(...)
 		end
 		instance.currencies[currencyID] = {
 			name = data.name,
-			count = instance.currencies[currencyID].count + amount,
+			count = instance.currencies[currencyID].count + (amount or 1),
 			icon = data.iconFileID,
 		}; --/run NIT.data.instances[1].currencies[395] = {name = "Justice Points", count = 5, icon = 463446}
 	end
@@ -1111,6 +1160,18 @@ end
 	RaidNotice_AddMessage(RaidWarningFrame, NIT.prefixColor .. "[NIT Reminder]:|r |cFF00FF00" .. string.format(L["autoGammaBuffReminder"], npcType), colorTable, 6);
 end]]
 
+function NIT:enteredDelve()
+	C_Timer.After(1, function()
+		if (not NIT.inInstance) then
+			NIT:enteredInstance();
+		end
+	end)
+end
+
+function NIT:leftDelve()
+	NIT:leftInstance();
+end
+
 local isGhost = false;
 NIT.lastInstanceName = "(Unknown Instance)";
 local doneFirstGUIDCheck;
@@ -1139,6 +1200,14 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 	if (checkAgain) then
 		NIT:debug("Rechecked Instance:", instance, "Type:", instanceType, NIT:isInArena(), UnitInBattleground("player"));
 	end
+	if (instance and instanceType == "scenario") then
+		--Check for delves.
+		local _, _, difficultyID = GetInstanceInfo();
+		if (difficultyID == 208) then
+			instanceType = "party";
+			type = "delve";
+		end
+	end
 	if (instance == true and ((instanceType == "party") or (instanceType == "raid")
 			or (type == "bg") or (type == "arena"))) then
 		local instanceName, instanceType, difficultyID, difficultyName, maxPlayers, dynamicDifficulty,
@@ -1153,8 +1222,14 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 			instanceName = "(Instance Name Not Found)";
 		end
 		local instanceNameMsg = instanceName;
-		if (difficultyID == 174) then
+		--174 was heroic dung in wrath, but 2 is heroic in cata and retail.
+		if (difficultyID == 174 or difficultyID == 2 or difficultyID == 5 or difficultyID == 6 or difficultyID == 11
+			 or difficultyID == 15 or difficultyID == 39 or difficultyID == 149) then
 			instanceNameMsg = instanceNameMsg .. " |cFF9CD6DE(|r|cFFFF2222H|r|cFF9CD6DE)|r";
+		elseif (difficultyID == 8 or difficultyID == 16 or difficultyID == 23 or difficultyID == 40) then --Mythic retail.
+			instanceNameMsg = instanceNameMsg .. " |cFF9CD6DE(|r|cFFa335eeM|r|cFF9CD6DE)|r";
+		elseif (type == "delve") then
+			instanceNameMsg = instanceNameMsg .. " |cFF9CD6DE(|r|cFF00C800D|r|cFF9CD6DE)|r";
 		end
 		if (isGhost) then
 			--This never worked and doesn't need to anyway.
@@ -1176,6 +1251,7 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 					type = type,
 					enteredTime = GetServerTime(),
 					enteredLevel = UnitLevel("player");
+					enteredLevelPercent = NIT:getLevelPercentage();
 					enteredXP = UnitXP("player");
 					enteredMoney = GetMoney(),
 					leftTime = 0,
@@ -1246,6 +1322,15 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 							NIT:print("|HNITCustomLink:instancelog|h" .. string.format(L["enteredRaid"], instanceNameMsg) .. "|h");
 						end)
 					end
+				elseif (type == "delve") then
+					local msg = string.format(L["enteredDungeon"], instanceNameMsg, "");
+					msg = string.gsub(msg, " , ", ", ")
+					C_Timer.After(0.5, function()
+						--local hourCount, hourCount24, hourTimestamp, hourTimestamp24 = NIT:getInstanceLockoutInfo();
+						NIT:print("|HNITCustomLink:instancelog|h" .. msg .. "|h "
+								.. "|HNITCustomLink:deletelast|h" .. texture
+								.. "|h |HNITCustomLink:instancelog|h" .. L["enteredDungeon2"] .. "|h");
+					end)
 				elseif (isLogon) then
 					C_Timer.After(3, function()
 						--local hourCount, hourCount24, hourTimestamp, hourTimestamp24 = NIT:getInstanceLockoutInfo();
@@ -1269,6 +1354,11 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 						NIT:print("|cFF00FF00Gamma Dungeon:|r " .. L["autoGammaBuffReminder"]);
 					end)
 				end]]
+				if (NIT.isClassic and (instanceID == 289 or instanceID == 329)) then
+					C_Timer.After(10, function()
+						NIT:argentDawnTrinketReminder();
+					end)
+				end
 			elseif (isReload) then
 				C_Timer.After(3, function()
 					local texture = "|TInterface\\AddOns\\NovaInstanceTracker\\Media\\redX2:12:12:0:0|t";
@@ -1303,24 +1393,33 @@ function NIT:enteredInstance(isReload, isLogon, checkAgain)
 	end
 end
 
+function NIT:recordLeftInstanceStats()
+	local isPvp = NIT.data.instances[1].isPvp
+	NIT.data.instances[1]["leftTime"] = GetServerTime();
+	if (isPvp) then
+		if (usePreHonor and NIT.data.instances[1].type == "bg") then
+			local honor = C_CurrencyInfo.GetCurrencyInfo(1901);
+			if (honor) then
+				NIT.data.instances[1].postHonor = honor.quantity;
+			end
+		end
+	else
+		NIT.data.instances[1]["leftLevel"] = UnitLevel("player");
+		local levelPercentage = NIT:getLevelPercentage();
+		if (levelPercentage) then
+			NIT.data.instances[1]["leftLevelPercent"] = levelPercentage;
+		end
+		NIT.data.instances[1]["leftXP"] = UnitXP("player");
+		NIT.data.instances[1]["leftMoney"] = GetMoney();
+	end
+end
+
 function NIT:leftInstance()
 	if (NIT.inInstance and NIT.data.instances[1]) then
-		local isPvp = NIT.data.instances[1].isPvp
-		NIT.data.instances[1]["leftTime"] = GetServerTime();
-		if (isPvp) then
-			if (usePreHonor and NIT.data.instances[1].type == "bg") then
-				local honor = C_CurrencyInfo.GetCurrencyInfo(1901);
-				if (honor) then
-					NIT.data.instances[1].postHonor = honor.quantity;
-				end
-			end
-		else
-			NIT.data.instances[1]["leftLevel"] = UnitLevel("player");
-			NIT.data.instances[1]["leftXP"] = UnitXP("player");
-			NIT.data.instances[1]["leftMoney"] = GetMoney();
-		end
+		NIT:recordLeftInstanceStats();
 		--NIT:debug("left", UnitLevel("player"));
 		--Don't show party stats if bg or arena, only self.
+		local isPvp = NIT.data.instances[1].isPvp
 		if (not isPvp or NIT.db.global.instanceStatsOutputWhere == "self") then
 			NIT:showInstanceStats();
 		end
@@ -1492,7 +1591,7 @@ function NIT:showInstanceStats(id, output, showAll, customPrefix, showDate)
 				if (v > 0) then
 					v = "+" .. NIT:commaValue(v);
 				else
-					v = "-" .. NIT:commaValue(v);
+					v = NIT:commaValue(v);
 				end
 				if (count == 1) then
 					repText = repText .. "(" .. k .. " " .. v .. ")";
@@ -1713,9 +1812,10 @@ function NIT:mergeLastInstances(GUID, source)
 	NIT.data.instances[2].playerName = UnitName("player");
 	NIT.data.instances[2].class = class;
 	NIT.data.instances[2].classEnglish = classEnglish;
-	NIT.data.instances[2].enteredLevel = UnitLevel("player");
-	NIT.data.instances[2].enteredXP = UnitXP("player");
-	NIT.data.instances[2].enteredMoney = GetMoney();
+	--This stuff should already be recorded and overwriting it would have been incorrect.
+	--NIT.data.instances[2].enteredLevel = UnitLevel("player");
+	--NIT.data.instances[2].enteredXP = UnitXP("player");
+	--NIT.data.instances[2].enteredMoney = GetMoney();
 	if (not NIT.data.instances[1].isPvp) then
 		NIT.data.instances[2].mobCount =  NIT.data.instances[2].mobCount + NIT.data.instances[1].mobCount;
 		NIT.data.instances[2].mobCountFromKill =  NIT.data.instances[2].mobCountFromKill + NIT.data.instances[1].mobCountFromKill;
@@ -1911,7 +2011,7 @@ function NIT:getInstanceLockoutInfo(char)
 	end
 	for k, v in ipairs(NIT.data.instances) do
 		if (not NIT.perCharOnly or target == v.playerName) then
-			if (v.isPvp or (NIT.noRaidLockouts and v.instanceID and NIT.zones[v.instanceID] and NIT.zones[v.instanceID].noLockout)) then
+			if (v.isPvp or v.type == "delve" or (NIT.noRaidLockouts and v.instanceID and NIT.zones[v.instanceID] and NIT.zones[v.instanceID].noLockout)) then
 				--NIT:debug("skipping raid", v.instanceID);
 			else
 				count = count + 1;
@@ -2673,6 +2773,13 @@ function NIT:resetWeeklyAndDailyData()
 							NIT.db.global[realm].myChars[char].keystoneData = nil;
 						end
 					end
+					if (charData.bossKills) then
+						for k, v in pairs(charData.bossKills) do
+							if (not v.resetTime or (v.resetTime and v.resetTime < GetServerTime())) then
+								NIT.db.global[realm].myChars[char].bossKills[k] = nil;
+							end
+						end
+					end
 				end
 			end
 		end
@@ -3048,7 +3155,12 @@ local function getProfessionSpec(spellTabIndex)
     for j = offset + 1, offset + numSlots do
         local _, spellID = GetSpellBookItemInfo(j, BOOKTYPE_SPELL);
         if (spellID and tradeskillSpecs[spellID]) then
-            specName = GetSpellInfo(spellID);
+        	if (C_Spell and C_Spell.GetSpellInfo) then
+				local spellData = C_Spell.GetSpellInfo(spellID);
+				specName = spellData.name;
+			else
+            	specName = GetSpellInfo(spellID);
+            end
             return specName;
         end
     end
@@ -3066,7 +3178,12 @@ local function getProfessionSpecClassic(profName)
         for j = offset + 1, offset + numSlots do
            local _, spellID = GetSpellBookItemInfo(j, BOOKTYPE_SPELL);
            if (spellID and tradeskillSpecs[spellID] and tradeskillSpecs[spellID] == profName) then
-	            specName = GetSpellInfo(spellID);
+           		if (C_Spell and C_Spell.GetSpellInfo) then
+				local spellData = C_Spell.GetSpellInfo(spellID);
+					specName = spellData.name;
+				else
+	            	specName = GetSpellInfo(spellID);
+	            end
 	            return specName
 	        end
         end
@@ -3323,8 +3440,8 @@ function NIT:recordCooldowns()
 		for slot = 1, GetContainerNumSlots(bag) do
 			local item = Item:CreateFromBagAndSlot(bag, slot);
 			if (item) then
-				local itemID = item:GetItemID(item);
-				local itemName = item:GetItemName(item);
+				local itemID = item:GetItemID();
+				local itemName = item:GetItemName();
 				if (itemID and itemName and itemCooldowns[itemID]) then
 					local startTime, duration, isEnabled = GetContainerItemCooldown(bag, slot);
 					--local endTime = (startTime + duration) - (GetTime() - GetServerTime());
@@ -3491,6 +3608,18 @@ function NIT:getBagSlots()
 	return freeSlots, totalSlots;
 end
 
+SLASH_NRCGHECMD1 = '/ghetto';
+function SlashCmdList.NRCGHECMD(msg, editBox)
+	if (IsInInstance() and not IsInGroup()) then
+		InviteUnit("1");
+		C_Timer.After(1,function()
+			LeaveParty();
+		end)
+	else
+		print("|cFFFFFF00This only works inside an instance and while not in a group.");
+	end
+end
+
 --Throddle by function name, delays event for non-vital info and catches any extras to avoid spam when mass looting etc.
 local throddle = true;
 NIT.currentThroddles = {};
@@ -3614,6 +3743,22 @@ end
 
 function NIT:resetCurrentTradeData()
 	playerMoney, targetMoney, tradeWho, tradeWhoClass = 0, 0, "", "";
+end
+
+--UnitXP() seems to return nil sometimes? Right on logging out I think?
+function NIT:getLevelPercentage()
+	--[[local xp = UnitXP("player");
+	if (xp and xp > 0) then
+		local percent = (xp / UnitXPMax("player")) * 100;
+		return NIT:round(percent, 2);
+	end]]
+	local playerLevel = UnitLevel("player");
+	local xp = UnitXP("player");
+	if (xp and xp > 0) then
+		local percent = (xp / UnitXPMax("player")) * 100;
+		playerLevel = tonumber(UnitLevel("player") .. "." .. string.format("%02.f", percent));
+		return playerLevel;
+	end
 end
 
 ---Some intergration for softres.it

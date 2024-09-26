@@ -14,6 +14,8 @@ L["hour"] = "hour"; --Hour (singular).
 L["hours"] = "hours"; --Hours (plural).
 L["day"] = "day"; --Day (singular).
 L["days"] = "days"; --Days (plural).
+L["year"] = "year"; --Year (singular).
+L["years"] = "years"; --Years (plural).
 L["secondMedium"] = "sec"; --Second (singular).
 L["secondsMedium"] = "secs"; --Seconds (plural).
 L["minuteMedium"] = "min"; --Minute (singular).
@@ -22,10 +24,13 @@ L["hourMedium"] = "hour"; --Hour (singular).
 L["hoursMedium"] = "hours"; --Hours (plural).
 L["dayMedium"] = "day"; --Day (singular).
 L["daysMedium"] = "days"; --Days (plural).
+L["yearMedium"] = "year"; --Day (singular).
+L["yearsMedium"] = "years"; --Days (plural).
 L["secondShort"] = "s"; --Used in short timers like 1m30s (single letter only, usually the first letter of seconds).
 L["minuteShort"] = "m"; --Used in short timers like 1m30s (single letter only, usually the first letter of minutes).
 L["hourShort"] = "h"; --Used in short timers like 1h30m (single letter only, usually the first letter of hours).
 L["dayShort"] = "d"; --Used in short timers like 1d8h (single letter only, usually the first letter of days).
+L["yearShort"] = "y"; --Used in short timers like 1d8h (single letter only, usually the first letter of days).
 L["startsIn"] = "Starts in %s"; --"Starts in 1hour".
 L["endsIn"] = "Ends in %s"; --"Ends in 1hour".
 L["versionOutOfDate"] = "Nova Instance Tracker is out of date, please update at https://www.curseforge.com/wow/addons/nova-instance-tracker";
@@ -550,6 +555,8 @@ L["Cata Cooking Daily"] = "Cata Cooking Daily";
 L["Cata Fishing Daily"] = "Cata Fishing Daily";
 L["Cata Jewelcrafting Daily"] = "Cata Jewelcrafting Daily";
 
+L["Tarnished Undermine Real"] = "Tarnished Undermine Real";
+
 L["Dungeon weeklies remaining"] = "Dungeon weeklies remaining";
 
 L["Currency"] = "Currency";
@@ -557,3 +564,28 @@ L["Currencies"] = "Currencies";
 
 L["instanceStatsOutputCurrencyTitle"] = "Currency";
 L["instanceStatsOutputCurrencyDesc"] = "Show what currencies were gained while inside a dungeon?";
+
+L["lootReminderDesc"] = "Loot Reminders";
+
+L["lootReminderRealTitle"] = "Tarnished Undermine Real";
+L["lootReminderRealDesc"] = "Show a reminder to loot Tarnished Undermine Real in SoD when a boss dies that can drop it.";
+
+L["lootReminderSizeTitle"] = "Text Size";
+L["lootReminderSizeDesc"] = "What size text to show on the reminder.";
+
+L["lootReminderXTitle"] = "X Position";
+L["lootReminderXDesc"] = "Adjust this for the left/right position of the reminder text.";
+
+L["lootReminderYTitle"] = "Y Position";
+L["lootReminderYDesc"] = "Adjust this for the up/down position of the reminder text.";
+
+L["Looted"] = "Looted";
+L["Not Looted"] = "Not Looted";
+L["Killed But Not Looted"] = "Killed But Not Looted";
+L["Loot the Tarnished Undermine Real"] = "Loot the Tarnished Undermine Real";
+
+L["Reminder"] = "Reminder";
+L["missingArgentDawnTrinket"] = "%s trinket reminder %s isn't equipped." --Argent Dawn trinket reminder [Rune of the Dawn] isn't equipped.
+
+L["argentDawnTrinketReminderTitle"] = "Argent Dawn Trinket Reminder";
+L["argentDawnTrinketReminderDesc"] = "Argent Dawn trinket reminder in chat if you enter Scholomance/Stratholme with the trinket in bags and not exalted.";
