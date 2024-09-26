@@ -872,7 +872,7 @@ function func.gm_SetButton(button, index)
 		else
 			button.cloak:SetChecked(false);
 		end
-		if GetMouseFocus() == button then
+		if GetMouseFoci() == button then
 			button:GetScript("OnEnter")(button);
 		end
 	elseif index == #sets + 1 then
