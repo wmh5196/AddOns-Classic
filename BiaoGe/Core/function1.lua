@@ -172,11 +172,9 @@ local function SetClassCFF(name, player, type)
     else
         _, class = UnitClass(name)
     end
-    local colorname = ""
     if class then
         local color = select(4, GetClassColor(class))
-        colorname = "|c" .. color .. name .. "|r"
-        return colorname, color
+        return "|c" .. color .. name .. "|r", color
     else
         return name, ""
     end
@@ -247,6 +245,10 @@ local function FrameHide(num)
     if BG.frameImportHope then
         BG.frameImportHope:Hide()
     end
+    if BG.auctionLogFrame and BG.auctionLogFrame.changeFrame then
+        BG.auctionLogFrame.changeFrame:Hide()
+    end
+
     -- if BG.FrameNewBee then
     --     BG.FrameNewBee:Hide()
     -- end
@@ -393,6 +395,7 @@ function BG.OnUpdateTime(func)
     local updateFrame = CreateFrame("Frame")
     updateFrame.timeElapsed = 0
     updateFrame:SetScript("OnUpdate", func)
+    return updateFrame
 end
 
 --[[
@@ -404,6 +407,7 @@ BG.OnUpdateTime(function(self,elapsed)
     end
 end)
  ]]
+
 ------------------设置按钮文本的宽度------------------
 function BG.SetButtonStringWidth(bt)
     local t = bt:GetFontString()
@@ -419,25 +423,27 @@ end
 
 ------------------菜单：点文本也能打开菜单------------------
 function BG.dropDownToggle(dropDown)
-    dropDown:SetScript("OnMouseUp", function(self)
+    dropDown:SetScript("OnMouseDown", function(self)
         LibBG:ToggleDropDownMenu(nil, nil, self)
+        BG.PlaySound(1)
     end)
 end
 
 ------------------是国服或亚服吗------------------
 function BG.IsCN()
-    if GetCurrentRegionName() == "CN" or GetCurrentRegionName() == "KR" then
+    if GetCurrentRegionName() == "CN" or GetCurrentRegionName() == "TW" or GetCurrentRegionName() == "KR" then
         return true
     end
 end
 
 ------------------按键声音------------------
 function BG.PlaySound(id)
+    if BiaoGe.options['buttonSound'] ~= 1 then return end
     if id and BG["sound" .. id] then
         if id == 2 then
-            PlaySoundFile(BG["sound" .. id], "Master")
+            PlaySoundFile(BG["sound" .. id])
         else
-            PlaySound(BG["sound" .. id], "Master")
+            PlaySound(BG["sound" .. id])
         end
     end
 end
@@ -486,6 +492,7 @@ end
 ----------滚动到最末----------
 function BG.SetScrollBottom(scroll, child)
     local offset = child:GetHeight() - scroll:GetHeight()
+    -- pt(child:GetHeight(),scroll:GetHeight())
     if offset > 0 then
         scroll:SetVerticalScroll(offset)
     end
@@ -514,17 +521,13 @@ end
 do
     function BG.CursorIsInRight()
         local uiScale = UIParent:GetEffectiveScale()
-        local w = floor(UIParent:GetRight())
-        local x, y = GetCursorPosition()
-        x, y = floor(x / uiScale), floor(y / uiScale)
-        if w * 0.67 < x then
+        if GetCursorPosition() / uiScale > UIParent:GetWidth() * 0.5 then
             return true
         end
     end
 
-    function BG.ButtonIsInRight(self, percent)
-        if not percent then percent = 0.6 end
-        if self:GetCenter() > UIParent:GetRight() * percent then
+    function BG.ButtonIsInRight(self)
+        if self:GetCenter() > UIParent:GetWidth() * 0.5 then
             return true
         end
     end
@@ -549,10 +552,10 @@ function BG.SecondsToTime(second)
 end
 
 ----------是否已经拥有某物品----------
-function BG.GetItemCount(_itemID)
-    local itemID = _itemID
-    if not tonumber(_itemID) then
-        itemID = tonumber(_itemID:match("item:(%d+)"))
+function BG.GetItemCount(itemIDorLink)
+    local itemID = itemIDorLink
+    if not tonumber(itemIDorLink) then
+        itemID = tonumber(itemIDorLink:match("item:(%d+)"))
     end
     for _, FB in pairs(BG.FBtable) do
         for itemID2, _ in pairs(BG.Loot[FB].ExchangeItems) do
@@ -571,4 +574,43 @@ end
 
 function BG.SendSystemMessage(msg)
     SendSystemMessage(BG.STC_b1("<BiaoGe>") .. " " .. msg)
+end
+
+function BG.Copy(table)
+    if type(table) == "table" then
+        local t = {}
+        for k, v in pairs(table) do
+            if type(v) == "table" then
+                t[k] = BG.Copy(v) -- 递归拷贝子表
+            else
+                t[k] = v
+            end
+        end
+        return t
+    else
+        return table
+    end
+end
+
+function BG.SetBorderAlpha(self)
+    self.Left:SetAlpha(BG.otherEditAlpha)
+    self.Right:SetAlpha(BG.otherEditAlpha)
+    self.Middle:SetAlpha(BG.otherEditAlpha)
+end
+
+function BG.FormatNumber(num)
+    local len = strlen(num)
+    if len <= 3 then
+        return num
+    else
+        local k = num:sub(-4, -4)
+        local w = num:sub(1, -5)
+        if w == "" then
+            w = 0
+        end
+        return w .. "." .. k .. L["万"]
+    end
+    -- local formatted = tostring(num)
+    -- formatted = formatted:reverse():gsub("(%d%d%d)", "%1,"):reverse():gsub("^,","")
+    -- return formatted
 end

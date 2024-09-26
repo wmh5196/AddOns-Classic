@@ -34,8 +34,10 @@ frame:SetScript("OnEvent", function(self, event, addonName)
 
     BiaoGe.auctionMSGhistory = BiaoGe.auctionMSGhistory or {}
 
-    local maxLine = 1000
 
+    local maxLine = 1000
+    local normalX, normalY = 250, 230
+    local bigX, bigY = 400, 230
     -- UI
     do
         BG.FrameAuctionMSGbg = CreateFrame("Frame", nil, BG.MainFrame, "BackdropTemplate")
@@ -47,31 +49,39 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         })
         BG.FrameAuctionMSGbg:SetBackdropColor(0, 0, 0, 0.8)
         BG.FrameAuctionMSGbg:SetPoint("CENTER")
-        BG.FrameAuctionMSGbg:SetSize(220, 230) -- 大小
+        if BiaoGe.auctionMSGIsBig then
+            BG.FrameAuctionMSGbg:SetSize(bigX, bigY)
+        else
+            BG.FrameAuctionMSGbg:SetSize(normalX, normalY)
+        end
         BG.FrameAuctionMSGbg:SetFrameLevel(120)
         BG.FrameAuctionMSGbg:EnableMouse(true)
         BG.FrameAuctionMSGbg:Hide()
 
+        local _f = CreateFrame("Frame", nil, BG.FrameAuctionMSGbg)
+        _f:SetSize(1, 1)
+        _f:SetPoint("TOPRIGHT", 0, 1)
+        BG.FrameAuctionMSGbg.tooltip = _f
+
         local f = CreateFrame("ScrollingMessageFrame", nil, BG.FrameAuctionMSGbg)
-        f:SetSpacing(1)                                                                        -- 行间隔
+        f:SetSpacing(1)       -- 行间隔
         f:SetFading(false)
-        f:SetJustifyH("LEFT")                                                                  -- 对齐格式
-        f:SetSize(BG.FrameAuctionMSGbg:GetWidth() - 15, BG.FrameAuctionMSGbg:GetHeight() - 15) -- 大小
-        f:SetPoint("CENTER", BG.FrameAuctionMSGbg)                                             --设置显示位置
+        f:SetJustifyH("LEFT") -- 对齐格式
+        f:SetPoint("TOPLEFT", 7, -7)
+        f:SetPoint("BOTTOMRIGHT", -7, 7)
         f:SetMaxLines(maxLine)
         f:SetFontObject(GameFontNormalSmall2)
         f:SetJustifyH("LEFT")
         f:SetHyperlinksEnabled(true)
         BG.FrameAuctionMSG = f
         f:SetScript("OnHyperlinkEnter", function(self, link, text, button)
-            GameTooltip:SetOwner(self, "ANCHOR_CURSOR", 0, 0)
+            GameTooltip:SetOwner(BG.FrameAuctionMSGbg.tooltip, "ANCHOR_BOTTOMRIGHT", 0, 0)
             GameTooltip:ClearLines()
             local itemID = GetItemInfoInstant(link)
             if itemID then
                 GameTooltip:SetItemByID(itemID)
                 GameTooltip:Show()
-                BG.HighlightBiaoGe(link)
-                BG.HighlightBag(link)
+                BG.Show_AllHighlight(link)
             end
         end)
         f:SetScript("OnHyperlinkLeave", function(self, link, text, button)
@@ -96,8 +106,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             elseif (strsub(link, 1, 4) == "item") then
                 local name, link, quality, level, _, _, _, _, _, Texture, _, typeID = GetItemInfo(link)
                 if IsShiftKeyDown() then
-                    ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
-                    ChatEdit_InsertLink(text)
+                    BG.InsertLink(text)
                 elseif IsAltKeyDown() then
                     if BG.IsML then -- 开始拍卖
                         BG.StartAuction(link)
@@ -113,13 +122,41 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 end
             end
         end)
-        for i, msg in ipairs(BiaoGe.auctionMSGhistory) do
-            BG.FrameAuctionMSG:AddMessage(msg)
+        f:SetScript("OnShow", function(self)
+            if not BG.FrameAuctionMSG:AtBottom() then
+                BG.FrameAuctionMSG.hilighttexture:Show()
+            else
+                BG.FrameAuctionMSG.hilighttexture:Hide()
+            end
+            self.UpdateButtonItem()
+        end)
+        hooksecurefunc(f, "RefreshDisplay", function(self)
+            self.UpdateButtonItem()
+        end)
+
+        local t = time()
+        for i = #BiaoGe.auctionMSGhistory, 1, -1 do
+            if type(BiaoGe.auctionMSGhistory[i]) == "table" then
+                if t - BiaoGe.auctionMSGhistory[i].time > 3600 * 12 then
+                    tremove(BiaoGe.auctionMSGhistory, i)
+                end
+            end
+        end
+
+        for i, v in ipairs(BiaoGe.auctionMSGhistory) do
+            if type(v) == "table" then
+                local info = date("*t", v.time)
+                local hour, min = info.hour, info.min
+                hour = string.format("%02d", hour)
+                min = string.format("%02d", min)
+                local _time = "|cff" .. "808080" .. hour .. ":" .. min .. "|r"
+                local msg = _time .. " |cff" .. v.textColor .. v.nameLink .. L["："] .. v.text .. RN
+                BG.FrameAuctionMSG:AddMessage(msg)
+            end
         end
     end
 
     -- 滚动按钮
-    local hilighttexture
     do
         local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG) -- 到底
         bt:SetSize(30, 30)
@@ -130,20 +167,33 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         bt:SetHighlightTexture("Interface/Buttons/UI-Common-MouseHilight")
         local chatbt = bt
         local texture = bt:CreateTexture(nil, "BACKGROUND") -- 高亮材质
-        texture:SetAllPoints()
+        texture:SetPoint("TOPLEFT", -2, 2)
+        texture:SetPoint("BOTTOMRIGHT", 2, -2)
         texture:SetTexture("Interface/ChatFrame/UI-ChatIcon-BlinkHilight")
         texture:Hide()
-        hilighttexture = texture
-        C_Timer.NewTicker(1, function()
-            if time() % 2 == 0 then
-                texture:SetAlpha(0)
-            else
-                texture:SetAlpha(1)
-            end
-        end)
+        BG.FrameAuctionMSG.hilighttexture = texture
+        local flashGroup = texture:CreateAnimationGroup()
+        for i = 1, 3 do
+            local fade = flashGroup:CreateAnimation('Alpha')
+            fade:SetChildKey('flash')
+            fade:SetOrder(i * 2)
+            fade:SetDuration(.4)
+            fade:SetFromAlpha(.1)
+            fade:SetToAlpha(1)
+
+            local fade = flashGroup:CreateAnimation('Alpha')
+            fade:SetChildKey('flash')
+            fade:SetOrder(i * 2 + 1)
+            fade:SetDuration(.4)
+            fade:SetFromAlpha(1)
+            fade:SetToAlpha(.1)
+        end
+        flashGroup:Play()
+        flashGroup:SetLooping("REPEAT")
         bt:SetScript("OnClick", function(self)
+            BG.PlaySound(1)
             self:GetParent():ScrollToBottom()
-            hilighttexture:Hide()
+            BG.FrameAuctionMSG.hilighttexture:Hide()
         end)
 
         local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG) -- 下滚
@@ -158,9 +208,29 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             self:GetParent():ScrollDown()
             self:GetParent():ScrollDown()
             if BG.FrameAuctionMSG:AtBottom() then
-                hilighttexture:Hide()
+                BG.FrameAuctionMSG.hilighttexture:Hide()
             end
         end)
+        bt:SetScript("OnMouseDown", function(self)
+            BG.PlaySound(1)
+            local t = 0
+            local t_do = 0.3
+            self:SetScript("OnUpdate", function(self, elapsed)
+                t = t + elapsed
+                if t >= t_do then
+                    t = t_do - 0.05
+                    self:GetParent():ScrollDown()
+                    if BG.FrameAuctionMSG:AtBottom() then
+                        BG.FrameAuctionMSG.hilighttexture:Hide()
+                    end
+                end
+            end)
+        end)
+        bt:SetScript("OnMouseUp", function(self)
+            self:SetScript("OnUpdate", nil)
+        end)
+
+
         local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG) -- 上滚
         bt:SetSize(30, 30)
         bt:SetPoint("BOTTOM", chatbt, "TOP", 0, -8)
@@ -173,10 +243,63 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             self:GetParent():ScrollUp()
             self:GetParent():ScrollUp()
         end)
+        bt:SetScript("OnMouseDown", function(self)
+            BG.PlaySound(1)
+            local t = 0
+            local t_do = 0.3
+            self:SetScript("OnUpdate", function(self, elapsed)
+                t = t + elapsed
+                if t >= t_do then
+                    t = t_do - 0.05
+                    self:GetParent():ScrollUp()
+                end
+            end)
+        end)
+        bt:SetScript("OnMouseUp", function(self)
+            self:SetScript("OnUpdate", nil)
+        end)
+
+        local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG) -- 放大
+        bt:SetSize(18, 18)
+        bt:SetPoint("BOTTOM", chatbt, "TOP", 1, -2)
+        bt:SetNormalTexture(3487944)
+        bt:SetHighlightTexture(3487944)
+        bt:GetNormalTexture():SetTexCoord(.38, .5, 0, 0.25)
+        bt:GetHighlightTexture():SetTexCoord(.38, .5, 0, 0.25)
+        BG.FrameAuctionMSG.buttonBig = bt
+        if BiaoGe.auctionMSGIsBig then
+            bt:Hide()
+        end
+        bt:SetScript("OnClick", function(self)
+            BG.PlaySound(1)
+            BG.FrameAuctionMSGbg:SetSize(bigX, bigY)
+            BG.FrameAuctionMSG.buttonBig:Hide()
+            BG.FrameAuctionMSG.buttonSmall:Show()
+            BiaoGe.auctionMSGIsBig = true
+        end)
+        local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG) -- 缩小
+        bt:SetSize(18, 18)
+        bt:SetPoint("BOTTOM", chatbt, "TOP", 1, -2)
+        bt:SetNormalTexture(3487944)
+        bt:SetHighlightTexture(3487944)
+        bt:GetNormalTexture():SetTexCoord(.38, .5, 0.5, 0.75)
+        bt:GetHighlightTexture():SetTexCoord(.38, .5, 0.5, 0.75)
+        BG.FrameAuctionMSG.buttonSmall = bt
+        if not BiaoGe.auctionMSGIsBig then
+            bt:Hide()
+        end
+        bt:SetScript("OnClick", function(self)
+            BG.PlaySound(1)
+            BG.FrameAuctionMSGbg:SetSize(normalX, normalY)
+            BG.FrameAuctionMSG.buttonBig:Show()
+            BG.FrameAuctionMSG.buttonSmall:Hide()
+            BiaoGe.auctionMSGIsBig = nil
+        end)
+
         -- 提示
         local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG)
         bt:SetSize(25, 25)
-        bt:SetPoint("BOTTOM", chatbt, "TOP", 0, -5)
+        bt:SetPoint("BOTTOM", chatbt, "TOP", 0, 16)
         local tex = bt:CreateTexture()
         tex:SetAllPoints()
         tex:SetTexture(616343)
@@ -216,7 +339,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             elseif delta == -1 then
                 if IsShiftKeyDown() then
                     self:ScrollToBottom()
-                    hilighttexture:Hide()
+                    BG.FrameAuctionMSG.hilighttexture:Hide()
                 elseif IsControlKeyDown() then
                     self:ScrollDown()
                     self:ScrollDown()
@@ -227,7 +350,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     self:ScrollDown()
                     self:ScrollDown()
                     if self:AtBottom() then
-                        hilighttexture:Hide()
+                        BG.FrameAuctionMSG.hilighttexture:Hide()
                     end
                 end
             end
@@ -256,28 +379,33 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             if string.find(text, "%d+") or string.find(text, "[pP]") or ML then
                 text = BG.GsubRaidTargetingIcons(text)
                 local msg
-                local h, m = GetGameTime()
-                h = string.format("%02d", h)
-                m = string.format("%02d", m)
-                local time = "|cff" .. "808080" .. "(" .. h .. ":" .. m .. ")|r"
+                local hour, min = GetGameTime()
+                hour = string.format("%02d", hour)
+                min = string.format("%02d", min)
+                local _time = "|cff" .. "808080" .. hour .. ":" .. min .. "|r"
                 local nameLink = "|Hplayer:" .. playerName .. ":" .. lineID .. ":RAID:" .. "|h[" .. SetClassCFF(playerName) .. "]|h"
                 if ML then
-                    msg = time .. " " .. "|cffFF4500" .. nameLink .. L["："] .. text .. RN -- 物品分配者聊天
+                    msg = _time .. " " .. "|cffFF4500" .. nameLink .. L["："] .. text .. RN -- 物品分配者聊天
                 else
-                    msg = time .. " " .. "|cffFF7F50" .. nameLink .. L["："] .. text .. RN -- 团员聊天
+                    msg = _time .. " " .. "|cffFF7F50" .. nameLink .. L["："] .. text .. RN -- 团员聊天
                 end
                 BG.FrameAuctionMSG:AddMessage(msg)
 
+                tinsert(BiaoGe.auctionMSGhistory, {
+                    time = time(),
+                    textColor = ML and "FF4500" or "FF7F50",
+                    nameLink = nameLink,
+                    text = text,
+                })
                 for i, v in ipairs(BiaoGe.auctionMSGhistory) do
                     if #BiaoGe.auctionMSGhistory <= maxLine then
                         break
                     end
                     tremove(BiaoGe.auctionMSGhistory, 1)
                 end
-                tinsert(BiaoGe.auctionMSGhistory, msg)
 
                 if not BG.FrameAuctionMSG:AtBottom() then
-                    hilighttexture:Show()
+                    BG.FrameAuctionMSG.hilighttexture:Show()
                 end
             end
         end
@@ -304,5 +432,231 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             end
             AddMSG(msg, playerName, lineID, ML)
         end)
+    end
+
+    -- 定位装备
+    do
+        local function SetItemButtonUpColor(r, g, b)
+            BG.FrameAuctionMSG.buttonItemUp:GetNormalTexture():SetVertexColor(r, g, b)
+            BG.FrameAuctionMSG.buttonItemUp:GetPushedTexture():SetVertexColor(r, g, b)
+            BG.FrameAuctionMSG.buttonItemUp:GetHighlightTexture():SetVertexColor(r, g, b)
+        end
+        local function SetItemButtonDownColor(r, g, b)
+            BG.FrameAuctionMSG.buttonItemDown:GetNormalTexture():SetVertexColor(r, g, b)
+            BG.FrameAuctionMSG.buttonItemDown:GetPushedTexture():SetVertexColor(r, g, b)
+            BG.FrameAuctionMSG.buttonItemDown:GetHighlightTexture():SetVertexColor(r, g, b)
+        end
+        local function Find(itemID, i, mod)
+            if not BG.FrameAuctionMSG.historyBuffer.elements[i] then return end
+            local headIndex = BG.FrameAuctionMSG.historyBuffer.headIndex
+            local message = BG.FrameAuctionMSG.historyBuffer.elements[i].message
+            if message:find("item:" .. itemID .. ":") then
+                if not mod then
+                    local offset
+                    if BG.FrameAuctionMSG.historyBuffer:IsFull() then
+                        offset = (headIndex - i + maxLine) % maxLine
+                    else
+                        offset = headIndex - i
+                    end
+                    BG.FrameAuctionMSG:SetScrollOffset(offset)
+                    BG.FrameAuctionMSG:ResetAllFadeTimes()
+                end
+                return true
+            end
+        end
+        local function OnClick(self)
+            --[[
+            ...
+            91
+            92
+            93
+            94
+            95
+            96
+            97
+            98
+            99
+            100
+            1
+            2
+            3
+            4
+            5
+            6
+            7
+            8
+            9
+            10
+            ]]
+            BG.PlaySound(1)
+            local item = BG.FrameAuctionMSG.item
+            local itemID = GetItemID(item)
+            if not itemID then return end
+            local maxLine = BG.FrameAuctionMSG:GetMaxLines()
+            local headIndex = BG.FrameAuctionMSG.historyBuffer.headIndex
+            local offset = BG.FrameAuctionMSG.scrollOffset
+            local elements = #BG.FrameAuctionMSG.historyBuffer.elements
+            if self.type == "up" then
+                if BG.FrameAuctionMSG.historyBuffer:IsFull() then
+                    for offset = offset, elements do
+                        local i = (headIndex - (offset + 1) + maxLine) % maxLine
+                        if Find(itemID, i) then return end
+                    end
+                else
+                    for i = #BG.FrameAuctionMSG.historyBuffer.elements - offset - 1, 1, -1 do
+                        if Find(itemID, i) then return end
+                    end
+                end
+            elseif self.type == "down" then
+                if BG.FrameAuctionMSG.historyBuffer:IsFull() then
+                    for offset = offset, 0, -1 do
+                        local i = (headIndex - (offset - 1) + maxLine) % maxLine
+                        if Find(itemID, i) then return end
+                    end
+                else
+                    for i = #BG.FrameAuctionMSG.historyBuffer.elements - offset + 1, #BG.FrameAuctionMSG.historyBuffer.elements do
+                        if Find(itemID, i) then return end
+                    end
+                end
+            end
+        end
+
+        local function UpdateButtonItemUp()
+            if not BG.FrameAuctionMSG:IsVisible() then return end
+            SetItemButtonUpColor(1, 0, 0)
+            local item = BG.FrameAuctionMSG.item
+            local itemID = GetItemID(item)
+            if not itemID then return end
+            local maxLine = BG.FrameAuctionMSG:GetMaxLines()
+            local headIndex = BG.FrameAuctionMSG.historyBuffer.headIndex
+            local offset = BG.FrameAuctionMSG.scrollOffset
+            local elements = #BG.FrameAuctionMSG.historyBuffer.elements
+            if BG.FrameAuctionMSG.historyBuffer:IsFull() then
+                for offset = offset, elements do
+                    local i = (headIndex - (offset + 1) + maxLine) % maxLine
+                    if Find(itemID, i, true) then
+                        SetItemButtonUpColor(0, 1, 0)
+                        return
+                    end
+                end
+            else
+                for i = #BG.FrameAuctionMSG.historyBuffer.elements - offset - 1, 1, -1 do
+                    if Find(itemID, i, true) then
+                        SetItemButtonUpColor(0, 1, 0)
+                        return
+                    end
+                end
+            end
+        end
+        local function UpdateButtonItemDown()
+            if not BG.FrameAuctionMSG:IsVisible() then return end
+            SetItemButtonDownColor(1, 0, 0)
+            local item = BG.FrameAuctionMSG.item
+            local itemID = GetItemID(item)
+            if not itemID then return end
+            local maxLine = BG.FrameAuctionMSG:GetMaxLines()
+            local headIndex = BG.FrameAuctionMSG.historyBuffer.headIndex
+            local offset = BG.FrameAuctionMSG.scrollOffset
+            if BG.FrameAuctionMSG.historyBuffer:IsFull() then
+                for offset = offset, 0, -1 do
+                    local i = (headIndex - (offset - 1) + maxLine) % maxLine
+                    if Find(itemID, i, true) then
+                        SetItemButtonDownColor(0, 1, 0)
+                        return
+                    end
+                end
+            else
+                for i = #BG.FrameAuctionMSG.historyBuffer.elements - offset + 1, #BG.FrameAuctionMSG.historyBuffer.elements do
+                    if Find(itemID, i, true) then
+                        SetItemButtonDownColor(0, 1, 0)
+                        return
+                    end
+                end
+            end
+        end
+
+
+        function BG.FrameAuctionMSG.UpdateButtonItem()
+            UpdateButtonItemUp()
+            UpdateButtonItemDown()
+            local offset = BG.FrameAuctionMSG.scrollOffset
+            local headIndex = BG.FrameAuctionMSG.historyBuffer.headIndex
+            local elements = #BG.FrameAuctionMSG.historyBuffer.elements
+            local i = (headIndex - offset + maxLine) % maxLine
+            -- local text = "offset:" .. BG.STC_w1(offset) .. NN
+            --     .. "i:" .. BG.STC_w1(i) .. NN
+            --     .. "headIndex:" .. BG.STC_w1(headIndex) .. NN
+            --     .. "elements:" .. BG.STC_w1(elements) .. NN
+            --     .. "maxLine:" .. BG.STC_w1(maxLine) .. NN
+            local text = (offset + 1) .. "/" .. elements
+            BG.FrameAuctionMSG.lineText:SetText(text)
+        end
+
+        local t = BG.FrameAuctionMSG:CreateFontString()
+        t:SetFont(BIAOGE_TEXT_FONT, 12, "OUTLINE")
+        t:SetPoint("TOPRIGHT", BG.FrameAuctionMSG, "BOTTOMRIGHT", 5, -7)
+        t:SetTextColor(1, 0.82, 0)
+        t:SetJustifyH("LEFT")
+        BG.FrameAuctionMSG.lineText = t
+
+        local lastbutton
+        -- 提示
+        local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG)
+        bt:SetSize(25, 25)
+        bt:SetPoint("TOPRIGHT", BG.FrameAuctionMSG, "TOPLEFT", -4, 5)
+        local tex = bt:CreateTexture()
+        tex:SetAllPoints()
+        tex:SetTexture(616343)
+        tex:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        local tex2 = bt:CreateTexture()
+        tex2:SetAllPoints()
+        tex2:SetTexture(616343)
+        tex2:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        bt:SetNormalTexture(tex)
+        bt:SetHighlightTexture(tex2)
+        lastbutton = bt
+        bt:SetScript("OnEnter", function(self)
+            local item = BG.FrameAuctionMSG.item or ""
+            local tip = ""
+            if item == "" then
+                tip = BG.STC_r1(L["（当前装备为空）"])
+            end
+            GameTooltip:SetOwner(self, "ANCHOR_TOP", 0, 0)
+            GameTooltip:ClearLines()
+            GameTooltip:AddLine(L["定位装备"], 1, 1, 1)
+            GameTooltip:AddLine(format(L["把拍卖聊天记录定位到当前装备%s所在处。%s"], item, tip), 1, 0.82, 0, true)
+            GameTooltip:Show()
+        end)
+        bt:SetScript("OnLeave", GameTooltip_Hide)
+
+        local color = { 0, 1, 0 }
+        local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG) -- 上滚
+        bt.type = "up"
+        BG.FrameAuctionMSG.buttonItemUp = bt
+        bt:SetSize(30, 30)
+        bt:SetPoint("TOP", lastbutton, "BOTTOM", 0, 8)
+        bt:SetNormalTexture("Interface/ChatFrame/UI-ChatIcon-ScrollUp-Up")
+        bt:SetPushedTexture("Interface/ChatFrame/UI-ChatIcon-ScrollUp-Down")
+        bt:SetDisabledTexture("Interface/ChatFrame/UI-ChatIcon-ScrollUp-Disabled")
+        bt:SetHighlightTexture("Interface/Buttons/UI-Common-MouseHilight")
+        bt:GetNormalTexture():SetVertexColor(unpack(color))
+        bt:GetPushedTexture():SetVertexColor(unpack(color))
+        bt:GetHighlightTexture():SetVertexColor(unpack(color))
+        lastbutton = bt
+        bt:SetScript("OnClick", OnClick)
+
+        local bt = CreateFrame("Button", nil, BG.FrameAuctionMSG) -- 下滚
+        bt.type = "down"
+        BG.FrameAuctionMSG.buttonItemDown = bt
+        bt:SetSize(30, 30)
+        bt:SetPoint("TOP", lastbutton, "BOTTOM", 0, 8)
+        bt:SetNormalTexture("Interface/ChatFrame/UI-ChatIcon-ScrollDown-Up")
+        bt:SetPushedTexture("Interface/ChatFrame/UI-ChatIcon-ScrollDown-Down")
+        bt:SetDisabledTexture("Interface/ChatFrame/UI-ChatIcon-ScrollDown-Disabled")
+        bt:SetHighlightTexture("Interface/Buttons/UI-Common-MouseHilight")
+        bt:GetNormalTexture():SetVertexColor(unpack(color))
+        bt:GetPushedTexture():SetVertexColor(unpack(color))
+        bt:GetHighlightTexture():SetVertexColor(unpack(color))
+        bt:SetScript("OnClick", OnClick)
     end
 end)

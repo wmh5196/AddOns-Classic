@@ -24,6 +24,7 @@ local function CreateListTable(onClick, tbl1)
     local alltable = {}
     local maijiatable = {}
     local sumtable = {}
+    local allsum = 0
     local FB = BG.FB1
     for b = 1, Maxb[FB] do
         for i = 1, Maxi[FB] do
@@ -43,6 +44,9 @@ local function CreateListTable(onClick, tbl1)
                 end
             end
         end
+    end
+    for i, v in ipairs(alltable) do
+        allsum = v.qiankuan + allsum
     end
     for maijia, _ in pairs(maijiatable) do
         local sum = 0
@@ -66,7 +70,7 @@ local function CreateListTable(onClick, tbl1)
     -- 开始
     local tbl1 = tbl1 or {}
     local tbl2 = {}
-    local text = L["————通报欠款————"]
+    local text = L["———通报欠款———"]
     table.insert(tbl1, text)
     table.insert(tbl2, { text })
 
@@ -92,6 +96,14 @@ local function CreateListTable(onClick, tbl1)
             table.insert(tbl1, text)
             table.insert(tbl2, { text })
         end
+
+        if onClick then
+            text = L["总欠款："] .. allsum
+        else
+            text = L["总欠款："] .. " |cffFF0000" .. allsum .. RR
+        end
+        table.insert(tbl1, text)
+        table.insert(tbl2, { text })
     else
         local text = L["没有欠款"]
         table.insert(tbl1, text)
@@ -103,9 +115,9 @@ end
 
 function BG.QianKuanUI(lastbt)
     local bt = CreateFrame("Button", nil, BG.ButtonZhangDan, "UIPanelButtonTemplate")
-    bt:SetSize(90, BG.ButtonZhangDan:GetHeight())
-    bt:SetPoint("LEFT", lastbt, "RIGHT", 10, 0)
-    bt:SetText(L["通报欠款"])
+    bt:SetSize(BG.ButtonZhangDan:GetWidth(), BG.ButtonZhangDan:GetHeight())
+    bt:SetPoint("LEFT", lastbt, "RIGHT", BG.ButtonZhangDan.jiange, 0)
+    bt:SetText(L["欠款"])
     BG.ButtonQianKuan = bt
     tinsert(BG.TongBaoButtons, bt)
 
@@ -130,7 +142,7 @@ function BG.QianKuanUI(lastbt)
         FrameHide(0)
         if not IsInRaid(1) then
             SendSystemMessage(L["不在团队，无法通报"])
-            PlaySound(BG.sound1, "Master")
+            BG.PlaySound(1)
         else
             self:SetEnabled(false) -- 点击后按钮变灰2秒
             C_Timer.After(2, function()
@@ -140,7 +152,7 @@ function BG.QianKuanUI(lastbt)
             local _, tbl = CreateListTable(true)
             BG.SendMsgToRaid(tbl)
 
-            PlaySoundFile(BG.sound2, "Master")
+            BG.PlaySound(2)
         end
     end)
 

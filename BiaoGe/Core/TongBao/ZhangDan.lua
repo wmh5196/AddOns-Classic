@@ -167,18 +167,14 @@ local function ZhiChu(onClick, tbl1, tbl2)
     local b = Maxb[FB] + 1
     for i = 1, Maxi[FB] do
         local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
-        local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]
         local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
         if zhuangbei then
             if tonumber(jine:GetText()) and tonumber(jine:GetText()) ~= 0 then
                 local text
                 if onClick then
-                    text = zhuangbei:GetText() .. " " .. (maijia:GetText()) .. " " ..
-                        jine:GetText()
+                    text = zhuangbei:GetText() .. " " .. jine:GetText()
                 else
-                    text = num .. ". " .. "|cff00FF00" .. zhuangbei:GetText() .. " " ..
-                        RGB_16(maijia:GetText(), unpack({ maijia:GetTextColor() })) .. " " ..
-                        jine:GetText() .. "|r"
+                    text = num .. ". " .. "|cff00FF00" .. zhuangbei:GetText() .. " " .. jine:GetText() .. "|r"
                 end
                 table.insert(tbl1, text)
                 table.insert(tbl_boss, text)
@@ -295,17 +291,14 @@ local function CreateListTable(onClick, tbl1)
         local b = Maxb[FB] + 1
         for i = 1, Maxi[FB], 1 do
             local zhuangbei = BG.Frame[FB]["boss" .. b]["zhuangbei" .. i]
-            local maijia = BG.Frame[FB]["boss" .. b]["maijia" .. i]
             local jine = BG.Frame[FB]["boss" .. b]["jine" .. i]
             if zhuangbei then
                 if tonumber(jine:GetText()) and tonumber(jine:GetText()) ~= 0 then
                     local text
                     if onClick then
-                        text = zhuangbei:GetText() .. " " .. (maijia:GetText()) .. " " .. jine:GetText()
+                        text = zhuangbei:GetText() .. " " .. jine:GetText()
                     else
-                        text = BG.STC_g1(zhuangbei:GetText()) .. " " ..
-                            RGB_16(maijia:GetText(), unpack({ maijia:GetTextColor() })) .. " " ..
-                            BG.STC_g1(jine:GetText())
+                        text = BG.STC_g1(zhuangbei:GetText()) .. " " .. BG.STC_g1(jine:GetText())
                     end
                     table.insert(tbl_boss, text)
                     num = num + 1
@@ -388,7 +381,7 @@ local function OnClick(self)
     FrameHide(0)
     if not IsInRaid(1) then
         SendSystemMessage(L["不在团队，无法通报"])
-        PlaySound(BG.sound1, "Master")
+        BG.PlaySound(1)
     else
         self:SetEnabled(false) -- 点击后按钮变灰2秒
         C_Timer.After(2, function()
@@ -422,28 +415,152 @@ local function OnClick(self)
                 SendChatMessage(text, "RAID")
             end)
 
+            local FB = BG.FB1
+            BG.After(2, function()
+                for ii in ipairs(BiaoGe[FB].tradeTbl) do
+                    local text = "DuiZhang-"
+                    local yes = true
+                    for i, v in ipairs(BiaoGe[FB].tradeTbl[ii]) do
+                        if i == 1 then
+                            if BiaoGe[v.FB]["boss" .. v.b]["maijia" .. v.i] then
+                                -- DuiZhang-苍牧-
+                                text = text .. BiaoGe[v.FB]["boss" .. v.b]["maijia" .. v.i] .. "-"
+                            else
+                                yes = nil
+                                break
+                            end
+                        end
+                        local jine = BiaoGe[v.FB]["boss" .. v.b]["jine" .. v.i]
+                        if not jine then
+                            yes = nil
+                            break
+                        end
+                        if jine == L["打包交易"] then
+                            jine = "t"
+                        end
+                        -- DuiZhang-苍牧-24478 10000,27854 t,27503 t,
+                        text = text .. v.itemID .. " " .. jine .. ","
+                    end
+                    if yes then
+                        C_ChatInfo.SendAddonMessage("BiaoGe", text, "RAID")
+                    end
+                end
+            end)
+
             local _, tbl = CreateListTable(true)
             local t = BG.SendMsgToRaid(tbl, BG.tongBaoSendCD + BG.tongBaoSendCD)
 
             BG.After(t, function()
-                local text = L["——感谢使用BiaoGe插件——"]
+                local text = L["—感谢使用BiaoGe插件—"]
                 SendChatMessage(text, "RAID")
             end)
         end
 
-        PlaySoundFile(BG.sound2, "Master")
+        BG.PlaySound(2)
     end
 end
 
+--[[
+    ["tradeTbl"] = {
+        {
+            {
+                ["i"] = 3,
+                ["itemID"] = 24478,
+                ["link"] = "|cff1eff00|Hitem:24478::::::::64:::::::::|h[裂纹的珍珠]|h|r",
+                ["FB"] = "ULD",
+                ["b"] = 15,
+            }, -- [1]
+            {
+                ["i"] = 1,
+                ["itemID"] = 27854,
+                ["link"] = "|cffffffff|Hitem:27854::::::::64:::::::::|h[熏烤塔布羊排]|h|r",
+                ["FB"] = "ULD",
+                ["b"] = 15,
+            }, -- [2]
+            {
+                ["i"] = 2,
+                ["itemID"] = 27503,
+                ["link"] = "|cffffffff|Hitem:27503::::::::64:::::::::|h[力量卷轴 V]|h|r",
+                ["FB"] = "ULD",
+                ["b"] = 15,
+            }, -- [3]
+        }, -- [1]
+        {
+            {
+                ["i"] = 7,
+                ["itemID"] = 14530,
+                ["link"] = "|cffffffff|Hitem:14530::::::::64:::::::::|h[厚符文布绷带]|h|r",
+                ["FB"] = "ULD",
+                ["b"] = 15,
+            }, -- [1]
+            {
+                ["i"] = 8,
+                ["itemID"] = 27854,
+                ["link"] = "|cffffffff|Hitem:27854::::::::64:::::::::|h[熏烤塔布羊排]|h|r",
+                ["FB"] = "ULD",
+                ["b"] = 15,
+            }, -- [2]
+        }, -- [2]
+    },
+
+
+    ["tradeTbl"] = {
+        {
+            {
+                ["i"] = 3,
+                ["itemID"] = 24478,
+                ["b"] = 15,
+                ["FB"] = "ULD",
+                ["link"] = "|cff1eff00|Hitem:24478::::::::64:::::::::|h[裂纹的珍珠]|h|r",
+            }, -- [1]
+            {
+                ["i"] = 1,
+                ["itemID"] = 27854,
+                ["b"] = 15,
+                ["FB"] = "ULD",
+                ["link"] = "|cffffffff|Hitem:27854::::::::64:::::::::|h[熏烤塔布羊排]|h|r",
+            }, -- [2]
+            {
+                ["i"] = 2,
+                ["itemID"] = 27503,
+                ["b"] = 15,
+                ["FB"] = "ULD",
+                ["link"] = "|cffffffff|Hitem:27503::::::::64:::::::::|h[力量卷轴 V]|h|r",
+            }, -- [3]
+        }, -- [1]
+        {
+            {
+                ["i"] = 7,
+                ["itemID"] = 14530,
+                ["b"] = 15,
+                ["FB"] = "ULD",
+                ["link"] = "|cffffffff|Hitem:14530::::::::64:::::::::|h[厚符文布绷带]|h|r",
+            }, -- [1]
+            {
+                ["i"] = 8,
+                ["itemID"] = 27854,
+                ["b"] = 15,
+                ["FB"] = "ULD",
+                ["link"] = "|cffffffff|Hitem:27854::::::::64:::::::::|h[熏烤塔布羊排]|h|r",
+            }, -- [2]
+        }, -- [2]
+    },
+]]
+
 function BG.ZhangDanUI(lastbt)
     local bt = CreateFrame("Button", nil, BG.FBMainFrame, "UIPanelButtonTemplate")
-    bt:SetSize(90, 30)
+    bt:SetSize(60, 30)
+    bt.jiange = 5
     if lastbt then
-        bt:SetPoint("LEFT", lastbt, "RIGHT", 10, 0)
+        bt:SetPoint("LEFT", lastbt, "RIGHT", bt.jiange, 0)
     else
-        bt:SetPoint("BOTTOMRIGHT", BG.MainFrame, "BOTTOMRIGHT", -430, 35)
+        if BG.IsWLK then
+            bt:SetPoint("BOTTOMRIGHT", BG.MainFrame, "BOTTOMRIGHT", -360, 35)
+        else
+            bt:SetPoint("BOTTOMRIGHT", BG.MainFrame, "BOTTOMRIGHT", -300, 35)
+        end
     end
-    bt:SetText(L["通报账单"])
+    bt:SetText(L["账单"])
     bt:Show()
     BG.ButtonZhangDan = bt
     tinsert(BG.TongBaoButtons, bt)
@@ -469,6 +586,12 @@ function BG.ZhangDanUI(lastbt)
             OnEnter(bt)
         end
     end)
+
+    local t = bt:CreateFontString()
+    t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+    t:SetPoint("RIGHT", bt, "LEFT", -5, 0)
+    t:SetTextColor(1, 0.82, 0)
+    t:SetText(L["通报："])
 
     return bt
 end
