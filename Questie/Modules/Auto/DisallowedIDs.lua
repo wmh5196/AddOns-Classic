@@ -217,4 +217,8 @@ _QuestieAuto.disallowedQuests = {
 
     [13926] = true, -- Little Orphan Roo of the Oracles
     [13927] = true, -- Little Orphan Kekek of the Wolvar
+
+    [27022] = true, -- Extinguishing the Idol
+
+    [82062] = true, -- Ever After SoD
 }
