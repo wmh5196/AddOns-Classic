@@ -1099,6 +1099,9 @@ L["overlayShowAshenvaleDesc"] = "顯示艾梣谷大戰計時器？";
 L["overlayShowStranglethornTitle"] = "顯示荊棘谷大戰圖示";
 L["overlayShowStranglethornDesc"] = "顯示剃刀高地計時器？";
 
+L["overlayShowBlackrockTitle"] = "顯示黑石計時器";
+L["overlayShowBlackrockDesc"] = "顯示荊棘谷黑石計時器?";
+
 L["sodMiddleScreenWarningTitle"] = "螢幕警告";
 L["sodMiddleScreenWarningDesc"] = "在螢幕中間顯示一個 15/30 分鐘的警告，提醒您關於像 STV 等的 SoD 事件。";
 
@@ -1121,6 +1124,26 @@ L["Tol Barad"] = "托爾巴拉德";
 L["eventIsRunning"] = "%s 正在進行中";
 
 L["Might of Stormwind"] = "暴風城之力";
+
+L["printStvCoinsTitle"] = "顯示 斯坦索姆聖水";
+L["printStvCoinsDesc"] = "在聊天視窗顯示活動期間獲得的斯坦索姆聖水數量。";
+
+L["printBlackrockHonorTitle"] = "顯示 黑石競技場榮譽";
+L["printBlackrockHonorDesc"] = "在聊天視窗顯示活動期間獲得的黑石競技場榮譽數量。";
+
+L["chatOnlyInCityTitle"] = "僅限主城";
+L["chatOnlyInCityDesc"] = "僅在您位於增益掉落的主要城市（包括贊達拉增益的荊棘谷）時，才列印計時器和增益掉落聊天訊息。";
+
+L["middleOnlyInCityTitle"] = "僅限主城";
+L["middleOnlyInCityDesc"] = "僅在您位於增益掉落的主要城市（包括贊達拉增益的荊棘谷）時，才顯示螢幕中間的計時器和增益掉落訊息。";
+
+L["flashOnlyInCityTitle"] = "僅限主城";
+L["flashOnlyInCityDesc"] = "僅在您位於增益掉落的主要城市（包括贊達拉增益的荊棘谷）時，最小化時才會閃爍。";
+
+L["blueShamansTitle"] = "藍色薩滿";
+L["blueShamansDesc"] = "在經典版中，在此插件中將薩滿顯示為藍色。";
+
+L["Battle Shout"] = "戰鬥怒吼";
 
 L["printStvCoinsTitle"] = "顯示 STV 幣";
 L["printStvCoinsDesc"] = "在聊天頻道中顯示一個計數器，顯示活動期間獲得的 STV 幣數量。";
