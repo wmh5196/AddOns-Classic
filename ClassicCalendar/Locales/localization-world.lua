@@ -14,7 +14,7 @@ L.Options = {
 		["SelectDefaultText"]			 = "DEFAULT",
 		["GeneralHeaderText"]			 = "General",
 		["ArtHeaderText"]				 = "Art",
-		["AuthorHeaderText"]			 = "Authors",
+		["AuthorHeaderText"]			 = "Author",
 		["CALENDAR_FILTER_BATTLEGROUND"] = "Battleground Call to Arms",
 		["EventAlarmsHeaderText"]		 = "Event Alarms",
 		["EventAlarmsDesc"]			 	 = "How the calendar notifies you when you have an event starting soon",
@@ -29,6 +29,7 @@ L.Options = {
 		["HourSingular"]				 = "hour",
 		["HourPlural"]					 = "hours",
 		["MinutePlural"]				 = "minutes",
+		["HideLevelUpRaidText"]			 = "[SoD] Hide level-up raid resets (BFD, Gnomeregan, ST)"
 	},
 	["zhTW"] = {
 		["PVPArtText"] 					 = "顯示 PvP 周末的美術圖案",
