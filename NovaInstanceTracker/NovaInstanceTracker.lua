@@ -28,7 +28,7 @@ elseif (WOW_PROJECT_ID == WOW_PROJECT_LEGION_CLASSIC) then
 	NIT.expansionNum = 7;
 elseif (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE) then
 	NIT.isRetail = true;
-	NIT.expansionNum = 10;
+	NIT.expansionNum = 11;
 end
 if (NIT.isClassic and C_Engraving and C_Engraving.IsEngravingEnabled()) then
 	NIT.isSOD = true;
@@ -48,7 +48,9 @@ NIT.acr = LibStub:GetLibrary("AceConfigRegistry-3.0");
 local L = LibStub("AceLocale-3.0"):GetLocale("NovaInstanceTracker");
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1");
 NIT.LDBIcon = LibStub("LibDBIcon-1.0");
+local GetAddOnMetadata = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata;
 local version = GetAddOnMetadata("NovaInstanceTracker", "Version") or 9999;
+NIT.version = tonumber(version);
 if (NIT.expansionNum < 10) then
 	NIT.classic = true;
 end
@@ -59,26 +61,18 @@ if (NIT.isCata) then
 elseif (NIT.isWrath) then
 	NIT.hourlyLimit = 5;
 	NIT.dailyLimit = 999;  --No limit in prepatch, but maybe a limit later?
-	--if (NIT.isPrepatch) then
-	--	NIT.maxLevel = 70;
-	--else
-	--	NIT.maxLevel = 80;
-	--end
 elseif (NIT.isTBC) then
 	NIT.hourlyLimit = 5;
 	NIT.dailyLimit = 999;
-	--NIT.maxLevel = 70;
 elseif (NIT.isRetail) then
 	--Retail is 10 per hour and account wide not per character.
 	NIT.hourlyLimit = 10;
 	NIT.dailyLimit = 999;
-	--NIT.maxLevel = 70;
 	NIT.noDailyLockout = true;
 else
 	NIT.noRaidLockouts = true;
 	NIT.hourlyLimit = 5;
 	NIT.dailyLimit = 999;
-	--NIT.maxLevel = 60;
 	NIT.noRaidLockout = nil;
 end
 NIT.maxLevel = GetMaxPlayerLevel();
@@ -86,7 +80,22 @@ NIT.prefixColor = "|cFFFF6900";
 NIT.perCharOnly = false; --Per char is gone in TBC, not sure how I didn't notice this earlier tbh, blizz never announced it.
 NIT.loadTime = GetServerTime();
 local GetGossipOptions = GetGossipOptions or C_GossipInfo.GetOptions;
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
 local floor = floor;
+
+--Temp function until classic era gets the new func and everything can be updated in the addon.
+function NIT.GetSpellInfo(spellIdentifier, bookType)
+	if (GetSpellInfo) then
+		--No need for bookType we don't use it anywhere and passing nil breaks the function, bit strange.
+		--return GetSpellInfo(spellIdentifier, bookType);
+		return GetSpellInfo(spellIdentifier);
+	else
+		local data = C_Spell.GetSpellInfo(spellIdentifier);
+		if (data) then --Second arg rank is always nil in original func.
+			return data.name, nil, data.iconID, data.castTime, data.minRange, data.maxRange, data.spellID, data.originalIconID;
+		end
+	end
+end
 
 function NIT:OnInitialize()
 	self:loadSpecificOptions();
@@ -107,6 +116,10 @@ function NIT:OnInitialize()
 	self:tickerCharacterData();
 	self:resetOldLockouts();
 	self:wipeUpgradeData();
+	if (self.updateLootReminderFrame) then
+		self:updateLootReminderFrame();
+	end
+	self:checkNewVersion();
 end
 
 NIT.regionFont = "Fonts\\ARIALN.ttf";
@@ -248,6 +261,7 @@ function NIT:getTimeString(seconds, countOnly, type)
 	else
 		timecalc = seconds - time();
 	end
+	local y = math.floor((timecalc / (86400*365)));
 	local d = math.floor((timecalc % (86400*365)) / 86400);
 	local h = math.floor((timecalc % 86400) / 3600);
 	local m = math.floor((timecalc % 3600) / 60);
@@ -257,6 +271,16 @@ function NIT:getTimeString(seconds, countOnly, type)
 		space = " ";
 	end
 	if (type == "short") then
+		if (y == 1 and d == 0) then
+			return y .. " " .. L["yearShort"];
+		elseif (y == 1) then
+			return y .. " " .. L["yearShort"] .. " " .. d .. " " .. L["dayShort"];
+		end
+		if (y > 1 and d == 0) then
+			return y .. " " .. L["yearShort"];
+		elseif (y > 1) then
+			return y .. " " .. L["yearShort"] .. " " .. d .. " " .. L["dayShort"];
+		end
 		if (d == 1 and h == 0) then
 			return d .. L["dayShort"];
 		elseif (d == 1) then
@@ -290,6 +314,16 @@ function NIT:getTimeString(seconds, countOnly, type)
 		--If no matches it must be seconds only.
 		return s .. L["secondShort"];
 	elseif (type == "medium") then
+		if (y == 1 and d == 0) then
+			return y .. " " .. L["yearMedium"];
+		elseif (y == 1) then
+			return y .. " " .. L["yearMedium"] .. " " .. d .. " " .. L["daysMedium"];
+		end
+		if (y > 1 and d == 0) then
+			return y .. " " .. L["yearsMedium"];
+		elseif (y > 1) then
+			return y .. " " .. L["yearsMedium"] .. " " .. d .. " " .. L["daysMedium"];
+		end
 		if (d == 1 and h == 0) then
 			return d .. " " .. L["dayMedium"];
 		elseif (d == 1) then
@@ -323,6 +357,16 @@ function NIT:getTimeString(seconds, countOnly, type)
 		--If no matches it must be seconds only.
 		return s .. " " .. L["secondsMedium"];
 	else
+		if (y == 1 and d == 0) then
+			return y .. " " .. L["year"];
+		elseif (y == 1) then
+			return y .. " " .. L["year"] .. " " .. d .. " " .. L["days"];
+		end
+		if (y > 1 and d == 0) then
+			return y .. " " .. L["years"];
+		elseif (y > 1) then
+			return y .. " " .. L["years"] .. " " .. d .. " " .. L["days"];
+		end
 		if (d == 1 and h == 0) then
 			return d .. " " .. L["day"];
 		elseif (d == 1) then
@@ -660,17 +704,7 @@ function NIT:explode(div, str, count)
 end
 
 function NIT:openConfig()
-	--Opening the frame needs to be run twice to avoid a bug.
-	InterfaceOptionsFrame_OpenToCategory("NovaInstanceTracker");
-	--Hack to fix the issue of interface options not opening to menus below the current scroll range.
-	--This addon name starts with N and will always be closer to the middle so just scroll to the middle when opening.
-	if (InterfaceOptionsFrameAddOnsListScrollBar) then
-		local min, max = InterfaceOptionsFrameAddOnsListScrollBar:GetMinMaxValues();
-		if (min < max) then
-			InterfaceOptionsFrameAddOnsListScrollBar:SetValue(math.floor(max/2));
-		end
-	end
-	InterfaceOptionsFrame_OpenToCategory("NovaInstanceTracker");
+	Settings.OpenToCategory("NovaInstanceTracker");
 end
 
 function NIT:isInArena()
@@ -828,6 +862,7 @@ function NIT:ticker()
 	end
 	lockoutNum24 = hourCount24;
 	lockoutNum = hourCount;
+	NIT:updateDataBrokerText();
 	C_Timer.After(1, function()
 		NIT:ticker();
 	end)
@@ -891,9 +926,9 @@ end
 local NITLDB, doUpdateMinimapButton;
 function NIT:createBroker()
 	local data = {
-		type = "launcher",
+		type = "data source",
 		label = "NIT",
-		text = "NovaInstanceTracker",
+		text = "Ready",
 		icon = "Interface\\AddOns\\NovaInstanceTracker\\Media\\portal",
 		OnClick = function(self, button)
 			if (button == "LeftButton" and IsShiftKeyDown()) then
@@ -906,6 +941,8 @@ function NIT:createBroker()
 			elseif (button == "RightButton" and IsShiftKeyDown()) then
 				if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
 					InterfaceOptionsFrame:Hide();
+				elseif (SettingsPanel and SettingsPanel:IsShown()) then
+					SettingsPanel:Hide();
 				else
 					NIT:openConfig();
 				end
@@ -947,13 +984,15 @@ function NIT:updateMinimapButton(tooltip, frame)
 		if (tooltip.NITSeparator) then
 			tooltip.NITSeparator:Hide();
 		end
-		if (tooltip.NITSeparator2) then
-			tooltip.NITSeparator2:Hide();
+		for i = 2, 10 do
+			if (tooltip["NITSeparator" .. i]) then
+				tooltip["NITSeparator" .. i]:Hide();
+			end
 		end
 		return;
 	end
 	tooltip:ClearLines()
-	tooltip:AddLine("NovaInstanceTracker");
+	tooltip:AddLine("Nova Instance Tracker");
 	if (NIT.inInstance) then
 		if (not tooltip.NITSeparator) then
 		    tooltip.NITSeparator = tooltip:CreateTexture(nil, "BORDER");
@@ -977,7 +1016,28 @@ function NIT:updateMinimapButton(tooltip, frame)
 			if (data.isPvp) then
 				tooltip:AddLine("|cFFFFA500" .. data.instanceName);
 			else
-				tooltip:AddLine("|cFF00C800" .. data.instanceName);
+				local instanceDiff = "";
+				if (data.mythicPlus) then
+					local mythicData = data.mythicPlus;
+					if (mythicData.level) then
+						instanceDiff = " |cFF9CD6DE(|cFFa335eeM+" .. mythicData.level .. "|r)|r";
+					else
+						instanceDiff = " |cFF9CD6DE(|cFFa335eeM+|r)|r";
+					end
+				elseif (data.difficultyID == 174 or data.difficultyID == 2 or data.difficultyID == 5 or data.difficultyID == 6 or data.difficultyID == 11
+						 or data.difficultyID == 15 or data.difficultyID == 39 or data.difficultyID == 149) then
+					if (data.subDifficulty) then
+						--Display if gamma dung in wrath.
+						instanceDiff = " |cFF9CD6DE(|cFFFF2222" .. gsub(data.subDifficulty, "^%l", string.upper) .. "|r)|r";
+					else
+						instanceDiff = " |cFF9CD6DE(|cFFFF2222H|r)|r";
+					end
+				elseif (data.difficultyID == 8 or data.difficultyID == 16 or data.difficultyID == 23 or data.difficultyID == 40) then
+					instanceDiff = " |cFF9CD6DE(|cFFa335eeM|r)|r";
+				elseif (data.type == "delve") then
+					instanceDiff = " |cFF9CD6DE(|cFF00C800D|r)|r";
+				end
+				tooltip:AddLine("|cFF00C800" .. data.instanceName .. instanceDiff);
 			end
 			tooltip:AddLine("|cFF9CD6DE" .. timeInside);		
 			if (not data.isPvp) then
@@ -1029,6 +1089,37 @@ function NIT:updateMinimapButton(tooltip, frame)
 					end
 					tooltip:AddLine(" |cFF9CD6DE" .. k .. "|r |cFFFFFFFF" .. v);
 				end
+			end
+		end
+		if (NIT.currentInstanceID == 409 and NIT.getDousesMinimapString) then
+			local text = NIT:getDousesMinimapString();
+			if (text) then
+				if (not tooltip.NITSeparator3) then
+					tooltip.NITSeparator3 = tooltip:CreateTexture(nil, "BORDER");
+				    tooltip.NITSeparator3:SetColorTexture(0.6, 0.6, 0.6, 0.85);
+				    tooltip.NITSeparator3:SetHeight(1);
+				    tooltip.NITSeparator3:SetPoint("LEFT", 10, 0);
+				    tooltip.NITSeparator3:SetPoint("RIGHT", -10, 0);
+			    end
+			    tooltip:AddLine(" ");
+				tooltip.NITSeparator3:SetPoint("TOP", _G[tooltip:GetName() .. "TextLeft" .. tooltip:NumLines()], "CENTER");
+				tooltip.NITSeparator3:Show();
+				tooltip:AddLine(text);
+			end
+		elseif (NIT.getLootReminderMinimapString and NIT.db.global.lootReminderMinimap) then
+			local text = NIT:getLootReminderMinimapString();
+			if (text) then
+				if (not tooltip.NITSeparator3) then
+					tooltip.NITSeparator3 = tooltip:CreateTexture(nil, "BORDER");
+				    tooltip.NITSeparator3:SetColorTexture(0.6, 0.6, 0.6, 0.85);
+				    tooltip.NITSeparator3:SetHeight(1);
+				    tooltip.NITSeparator3:SetPoint("LEFT", 10, 0);
+				    tooltip.NITSeparator3:SetPoint("RIGHT", -10, 0);
+			    end
+			    tooltip:AddLine(" ");
+				tooltip.NITSeparator3:SetPoint("TOP", _G[tooltip:GetName() .. "TextLeft" .. tooltip:NumLines()], "CENTER");
+				tooltip.NITSeparator3:Show();
+				tooltip:AddLine(text);
 			end
 		end
 		tooltip:AddLine(" ");
@@ -1141,6 +1232,22 @@ function NIT:getMinimapButtonLockoutString()
 	return msg;
 end
 
+--For data broker panel type addons text.
+local gsub = gsub;
+function NIT:updateDataBrokerText()
+	local hourCount, hourCount24, hourTimestamp, hourTimestamp24 = NIT:getInstanceLockoutInfo();
+	local msg = gsub(L["ready"], "%.$", ""); --Remove trailing period from our local string.
+	local timeLeft24 = 86400 - (GetServerTime() - hourTimestamp24);
+	local timeLeft = 3600 - (GetServerTime() - hourTimestamp);
+	local timeLeftMax = math.max(timeLeft24, timeLeft);
+	if (GetServerTime() - hourTimestamp24 < 86400 and hourCount24 >= NIT.dailyLimit and timeLeft24 == timeLeftMax) then
+		msg = NIT:getTimeString(86400 - (GetServerTime() - hourTimestamp24), true, "short") .. " (24" .. L["hourShort"] .. ")";
+	elseif (GetServerTime() - hourTimestamp < 3600 and hourCount >= NIT.hourlyLimit) then
+		msg = NIT:getTimeString(3600 - (GetServerTime() - hourTimestamp), true, "short");
+	end
+	NITLDB.text = msg;
+end
+
 function NIT:getMinimapButtonNextExpires(char)
 	if (not char) then
 		char = UnitName("player");
@@ -1154,7 +1261,7 @@ function NIT:getMinimapButtonNextExpires(char)
 		if (NIT.noRaidLockouts and v.instanceID and NIT.zones[v.instanceID] and NIT.zones[v.instanceID].noLockout) then
 			noLockout = true;
 		end
-		if (not v.isPvp and not noLockout and (not NIT.perCharOnly or char == v.playerName)) then
+		if (not v.isPvp and not noLockout and v.type ~= "delve" and (not NIT.perCharOnly or char == v.playerName)) then
 			if (v.leftTime and v.leftTime > (GetServerTime() - 3600)) then
 				local time = 3600 - (GetServerTime() - v.leftTime);
 				--msg = msg .. "\n|cFF9CD6DE" .. v.instanceName .. " expires in " .. NIT:getTimeString(time, true);
@@ -1714,6 +1821,8 @@ function NIT:openInstanceLogFrame()
 		--So interface options and this frame will open on top of each other.
 		if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
 			NITInstanceFrame:SetFrameStrata("DIALOG");
+		elseif (SettingsPanel and SettingsPanel:IsShown()) then
+			NITInstanceFrame:SetFrameStrata("DIALOG");
 		else
 			NITInstanceFrame:SetFrameStrata("HIGH");
 		end
@@ -2088,6 +2197,8 @@ function NIT:buildInstanceLineFrameString(v, count, logID)
 		end
 	elseif (v.difficultyID == 8 or v.difficultyID == 16 or v.difficultyID == 23 or v.difficultyID == 40) then
 		instance = instance .. " (|cFFa335eeM|r)";
+	elseif (v.type == "delve") then
+		instance = instance .. " (|cFF00C800D|r)";
 	end
 	local time = NIT:getTimeFormat(v.enteredTime, true, true);
 	local timeAgo = GetServerTime() - v.enteredTime;
@@ -2323,6 +2434,8 @@ function NIT:recalcInstanceLineFramesTooltip(obj)
 			end
 		elseif (data.difficultyID == 8 or data.difficultyID == 16 or data.difficultyID == 23 or data.difficultyID == 40) then
 			heroicString = " (|cFFa335eeM|r)";
+		elseif (data.type == "delve") then
+			heroicString = " (|cFF00C800D|r)";
 		end
 		local text = timeColor .. L["Instance"] .. " " .. obj.count .. " (" .. data.instanceName .. heroicString .. ")|r";
 		if (not data.isPvp and data.instanceID and (NIT.noRaidLockouts and NIT.zones[data.instanceID] and NIT.zones[data.instanceID].noLockout)) then
@@ -2374,8 +2487,20 @@ function NIT:recalcInstanceLineFramesTooltip(obj)
 			end
 		end
 		if (not data.isPvp and not data.mythicPlus) then
-			text = text .. "\n|cFF9CD6DE" .. L["enteredLevel"] .. ":|r " .. (data.enteredLevel or "Unknown");
-			text = text .. "\n|cFF9CD6DE" .. L["leftLevel"] .. ":|r " .. (data.leftLevel or "Unknown");
+			local foundPercent;
+			if (data.enteredLevelPercent) then
+				text = text .. "\n|cFF9CD6DE" .. L["enteredLevel"] .. ":|r " .. data.enteredLevelPercent;
+				foundPercent = true;
+			else
+				text = text .. "\n|cFF9CD6DE" .. L["enteredLevel"] .. ":|r " .. (data.enteredLevel or "Unknown");
+			end
+			if (data.enteredLevel ~= NIT.maxLevel) then
+				if (data.leftLevelPercent) then
+					text = text .. "\n|cFF9CD6DE" .. L["leftLevel"] .. ":|r " .. data.leftLevelPercent;
+				else
+					text = text .. "\n|cFF9CD6DE" .. L["leftLevel"] .. ":|r " .. (data.leftLevel or "Unknown");
+				end
+			end
 		end
 		if (data.type ~= "arena" and data.groupAverage and data.groupAverage > 0 and not data.mythicPlus) then
 			text = text .. "\n|cFF9CD6DE" .. L["averageGroupLevel"] .. ":|r " .. (NIT:round(data.groupAverage, 2) or "Unknown");
@@ -2988,9 +3113,11 @@ function NIT:openTradeLogFrame()
 		end)
 		--So interface options and this frame will open on top of each other.
 		if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
-			NITTradeLogFrame:SetFrameStrata("DIALOG")
+			NITTradeLogFrame:SetFrameStrata("DIALOG");
+		elseif (SettingsPanel and SettingsPanel:IsShown()) then
+			NITTradeLogFrame:SetFrameStrata("DIALOG");
 		else
-			NITTradeLogFrame:SetFrameStrata("HIGH")
+			NITTradeLogFrame:SetFrameStrata("HIGH");
 		end
 	end
 end
@@ -3312,9 +3439,11 @@ function NIT:openTradeCopyFrame()
 		end)
 		--So interface options and this frame will open on top of each other.
 		if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
-			NITTradeCopyFrame:SetFrameStrata("DIALOG")
+			NITTradeCopyFrame:SetFrameStrata("DIALOG");
+		elseif (SettingsPanel and SettingsPanel:IsShown()) then
+			NITTradeCopyFrame:SetFrameStrata("DIALOG");
 		else
-			NITTradeCopyFrame:SetFrameStrata("HIGH")
+			NITTradeCopyFrame:SetFrameStrata("HIGH");
 		end
 	end
 end
@@ -3612,6 +3741,43 @@ function NIT:createAltsFrameSlider()
 		NIT.charsMinLevelSlider.editBox:SetScript("OnEscapePressed", EditBox_OnEscapePressed);
 	end
 end
+function NIT:createAltsFrameLootReminderButton()
+	if (not NIT.isSOD) then
+		return;
+	end
+	if (NIT.updateLootReminderFrame and not NIT.altsLootReminderButton) then
+		--Loot reminder button.
+		NIT.altsLootReminderButton = CreateFrame("Button", "NITAltsLootReminderButton", NITAltsFrame.EditBox, "UIPanelButtonTemplate");
+		--NIT.altsLootReminderButton:SetPoint("CENTER", -60, -14);
+		NIT.altsLootReminderButton:SetPoint("CENTER", 0, -31);
+		NIT.altsLootReminderButton:SetWidth(170);
+		NIT.altsLootReminderButton:SetHeight(18);
+		NIT.altsLootReminderButton:SetText(L["Loot Reminder List"]);
+		NIT.altsLootReminderButton:SetNormalFontObject("GameFontNormalSmall");
+		NIT.altsLootReminderButton:SetScript("OnClick", function(self, arg)
+			NIT:loadLootReminderListFrame();
+		end)
+		NIT.altsLootReminderButton:SetScript("OnMouseDown", function(self, button)
+			if (button == "LeftButton" and not self:GetParent():GetParent().isMoving) then
+				self:GetParent():GetParent().EditBox:ClearFocus();
+				self:GetParent():GetParent():StartMoving();
+				self:GetParent():GetParent().isMoving = true;
+			end
+		end)
+		NIT.altsLootReminderButton:SetScript("OnMouseUp", function(self, button)
+			if (button == "LeftButton" and self:GetParent():GetParent().isMoving) then
+				self:GetParent():GetParent():StopMovingOrSizing();
+				self:GetParent():GetParent().isMoving = false;
+			end
+		end)
+		NIT.altsLootReminderButton:SetScript("OnHide", function(self)
+			if (self:GetParent():GetParent().isMoving) then
+				self:GetParent():GetParent():StopMovingOrSizing();
+				self:GetParent():GetParent().isMoving = false;
+			end
+		end)
+	end
+end
 
 function NIT:openAltsFrame()
 	if (not NIT.altsFrameShowsAltsButton) then
@@ -3619,6 +3785,9 @@ function NIT:openAltsFrame()
 	end
 	if (not NIT.charsMinLevelSlider) then
 		NIT:createAltsFrameSlider();
+	end
+	if (NIT.updateLootReminderFrame and not NIT.altsLootReminderButton) then
+		NIT:createAltsFrameLootReminderButton();
 	end
 	NITAltsFrame.fs:SetFont(NIT.regionFont, 14);
 	local header = NIT.prefixColor .. "NovaInstanceTracker v" .. version .. "|r\n"
@@ -3649,6 +3818,8 @@ function NIT:openAltsFrame()
 		end)
 		--So interface options and this frame will open on top of each other.
 		if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
+			NITAltsFrame:SetFrameStrata("DIALOG");
+		elseif (SettingsPanel and SettingsPanel:IsShown()) then
 			NITAltsFrame:SetFrameStrata("DIALOG");
 		else
 			NITAltsFrame:SetFrameStrata("HIGH");
@@ -4304,11 +4475,11 @@ function NIT:recalcAltsLineFramesTooltip(obj)
 				for k, v in pairs(data.cooldowns) do
 					if (v.time > GetServerTime()) then
 						local timeString = "(" .. NIT:getTimeString(v.time - GetServerTime(), true, NIT.db.global.timeStringType) .. " " .. L["left"] .. ")";
-						cooldownText = cooldownText .. "\n    " .. color1 .. k .. ":|r " .. color2 .. timeString .. "|r";
+						cooldownText = cooldownText .. "\n    " .. color1 .. k .. "|r " .. color2 .. timeString .. "|r";
 						foundCooldowns = true;
 					elseif (GetServerTime() - v.time < 1209600) then
 						--Display cooldowns are ready only for 2 weeks after last used so we don't have to worrie about dropped professions.
-						cooldownText = cooldownText .. "\n    " .. color1 .. k .. ":|r " .. color2 .. L["ready"] .. "|r";
+						cooldownText = cooldownText .. "\n    " .. color1 .. k .. "|r " .. color2 .. L["ready"] .. "|r";
 						foundCooldowns = true;
 					end
 				end
@@ -5060,11 +5231,12 @@ function NIT:getActiveSpec()
 	local name, icon, talentCount, specType, role, fileName = nil, nil, 0;
 	for tab = 1, GetNumTalentTabs() do
 		local _, specName, specIcon, pointsSpent, file;
-		if (NIT.isCata) then
+		--if (NIT.isCata) then
 			_, specName, _, specIcon, pointsSpent, file = GetTalentTabInfo(tab, false, false, GetActiveTalentGroup());
-		else
-			specName, specIcon, pointsSpent, file = GetTalentTabInfo(tab, false, false, GetActiveTalentGroup());
-		end
+		--else
+			--This returns order was changed in 1.15.3 era to the cata version above.
+		--	specName, specIcon, pointsSpent, file = GetTalentTabInfo(tab, false, false, GetActiveTalentGroup());
+		--end
 		if (pointsSpent and pointsSpent > talentCount) then
 			name, icon, talentCount, fileName = specName, specIcon, pointsSpent, file;
 		end
