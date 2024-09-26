@@ -992,7 +992,7 @@ function TC2:SetupFrame()
     -- Setup Header
     self.frame.header = CreateStatusBar(self.frame, true)
     self.frame.header:SetScript("OnMouseUp", function(self, button)
-        if button == "RightButton" then
+        if EasyMenu and button == "RightButton" then -- 暫時修正
             EasyMenu(TC2.menuTable, TC2.menu, "cursor", 0, 0, "MENU")
         end
     end)
