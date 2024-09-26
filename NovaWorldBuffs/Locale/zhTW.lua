@@ -1145,14 +1145,5 @@ L["blueShamansDesc"] = "在經典版中，在此插件中將薩滿顯示為藍�
 
 L["Battle Shout"] = "戰鬥怒吼";
 
-L["printStvCoinsTitle"] = "顯示 STV 幣";
-L["printStvCoinsDesc"] = "在聊天頻道中顯示一個計數器，顯示活動期間獲得的 STV 幣數量。";
-
-L["printBlackrockHonorTitle"] = "顯示黑石榮譽";
-L["printBlackrockHonorDesc"] = "在聊天頻道中顯示一個計數器，顯示活動期間獲得的黑石爆發榮譽數量。";
-
-L["chatOnlyInCityTitle"] = "僅在城市中";
-L["chatOnlyInCityDesc"] = "僅當你在掉落增益效果的主要城市（包括贊達拉增益效果的棘齒谷）時，才會顯示計時器和增益效果掉落聊天訊息。";
-
-L["middleOnlyInCityTitle"] = "僅在城市中";
-L["middleOnlyInCityDesc"] = "僅當你在掉落增益效果的主要城市（包括贊達拉增益效果的棘齒谷）時，才會在螢幕中央顯示計時器和增益效果掉落訊息。";
+L["dmfBuffDroppedNoCooldown"] = "獲得了暗月馬戲團增益效果 %s，在此遊戲版本中沒有冷卻時間。";
+L["chronoboonReleasedNoCooldown"] = "你已使用時光之末釋放了一個暗月馬戲團增益效果，在此遊戲版本中沒有冷卻時間。";

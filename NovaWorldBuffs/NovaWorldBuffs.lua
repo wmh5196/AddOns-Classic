@@ -896,7 +896,7 @@ function NWB:ticker()
 		NWB.data.myChars[UnitName("player")].dmfCooldown = NWB.data.myChars[UnitName("player")].dmfCooldown - 1;
 		if (lastDmfTick >= 1 and NWB.data.myChars[UnitName("player")].dmfCooldown <= 0 and NWB.data.myChars[UnitName("player")].dmfCooldown > -99990) then
 			if (NWB.isDmfUp or NWB.isAlwaysDMF) then
-				if (not NWB:isDMFBooned()) then
+				if (not NWB:isDMFBooned() and not NWB.noDmfCooldown) then
 					NWB:print(L["dmfBuffReset"]);
 				end
 			end
@@ -1765,7 +1765,11 @@ function NWB:trackNewBuff(spellName, type, npcID)
 		end
 	end
 	if (type == "dmf") then
-		NWB:print(string.format(L["dmfBuffDropped"], spellName));
+		if (NWB.noDmfCooldown) then
+			NWB:print(string.format(L["dmfBuffDroppedNoCooldown"], spellName));
+		else
+			NWB:print(string.format(L["dmfBuffDropped"], spellName));
+		end
 		NWB:addDmfCooldown();
 	end
 	--NWB:debug(GetServerTime(), "Tracking new buff", type, spellName);
@@ -1808,6 +1812,9 @@ local function getMaxDurationByType(type)
 end
 
 function NWB:getDmfCooldown()
+	if (NWB.noDmfCooldown) then
+		return 0;
+	end
 	if (NWB.data.myChars[UnitName("player")].dmfCooldown) then
 		return NWB.data.myChars[UnitName("player")].dmfCooldown, NWB.data.myChars[UnitName("player")].dmfCooldownNoMsgs;
 	else
@@ -1822,7 +1829,11 @@ function NWB:getDmfCooldown()
 end
 
 function NWB:addDmfCooldown()
-	NWB.data.myChars[UnitName("player")].dmfCooldown = 14400;
+	if (NWB.noDmfCooldown) then
+		NWB.data.myChars[UnitName("player")].dmfCooldown = 0;
+	else
+		NWB.data.myChars[UnitName("player")].dmfCooldown = 14400;
+	end
 end
 
 function NWB:resetDmfCooldown()
@@ -1836,7 +1847,11 @@ function NWB:dmfChronoCheck()
 			if (v.type == "dmf") then
 				NWB:addDmfCooldown();
 				if (NWB.isDmfUp or NWB.isAlwaysDMF) then
-					NWB:print(L["chronoboonReleased"]);
+					if (NWB.noDmfCooldown) then
+						NWB:print(L["chronoboonReleasedNoCooldown"]);
+					else 
+						NWB:print(L["chronoboonReleased"]);
+					end
 				end
 				return;
 			end
