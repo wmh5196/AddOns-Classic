@@ -1,16 +1,10 @@
-lightweight tag bdba2227c0af9bcea3695f89f91fa4a27ba3dd12 v1.15.0
+lightweight tag f33659ca9a2db383744f0a58d1ac0f75d0bae84d v1.16.1
 Author:	Mike D <mcd8604@users.noreply.github.com>
-Date:	Tue Jul 9 23:37:21 2024 -0400
+Date:	Wed Sep 25 18:01:13 2024 -0400
 
-commit bdba2227c0af9bcea3695f89f91fa4a27ba3dd12
+commit f33659ca9a2db383744f0a58d1ac0f75d0bae84d
 Author: Mike D <mcd8604@users.noreply.github.com>
-Date:   Tue Jul 9 23:37:21 2024 -0400
+Date:   Wed Sep 25 18:01:13 2024 -0400
 
-    Update Engraver.toc
-
-commit 8cfb04b3c82afbfad85e9eec8e3becb1564c2bb1
-Author: Mike D <mcd8604@users.noreply.github.com>
-Date:   Thu Jul 4 17:36:07 2024 -0400
-
-    update for finger/back slots and other minor things
+    fixed VisibilityMode VarType
 
