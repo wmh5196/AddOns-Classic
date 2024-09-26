@@ -98,6 +98,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
                 scroll:SetPoint("TOPLEFT", 0, -12 - BUTTONHEIGHT)
                 scroll.ScrollBar.scrollStep = 5
                 BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+                -- BG.UpdateScrollBarShowOrHide(scroll.ScrollBar)
 
                 child = CreateFrame("Frame", nil, f) -- 子框架
                 child:SetWidth(scroll:GetWidth())
@@ -1034,7 +1035,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
 
             -- 在右键菜单中插入举报按钮
             do
-                local function FindDropdownItem(dropdown, text)
+                function BG.FindDropdownItem(dropdown, text)
                     local name = dropdown:GetName()
                     for i = 1, UIDROPDOWNMENU_MAXBUTTONS do
                         local dropdownItem = _G[name .. 'Button' .. i]
@@ -1043,13 +1044,14 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
                         end
                     end
                 end
+
                 local function UpdateAddReportButtons(mybuttontext, targetbuttontextTbl, isPvPreport)
                     local dropdownName = 'DropDownList' .. 1
                     local dropdown = _G[dropdownName]
-                    local myindex1, mybutton1 = FindDropdownItem(dropdown, mybuttontext)
+                    local myindex1, mybutton1 = BG.FindDropdownItem(dropdown, mybuttontext)
                     local index, targetbutton
                     for i, text in ipairs(targetbuttontextTbl) do
-                        index, targetbutton = FindDropdownItem(dropdown, text)
+                        index, targetbutton = BG.FindDropdownItem(dropdown, text)
                         if index and targetbutton then
                             break
                         end
@@ -1176,7 +1178,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
                         end
                         local color = "|c" .. select(4, GetClassColor(class))
 
-                        print(BG.STC_y1(format(L["已删除<%s>的举报记录。"], color .. fullname .. RR)))
+                        BG.SendSystemMessage(format(L["已删除<%s>的举报记录。"], color .. fullname .. RR))
                     end
                     UIDropDownMenu_AddButton(info)
                     UpdateAddReportButtons(mybuttontext, { REPORT_PLAYER, REPORT_FRIEND, IGNORE })
@@ -1221,10 +1223,43 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
                         end
                     end
 
-                    if which ~= "SELF" and which ~= "FRIEND" and unit and UnitIsPlayer(unit) then -- 头像右键菜单
-                        if havedReport then
-                            AddDeleteButton(fullname, playerLocation)
+                    local type
+                    if which ~= "SELF" and which ~= "FRIEND" and unit and UnitIsPlayer(unit) then           -- 头像右键菜单
+                        type = 1
+                    elseif which == "FRIEND" and not UnitIsUnit('player', Ambiguate(fullname, 'none')) then -- 聊天框玩家右键菜单
+                        type = 2
+                    end
+
+                    if havedReport and type then -- 聊天框玩家右键菜单
+                        AddDeleteButton(fullname, playerLocation)
+                    end
+
+                    -- 如果目标是自己队友或好友，则不添加一键举报按钮
+                    if name then
+                        local tbl = {}
+                        if IsInRaid(1) then
+                            tbl = BG.raidRosterInfo
+                        elseif IsInGroup(1) then
+                            tbl = BG.groupRosterInfo
                         end
+                        for i, v in ipairs(tbl) do
+                            if name == v.name then
+                                return
+                            end
+                        end
+                        if unit then
+                            if C_FriendList.IsFriend(UnitGUID(unit)) then
+                                return
+                            end
+                        elseif _name and chatPlayerGUIDs[fullname] then
+                            if C_FriendList.IsFriend(chatPlayerGUIDs[fullname]) then
+                                return
+                            end
+                        end
+                    end
+
+
+                    if type == 1 then -- 头像右键菜单
                         AddReportButton("jiaoben", fullname, playerLocation)
                         local _, type = IsInInstance()
                         if type == "pvp" then
@@ -1232,10 +1267,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
                         else
                             AddReportButton("RMT", fullname, playerLocation)
                         end
-                    elseif which == "FRIEND" and not UnitIsUnit('player', Ambiguate(fullname, 'none')) then -- 聊天框玩家右键菜单
-                        if havedReport then
-                            AddDeleteButton(fullname, playerLocation)
-                        end
+                    elseif type == 2 then -- 聊天框玩家右键菜单
                         AddReportButton("jiaoben", fullname, playerLocation)
                         AddReportButton("RMT", fullname, playerLocation)
                     end

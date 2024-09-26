@@ -74,7 +74,9 @@ do
             AddDB("Gno", mainFrameWidth, 835, 3, 8, { 0, 5, 8 })
             AddDB("Temple", mainFrameWidth, 885, 3, 10, { 0, 6, 9, })
             AddDB("UBRS", mainFrameWidth, 835, 3, 10, { 0, 5, 9 })
-            AddDB("MCsod", 1715, 900, 4, 16, { 0, 7, 12, 15 })
+            AddDB("MCsod", 1715, 940, 4, 16, { 0, 6, 11, 14 })
+            AddDB("ZUGsod", mainFrameWidth, 810, 3, 12, { 0, 6, 11 })
+            AddDB("BWLsod", mainFrameWidth, 810, 3, 11, { 0, 5, 9 })
         elseif BG.IsVanilla_60 then
             AddDB("MC", mainFrameWidth, 873, 3, 13, { 0, 8, 12 })
             AddDB("BWL", mainFrameWidth, 810, 3, 10, { 0, 5, 9 })
@@ -119,14 +121,16 @@ do
             end
         end
         if BG.IsVanilla_Sod then
-            BG.FB1 = "Temple"
+            BG.FB1 = "MCsod"
             BG.fullLevel = 25
-            BG.theEndBossID = { 2891, 2940, 2956, 672 }
+            BG.theEndBossID = { 2891, 2940, 2956, 3018, 617, 793 }
             AddDB("BD", 48, "P1", 10, 3)
             AddDB("Gno", 90, "P2", 10, 3)
             AddDB("Temple", 109, "P3", 20, 3)
             AddDB("UBRS", 229, "P4", 10, 3, nil, { "UBRS", "MCsod" })
             AddDB("MCsod", 409, "P4", 20, nil, nil, { "UBRS", "MCsod" }, { 1, 11 })
+            AddDB("ZUGsod", 309, "P5", 10, 3, nil, { "BWLsod", "ZUGsod" })
+            AddDB("BWLsod", 469, "P5", 20, nil, nil, { "BWLsod", "ZUGsod" })
 
             BG.FBIDtable[249] = "MCsod" -- 奥妮克希亚的巢穴
             BG.bossPositionStartEnd[249] = { 12, 12 }
@@ -142,10 +146,19 @@ do
             BG.bossPositionStartEnd[2789] = { 14, 14 }
             BG.FBfromBossPosition["MCsod"][14] = { name = "TTS", localName = GetRealZoneText(2789) }
             BG.instanceIDfromBossPosition["MCsod"][14] = 2789
+
+            -- 水晶谷
+            do
+                local FB, instanceID, bossNum = "BWLsod", 2804, 9
+                BG.FBIDtable[instanceID] = FB
+                BG.bossPositionStartEnd[instanceID] = { bossNum, bossNum }
+                BG.FBfromBossPosition[FB][bossNum] = { name = "TCV", localName = GetRealZoneText(instanceID) }
+                BG.instanceIDfromBossPosition[FB][bossNum] = instanceID
+            end
         elseif BG.IsVanilla_60 then
             BG.FB1 = "MC"
             BG.fullLevel = 60
-            BG.theEndBossID = { 672, 1084, 617, 793, 723, 717, 1114 } --MC_SodOL BWL ZUG AQL TAQ NAXX
+            BG.theEndBossID = { 672, 1084, 617, 793, 723, 717, 1114 } --MC OL BWL ZUG AQL TAQ NAXX
             AddDB("MC", 409, L["全阶段"], 40, nil, nil, { "MC", "BWL", "ZUG", "AQL", "TAQ", "NAXX" }, { 1, 10 })
             AddDB("BWL", 469, L["全阶段"], 40, nil, nil, { "MC", "BWL", "ZUG", "AQL", "TAQ", "NAXX" })
             AddDB("ZUG", 309, L["全阶段"], 20, 3, nil, { "MC", "BWL", "ZUG", "AQL", "TAQ", "NAXX" })
@@ -160,11 +173,11 @@ do
         elseif BG.IsWLK then
             BG.FB1 = "NAXX"
             BG.fullLevel = 80
-            BG.theEndBossID = { 1114, 757, 645, 856, }
-            AddDB("NAXX", 533, "P1", nil, nil, { "H25", "H10", "N25", "N10" })
+            BG.theEndBossID = { 1114, 756, 645, 856, }
+            AddDB("NAXX", 533, "P1", nil, nil, { "H25", "H10", "N25", "N10" }, nil, { 1, 15 })
             AddDB("ULD", 603, "P2", nil, nil, { "H25", "H10", "N25", "N10" })
-            AddDB("TOC", 649, "P3", nil, nil, { "H25", "H10", "N25", "N10" })
-            AddDB("ICC", 631, "P4", nil, nil, { "H25", "H10", "N25", "N10" })
+            AddDB("TOC", 649, "P3", nil, nil, { "H25", "H10", "N25", "N10" }, nil, { 1, 6 })
+            AddDB("ICC", 631, "P4", nil, nil, { "H25", "H10", "N25", "N10" }, nil, { 1, 12 })
 
             BG.FBIDtable[615] = "NAXX" -- 黑曜石圣殿
             BG.bossPositionStartEnd[615] = { 16, 16 }
@@ -189,9 +202,9 @@ do
             BG.FB1 = "BOT"
             BG.fullLevel = 85
             BG.theEndBossID = { 1082, 1026, 1034, 1203, 1299, }
-            AddDB("BOT", 671, "P1")   -- 暮光堡垒
+            AddDB("BOT", 671, "P1", nil, nil, nil, nil, { 1, 5 }) -- 暮光堡垒
 
-            BG.FBIDtable[669] = "BOT" -- 黑翼血环
+            BG.FBIDtable[669] = "BOT"                             -- 黑翼血环
             BG.bossPositionStartEnd[669] = { 6, 11 }
             for i = 6, 11 do
                 BG.FBfromBossPosition["BOT"][i] = { name = "BWD", localName = GetRealZoneText(669) }
@@ -236,6 +249,7 @@ do
 
     BG.onEnterAlpha = 0.1
     BG.highLightAlpha = 0.2
+    BG.otherEditAlpha = 0.3
     BG.scrollStep = 80
 
     BG.ver = ns.ver
@@ -411,16 +425,17 @@ do
                 WARLOCK = {},
                 PRIEST = {},
 
-                Team = {},       -- 5人本
-                World = {},      -- 世界掉落
-                WorldBoss = {},  -- 世界boss
-                Currency = {},   -- 货币贷款（WLK）
-                Faction = {},    -- 声望
-                Pvp = {},        -- PVP
-                Profession = {}, -- 专业制造
-                Quest = {},      -- 任务
+                Team = {},         -- 5人本
+                World = {},        -- 世界掉落
+                WorldBoss = {},    -- 世界boss
+                Currency = {},     -- 货币贷款（WLK）
+                Faction = {},      -- 声望
+                PVP = {},          -- PVP
+                PVP_currency = {}, -- PVP货币
+                Profession = {},   -- 专业制造
+                Quest = {},        -- 任务
 
-                Sod_Pvp = {},    -- 赛季服PVP活动
+                Sod_PVP = {},      -- 赛季服PVP活动
                 Sod_Currency = {},
 
                 ExchangeItems = {},
@@ -437,12 +452,16 @@ do
                 cff = "00BFFF"
             elseif color == "Green" then
                 cff = "00FF00"
+            elseif color == "Green2" then
+                cff = "40c040"
             elseif color == "Red" then
                 cff = "FF0000"
             elseif color == "Fen" then
                 cff = "FF69B4"
             elseif color == "Gold" then
                 cff = "FFD100"
+            elseif color == "Yellow" then
+                cff = "FFFF00"
             elseif color == "White" then
                 cff = "FFFFFF"
             elseif color == "Dis" then
@@ -460,8 +479,12 @@ do
         CreateMyFont("Green", 15)
         CreateMyFont("Green", 25)
 
+        CreateMyFont("Green2", 15)
+
         CreateMyFont("Gold", 13)
         CreateMyFont("Gold", 15)
+
+        CreateMyFont("Yellow", 15)
 
         CreateMyFont("Red", 15)
 
@@ -573,168 +596,196 @@ do
     do
         BG.sound1 = SOUNDKIT.GS_TITLE_OPTION_OK -- 按键音效
         BG.sound2 = 569593                      -- 升级音效
-        BG.sound3 = SOUNDKIT.UI_TRANSMOG_APPLY  -- 确认框弹出音效
+        BG.sound3 = SOUNDKIT.IG_MAINMENU_CLOSE  -- 菜单打开音效
+
 
         local Interface = "Interface\\AddOns\\BiaoGe\\Media\\sound\\"
-        local tbl = {
-            "AI",
-            "YingXue",
+        BG.soundTbl = {
+            { ID = "AI", name = L["AI语音"] },
+            { ID = "YingXue", name = L["樱雪"] },
+            { ID = "BeiXi", name = L["匕首岭-<TIMEs>贝西"] },
+            { ID = "SiKaQi", name = L["司卡奇"] },
         }
-        for i, name in ipairs(tbl) do
-            BG["sound_paimai" .. name] = Interface .. name .. "\\拍卖啦.mp3"
-            BG["sound_hope" .. name] = Interface .. name .. "\\心愿达成.mp3"
-            BG["sound_qingkong" .. name] = Interface .. name .. "\\已清空表格.mp3"
-            BG["sound_cehuiqingkong" .. name] = Interface .. name .. "\\已撤回清空.mp3"
-            BG["sound_alchemyReady" .. name] = Interface .. name .. "\\炼金转化已就绪.mp3"
-            BG["sound_tailorReady" .. name] = Interface .. name .. "\\裁缝洗布已就绪.mp3"
-            BG["sound_leatherworkingReady" .. name] = Interface .. name .. "\\制皮筛盐已就绪.mp3"
-            BG["sound_error" .. name] = Interface .. name .. "\\检测到配置文件错误，现已重置.mp3"
-            BG["sound_pingjia" .. name] = Interface .. name .. "\\给个评价吧.mp3"
-            BG["sound_biaogefull" .. name] = Interface .. name .. "\\表格满了.mp3"
-            BG["sound_guoqi" .. name] = Interface .. name .. "\\装备快过期了.mp3"
+        BG.soundTbl2 = {
+            { ID = "paimai", name = "拍卖啦.mp3" },
+            { ID = "hope", name = "心愿达成.mp3" },
+            { ID = "qingkong", name = "已清空表格.mp3" },
+            { ID = "cehuiqingkong", name = "已撤回清空.mp3" },
+            { ID = "alchemyReady", name = "炼金转化已就绪.mp3" },
+            { ID = "tailorReady", name = "裁缝洗布已就绪.mp3" },
+            { ID = "leatherworkingReady", name = "制皮筛盐已就绪.mp3" },
+            { ID = "pingjia", name = "给个评价吧.mp3" },
+            { ID = "biaogefull", name = "表格满了.mp3" },
+            { ID = "guoqi", name = "装备快过期了.mp3" },
+            { ID = "uploading", name = "账单正在上传.mp3" },
+            { ID = "uploaded", name = "账单上传成功.mp3" },
+            { ID = "countDownStop", name = "倒数暂停.mp3" },
+            { ID = "HusbandComeOn", name = "老公加油.mp3" },
+        }
+        for _, v in ipairs(BG.soundTbl) do
+            local name = v.ID
+            for _, v in ipairs(BG.soundTbl2) do
+                BG["sound_" .. v.ID .. name] = Interface .. name .. "\\" .. v.name
+            end
         end
     end
+
+    hooksecurefunc(LibBG, "ToggleDropDownMenu", function(_, _, _, dropDown)
+        for i = 1, L_UIDROPDOWNMENU_MAXBUTTONS do
+            local button = _G["L_DropDownList1Button" .. i]
+            if button.line then button.line:Hide() end
+            if button.value == "   " then
+                if not button.line then
+                    local line = button:CreateTexture(nil, 'BACKGROUND')
+                    line:SetTexture([[Interface\Common\UI-TooltipDivider-Transparent]])
+                    line:SetHeight(8)
+                    line:SetPoint('LEFT')
+                    line:SetPoint('RIGHT', -5, 0)
+                    line:Hide()
+                    button.line = line
+                end
+                button.line:Show()
+            end
+        end
+    end)
 end
 
 
 -- 数据库（保存至本地）
 local function DataBase()
-    -- 开始
-    do
-        if BiaoGe then
-            if type(BiaoGe) ~= "table" then
-                BiaoGe = {}
-            end
-        else
+    if BiaoGe then
+        if type(BiaoGe) ~= "table" then
             BiaoGe = {}
         end
-        if not BiaoGe.point then
-            BiaoGe.point = {}
-        end
-        if not BiaoGe.duizhang then
-            BiaoGe.duizhang = {}
-        end
+    else
+        BiaoGe = {}
+    end
+    if not BiaoGe.point then
+        BiaoGe.point = {}
+    end
+    if not BiaoGe.duizhang then
+        BiaoGe.duizhang = {}
+    end
 
-        for index, FB in ipairs(BG.FBtable) do
-            if not BiaoGe[FB] then
-                BiaoGe[FB] = {}
-            end
-            BiaoGe[FB].tradeTbl = BiaoGe[FB].tradeTbl or {}
-            for b = 1, 22 do
-                if not BiaoGe[FB]["boss" .. b] then
-                    BiaoGe[FB]["boss" .. b] = {}
-                end
-            end
+    for index, FB in ipairs(BG.FBtable) do
+        if not BiaoGe[FB] then
+            BiaoGe[FB] = {}
         end
-
-        if not BiaoGe.HistoryList then
-            BiaoGe.HistoryList = {}
-        end
-        for index, FB in ipairs(BG.FBtable) do
-            if not BiaoGe.HistoryList[FB] then
-                BiaoGe.HistoryList[FB] = {}
+        BiaoGe[FB].tradeTbl = BiaoGe[FB].tradeTbl or {}
+        for b = 1, 22 do
+            if not BiaoGe[FB]["boss" .. b] then
+                BiaoGe[FB]["boss" .. b] = {}
             end
         end
+    end
 
-        if not BiaoGe.History then
-            BiaoGe.History = {}
+    if not BiaoGe.HistoryList then
+        BiaoGe.HistoryList = {}
+    end
+    for index, FB in ipairs(BG.FBtable) do
+        if not BiaoGe.HistoryList[FB] then
+            BiaoGe.HistoryList[FB] = {}
         end
-        for index, FB in ipairs(BG.FBtable) do
-            if not BiaoGe.History[FB] then
-                BiaoGe.History[FB] = {}
-            end
-        end
+    end
 
-        if not BG.IsVanilla then
-            if not BiaoGe.BossFrame then
-                BiaoGe.BossFrame = {}
-            end
-            for index, FB in ipairs(BG.FBtable) do
-                if not BiaoGe.BossFrame[FB] then
-                    BiaoGe.BossFrame[FB] = {}
-                end
-            end
+    if not BiaoGe.History then
+        BiaoGe.History = {}
+    end
+    for index, FB in ipairs(BG.FBtable) do
+        if not BiaoGe.History[FB] then
+            BiaoGe.History[FB] = {}
         end
+    end
 
-        if not BiaoGe.options then
-            BiaoGe.options = {}
-        end
-        if not BiaoGe.options.SearchHistory then
-            BiaoGe.options.SearchHistory = {}
-        end
-        local name = "moLing"
-        BG.options[name .. "reset"] = 1
-        if not BiaoGe.options[name] then
-            BiaoGe.options[name] = BG.options[name .. "reset"]
-        end
-        -- 声音方案
-        BiaoGe.options.Sound = BiaoGe.options.Sound or "YingXue"
-
-        -- 高亮天赋装备
-        if not BiaoGe.filterClassNum then
-            BiaoGe.filterClassNum = {}
-        end
-        if not BiaoGe.filterClassNum[realmID] then
-            BiaoGe.filterClassNum[realmID] = {}
-        end
-        if not BiaoGe.filterClassNum[realmID][player] then
-            BiaoGe.filterClassNum[realmID][player] = 0
-        end
-        if BiaoGeA and BiaoGeA.filterClassNum then
-            BiaoGe.filterClassNum[realmID][player] = BiaoGeA.filterClassNum
-            BiaoGeA.filterClassNum = nil
-        end
-
-        -- 心愿清单
-        if not BiaoGe.Hope then
-            BiaoGe.Hope = {}
-        end
-
-        if not BiaoGe.Hope[realmID] then
-            BiaoGe.Hope[realmID] = {}
-        end
-        if not BiaoGe.Hope[realmID][player] then
-            BiaoGe.Hope[realmID][player] = {}
+    if not BG.IsVanilla then
+        if not BiaoGe.BossFrame then
+            BiaoGe.BossFrame = {}
         end
         for index, FB in ipairs(BG.FBtable) do
-            if not BiaoGe.Hope[realmID][player][FB] then
-                BiaoGe.Hope[realmID][player][FB] = {}
+            if not BiaoGe.BossFrame[FB] then
+                BiaoGe.BossFrame[FB] = {}
             end
-            for n = 1, 4 do
-                if not BiaoGe.Hope[realmID][player][FB]["nandu" .. n] then
-                    BiaoGe.Hope[realmID][player][FB]["nandu" .. n] = {}
-                    for b = 1, 22 do
-                        if not BiaoGe.Hope[realmID][player][FB]["nandu" .. n]["boss" .. b] then
-                            BiaoGe.Hope[realmID][player][FB]["nandu" .. n]["boss" .. b] = {}
-                        end
+        end
+    end
+
+    if not BiaoGe.options then
+        BiaoGe.options = {}
+    end
+    if not BiaoGe.options.SearchHistory then
+        BiaoGe.options.SearchHistory = {}
+    end
+    local name = "moLing"
+    BG.options[name .. "reset"] = 1
+    if not BiaoGe.options[name] then
+        BiaoGe.options[name] = BG.options[name .. "reset"]
+    end
+    -- 声音方案
+    BiaoGe.options.Sound = BiaoGe.options.Sound or BG.soundTbl[random(#BG.soundTbl)]
+
+    -- 高亮天赋装备
+    if not BiaoGe.filterClassNum then
+        BiaoGe.filterClassNum = {}
+    end
+    if not BiaoGe.filterClassNum[realmID] then
+        BiaoGe.filterClassNum[realmID] = {}
+    end
+    if not BiaoGe.filterClassNum[realmID][player] then
+        BiaoGe.filterClassNum[realmID][player] = 0
+    end
+    if BiaoGeA and BiaoGeA.filterClassNum then
+        BiaoGe.filterClassNum[realmID][player] = BiaoGeA.filterClassNum
+        BiaoGeA.filterClassNum = nil
+    end
+
+    -- 心愿清单
+    if not BiaoGe.Hope then
+        BiaoGe.Hope = {}
+    end
+
+    if not BiaoGe.Hope[realmID] then
+        BiaoGe.Hope[realmID] = {}
+    end
+    if not BiaoGe.Hope[realmID][player] then
+        BiaoGe.Hope[realmID][player] = {}
+    end
+    for index, FB in ipairs(BG.FBtable) do
+        if not BiaoGe.Hope[realmID][player][FB] then
+            BiaoGe.Hope[realmID][player][FB] = {}
+        end
+        for n = 1, 4 do
+            if not BiaoGe.Hope[realmID][player][FB]["nandu" .. n] then
+                BiaoGe.Hope[realmID][player][FB]["nandu" .. n] = {}
+                for b = 1, 22 do
+                    if not BiaoGe.Hope[realmID][player][FB]["nandu" .. n]["boss" .. b] then
+                        BiaoGe.Hope[realmID][player][FB]["nandu" .. n]["boss" .. b] = {}
                     end
                 end
             end
         end
-        if BiaoGeA and BiaoGeA.Hope then
-            for k, v in pairs(BiaoGeA.Hope) do
-                BiaoGe.Hope[realmID][player][k] = v
-            end
-            BiaoGeA.Hope = nil
+    end
+    if BiaoGeA and BiaoGeA.Hope then
+        for k, v in pairs(BiaoGeA.Hope) do
+            BiaoGe.Hope[realmID][player][k] = v
         end
+        BiaoGeA.Hope = nil
+    end
 
-        -- 记录服务器名称
-        do
-            BiaoGe.realmName = BiaoGe.realmName or {}
-            BiaoGe.realmName[realmID] = GetRealmName()
-        end
-        -- 记录每个角色的职业和等级
-        do
-            BiaoGe.playerInfo = BiaoGe.playerInfo or {}
-            BiaoGe.playerInfo[realmID] = BiaoGe.playerInfo[realmID] or {}
-            BiaoGe.playerInfo[realmID][player] = BiaoGe.playerInfo[realmID][player] or {}
-            BiaoGe.playerInfo[realmID][player].class = select(2, UnitClass("player"))
-            BiaoGe.playerInfo[realmID][player].level = UnitLevel("player")
+    -- 记录服务器名称
+    do
+        BiaoGe.realmName = BiaoGe.realmName or {}
+        BiaoGe.realmName[realmID] = GetRealmName()
+    end
+    -- 记录每个角色的职业和等级
+    do
+        BiaoGe.playerInfo = BiaoGe.playerInfo or {}
+        BiaoGe.playerInfo[realmID] = BiaoGe.playerInfo[realmID] or {}
+        BiaoGe.playerInfo[realmID][player] = BiaoGe.playerInfo[realmID][player] or {}
+        BiaoGe.playerInfo[realmID][player].class = select(2, UnitClass("player"))
+        BiaoGe.playerInfo[realmID][player].level = UnitLevel("player")
 
-            BG.RegisterEvent("PLAYER_LEVEL_UP", function(self, even, level)
-                BiaoGe.playerInfo[realmID][player].level = level
-            end)
-        end
+        BG.RegisterEvent("PLAYER_LEVEL_UP", function(self, even, level)
+            BiaoGe.playerInfo[realmID][player].level = level
+        end)
     end
 end
 

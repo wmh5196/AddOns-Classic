@@ -7,17 +7,27 @@ local RR = ns.RR
 local NN = ns.NN
 local RN = ns.RN
 local FrameHide = ns.FrameHide
-local Maxb = ns.Maxb
-local Maxi = ns.Maxi
-local HopeMaxn = ns.HopeMaxn
-local HopeMaxb = ns.HopeMaxb
-local HopeMaxi = ns.HopeMaxi
+local SetClassCFF = ns.SetClassCFF
+local RGB_16 = ns.RGB_16
 
 local pt = print
 
-------------------函数：WCL------------------
-local function Expand(v)
+--[[
+pt( "|cFFE5CC80".."啊~")
+pt( "|cFFE26880".."啊~")
+pt( "|cFFFF8000".."啊~")
+pt( "|cFFBE8200".."啊~")
+pt( "|cFFA335EE".."啊~")
+pt( "|cFF0070FF".."啊~")
+pt( "|cFF1EFF00".."啊~")
+pt( "|cFF666666".."啊~")
+ ]]
+
+function BG.Expand(v)
     local switch = {
+        ["r"] = function()
+            return "RS"
+        end,
         ["V"] = function()
             return "VOA"
         end,
@@ -37,28 +47,28 @@ local function Expand(v)
             return "ICC"
         end,
         ["A"] = function()
-            return "|cFFE5CC80"
-        end,
-        ["L"] = function()
-            return "|cFFFF8000"
+            return "|cFFE5CC80" -- 金
         end,
         ["S"] = function()
-            return "|cFFE26880"
+            return "|cFFE26880" -- 粉
+        end,
+        ["L"] = function()
+            return "|cFFFF8000" -- 橙
         end,
         ["N"] = function()
             return "|cFFBE8200"
         end,
         ["E"] = function()
-            return "|cFFA335EE"
+            return "|cFFA335EE" -- 紫
         end,
         ["R"] = function()
-            return "|cFF0070FF"
+            return "|cFF0070FF" -- 蓝
         end,
         ["U"] = function()
-            return "|cFF1EFF00"
+            return "|cFF1EFF00" -- 绿
         end,
         ["C"] = function()
-            return "|cFF666666"
+            return "|cFF666666" -- 灰
         end,
         ["%"] = function()
             return "% "
@@ -78,223 +88,185 @@ local function Expand(v)
     return fenshu
 end
 
-local function WCLpm()
-    if type(WP_Database) ~= "table" then
-        return
+local function GetWCLinfo(name)
+    -- test
+    -- WP_Database["苍刃"] = "SD:(鲜血)1598.93/99.6%|1"
+    -- STOP_Database["苍刃"] = "1血DK,3符文DK,3血DKDPS"
+
+    local tbl = {}
+    local wclText = WP_Database[name]
+    local pmText
+    if STOP_Database then
+        pmText = STOP_Database[name]
+        if pmText then
+            pmText = pmText:gsub("(%d+)", "本服第%1")
+        end
     end
-    local updatetime = WP_Database.LASTUPDATE
-    local wclname1 = {}   -- 单纯的名字
-    local wclname2 = {}   -- 带颜色字符的名字
-    local wclfenshu1 = {} -- 单纯的数字分数
-    local wclfenshu2 = {} -- 短字符串分数
-    local wclfenshu3 = {} -- 带颜色字符的分数
-    local num = GetNumGroupMembers()
-    if not IsInRaid(1) then
-        num = 1
-    end
-    for i = 1, num do
-        local fenshu1 -- 单纯的数字分数
-        local fenshu2 -- 短字符串分数
-        local fenshu3 -- 带颜色字符的分数
-        local name = UnitName("raid" .. i)
-        if not IsInRaid(1) then
-            name = UnitName("player")
-        end
-        local _, class = UnitClass("raid" .. i)
-        if not IsInRaid(1) then
-            _, class = UnitClass("player")
-        end
-        local _, _, _, color = GetClassColor(class)
-        for k, v in pairs(WP_Database) do -- WP_Database = {["Rainforce"]="ED:(平衡)12892/79.6%RX:(平衡)16641/63.1%LV:(守护)45/98.4%|1"}
-            if k == name then             -- 如果在WCL数据里找到该名团员名字
-                local a = string.find(v, "/")
-                fenshu1 = tonumber(strsub(v, a + 1, a + 4))
-                local b = string.find(v, ":")
-                fenshu2 = strsub(v, b + 1, a + 5)
-                local max = strlen(v)
-                local vv = strsub(v, 1, max - 2) .. "|r" .. "|r" .. "|r"
-                fenshu3 = Expand(vv) -- 获取并转换带颜色的WCL分数
-            end
-        end
-
-        table.insert(wclname1, name) -- 保存单纯的名字到表
-
-        name = "|c" .. color .. name .. "|r"
-        table.insert(wclname2, name) -- 保存带颜色字符串的名字到表
-
-        if not fenshu1 then
-            fenshu1 = 0
-        end
-        table.insert(wclfenshu1, fenshu1) -- 保存单纯的数字分数到表
-
-        if not fenshu2 then
-            fenshu2 = L["没有WCL记录"]
-        end
-        table.insert(wclfenshu2, fenshu2) -- 保存短字符串分数到表
-
-        if not fenshu3 then
-            fenshu3 = L["没有WCL记录"]
-        end
-        table.insert(wclfenshu3, fenshu3) -- 保存带颜色字符串分数到表
-    end
-    -- 开始排序
-    local wclname4 = {}       -- 单纯的名字
-    local wclname5 = {}       -- 带颜色字符的名字
-    local wclfenshu4 = {}     -- 单纯的分数
-    local wclfenshu5 = {}     -- 短字符串分数
-    local wclfenshu6 = {}     -- 带颜色字符的分数
-    for t = 1, #wclfenshu1 do -- 找到最大数值
-        local max = nil
-        for k, v in ipairs(wclfenshu1) do
-            if tonumber(v) then
-                if max == nil then
-                    max = v
+    if wclText then
+        wclText = wclText:sub(1, #wclText - 2)
+        for k, str in pairs({ strsplit("%", wclText) }) do
+            local FB = 0
+            local ED = str:match("(.+):")
+            if ED then
+                ED = strsub(ED, 1, 1)
+                if ED == "r" then
+                    FB = 9
+                elseif ED == "I" then
+                    FB = 8
+                elseif ED == "T" then
+                    FB = 7
+                elseif ED == "O" then
+                    FB = 6
+                elseif ED == "D" then
+                    FB = 5
+                elseif ED == "X" then
+                    FB = 4
+                elseif ED == "V" then
+                    FB = 4
                 end
-                if max < v then
-                    max = v
+            end
+            local topfen = tonumber(str:match("/(.+)"))
+            if topfen then
+                topfen = topfen / 100 + FB
+                if not tbl.topfen then
+                    tbl.topfen = topfen
+                elseif topfen > tbl.topfen then
+                    tbl.topfen = topfen
                 end
             end
         end
-        if not max then
-            break
-        end
-        for i = 1, #wclfenshu1 do
-            if wclfenshu1[i] == max then
-                table.insert(wclname4, wclname1[i])     -- 保存单纯的名字到表
-                table.insert(wclname5, wclname2[i])     -- 保存带颜色字符串的名字到表
-                table.insert(wclfenshu4, wclfenshu1[i]) -- 保存单纯的分数到表
-                table.insert(wclfenshu5, wclfenshu2[i]) -- 保存短字符串分数到表
-                table.insert(wclfenshu6, wclfenshu3[i]) -- 保存带颜色字符串分数到表
-
-                table.remove(wclname1, i)
-                table.remove(wclname2, i)
-                table.remove(wclfenshu1, i)
-                table.remove(wclfenshu2, i)
-                table.remove(wclfenshu3, i)
-            end
-        end
-    end
-    return wclname4, wclname5, wclfenshu4, wclfenshu5, wclfenshu6, updatetime -- 单纯的名字，带颜色字符串的名字，单纯的分数，短字符串分数，带颜色字符串分数，更新日期
-end
-
--- 按WCL分数上标记
-local function WCLcolor(fenshu)
-    local f = tonumber(fenshu)
-    local b                 -- 标记
-    if f then
-        if f >= 99 then     -- 星星：粉
-            b = "{rt1}"
-        elseif f >= 95 then -- 大饼：橙
-            b = "{rt2}"
-        elseif f >= 75 then -- 紫菱：紫
-            b = "{rt3}"
-        elseif f >= 5 then  -- 方块：蓝
-            b = "{rt6}"
-        elseif f >= 25 then -- 三角：绿
-            b = "{rt4}"
-        elseif f > 0 then   -- 骷髅：灰
-            b = "{rt8}"
-        elseif f == 0 then
-            b = "{rt7}" -- 叉叉：无
+        tbl.colortext = BG.Expand(wclText):gsub("%).+/", ")")
+        tbl.text = tbl.colortext:gsub("|c[fF][fF]......", ""):gsub("|r", "")
+        if pmText then
+            tbl.colortext = tbl.colortext .. "\n" .. pmText
+            tbl.text = tbl.text .. pmText
         end
     else
-        b = "{rt7}" -- 叉叉：无
+        tbl.topfen = 0
+        tbl.colortext = BG.STC_dis(L["没有wc1记录"])
+        tbl.text = L["没有wc1记录"]
     end
-    return b
+    tbl.colorname = SetClassCFF(name)
+    tbl.name = name
+    return tbl
 end
 
+local function CreateListTable()
+    local wclInfo = {}
+    if IsInRaid(1) then
+        for i = 1, GetNumGroupMembers() do
+            local name = UnitName("raid" .. i)
+            tinsert(wclInfo, GetWCLinfo(name))
+        end
+    else
+        local name = UnitName("player")
+        tinsert(wclInfo, GetWCLinfo(name))
+    end
+    sort(wclInfo, function(a, b)
+        return a.topfen > b.topfen
+    end)
+    return wclInfo
+end
 
+local yes
 function BG.WCLUI(lastbt)
     local bt = CreateFrame("Button", nil, BG.ButtonZhangDan, "UIPanelButtonTemplate")
-    bt:SetSize(90, BG.ButtonZhangDan:GetHeight())
-    bt:SetPoint("LEFT", lastbt, "RIGHT", 10, 0)
-    bt:SetText(L["通报WCL"])
+    bt:SetSize(BG.ButtonZhangDan:GetWidth(), BG.ButtonZhangDan:GetHeight())
+    bt:SetPoint("LEFT", lastbt, "RIGHT", BG.ButtonZhangDan.jiange, 0)
+    bt:SetText("WCL")
     BG.ButtonWCL = bt
     tinsert(BG.TongBaoButtons, bt)
-    bt:Hide()
-
-    local groupchange = true
-    local f = CreateFrame("Frame")
-    f:RegisterEvent("GROUP_ROSTER_UPDATE")
-    f:SetScript("OnEvent", function(self, even, ...)
-        groupchange = true
-    end)
 
     -- 鼠标悬停提示
-    local text
-    local wclname4, wclname5, wclfenshu4, wclfenshu5, wclfenshu6, updatetime -- 单纯的名字，带颜色字符串的名字，单纯的分数，短字符串分数，带颜色字符串分数，更新日期
     bt:SetScript("OnEnter", function(self)
         if BG.Backing then return end
-        if groupchange then
-            wclname4, wclname5, wclfenshu4, wclfenshu5, wclfenshu6, updatetime = WCLpm()
-            if not updatetime then
-                text = L["读取不到数据，你可能没安装或者没打开WCL插件"]
-            else
-                updatetime = "|cffFFFFFF" .. L["更新时间："] .. updatetime .. "|r"
-                text = "|cffffffff" .. L["< WCL分数 >"] .. RN
-                local num = GetNumGroupMembers()
-                if not IsInRaid(1) then
-                    num = 1
-                end
-                for i = 1, num do
-                    if wclname5[i] and wclfenshu6[i] then
-                        text = text .. i .. "、" .. wclname5[i] .. L["："] .. wclfenshu6[i] .. "\n"
-                    end
-                end
-                text = text .. updatetime
-            end
-            groupchange = false
-        end
         GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
         GameTooltip:ClearLines()
-        GameTooltip:SetText(text)
-        GameTooltip:SetClampedToScreen(false)
+        if WP_Database then
+            GameTooltip:AddLine(L["———通报wc1———"])
+            for i, v in ipairs(CreateListTable()) do
+                GameTooltip:AddLine(i .. ". " .. v.colorname .. " " .. v.colortext)
+            end
+            GameTooltip:AddLine(L["更新日期"] .. ":" .. WP_Database.LASTUPDATE)
+        else
+            GameTooltip:AddLine(L["读取不到数据，你可能没安装WclPlayerScore-WotLK插件"], 1, 0, 0, true)
+        end
+
+        GameTooltip:Show()
     end)
-    bt:SetScript("OnLeave", function(self)
-        GameTooltip:Hide()
-        GameTooltip:SetClampedToScreen(true)
-    end)
-    -- 点击通报WCL分数
+    bt:SetScript("OnLeave", GameTooltip_Hide)
     bt:SetScript("OnClick", function(self)
         FrameHide(0)
         if not IsInRaid(1) then
             SendSystemMessage(L["不在团队，无法通报"])
-            PlaySound(BG.sound1, "Master")
+            BG.PlaySound(1)
         else
             self:SetEnabled(false) -- 点击后按钮变灰2秒
             C_Timer.After(2, function()
                 bt:SetEnabled(true)
             end)
-            wclname4, wclname5, wclfenshu4, wclfenshu5, wclfenshu6, updatetime = WCLpm()
-            if not updatetime then
-                return
-            end
-            updatetime = L["更新时间："] .. updatetime
-            local text = ""
-            local num = GetNumGroupMembers()
-            SendChatMessage(L["———通报WCL分数———"], "RAID")
+
+            if not WP_Database then return end
+            yes = true
             local t = 0
-            for i = 1, num do
-                if wclname4[i] and wclfenshu4[i] and wclfenshu5[i] then
-                    -- BG.After(t, function()
-                    text = WCLcolor(wclfenshu4[i]) .. i .. "、" .. wclname4[i] .. L["："] .. wclfenshu5[i] .. "\n"
-                    SendChatMessage(text, "RAID")
-                    -- end)
-                    -- t = t + BG.tongBaoSendCD
-                end
+            SendChatMessage(L["———通报wc1———"], "RAID")
+            t = t + BG.tongBaoSendCD
+            for i, v in ipairs(CreateListTable()) do
+                BG.After(t, function()
+                    SendChatMessage(i .. ". " .. v.name .. " " .. v.text, "RAID")
+                end)
+                t = t + BG.tongBaoSendCD
             end
-            text = updatetime
-            SendChatMessage(text, "RAID")
-            PlaySoundFile(BG.sound2, "Master")
+            BG.After(t, function()
+                SendChatMessage(L["更新日期"] .. ":" .. WP_Database.LASTUPDATE, "RAID")
+            end)
+            BG.After(t + 1, function()
+                yes = false
+            end)
+            BG.PlaySound(2)
         end
     end)
 
     return bt
 end
 
---AD：粉
---LD：橙
---ED：紫
---RD：蓝
---UD：绿
---CD：灰
+local function AddWCLColor(self, even, msg, player, l, cs, t, flag, channelId, ...)
+    if not yes then return false, msg, player, l, cs, t, flag, channelId, ... end
+    local num, name, wcl, pm = strsplit(" ", msg)
+    if num and name and wcl then
+        name = SetClassCFF(name)
+
+        local newwcl = ""
+        for k, str in pairs { strsplit("%", wcl) } do
+            local topfen = tonumber(str:match("%)(.+)"))
+            local color = "666666"
+            if topfen then
+                if topfen >= 100 then
+                    color = "E5CC80"
+                elseif topfen >= 99 then
+                    color = "E26880"
+                elseif topfen >= 95 then
+                    color = "FF8000"
+                elseif topfen >= 75 then
+                    color = "A335EE"
+                elseif topfen >= 50 then
+                    color = "0070FF"
+                elseif topfen >= 25 then
+                    color = "1EFF00"
+                else
+                    color = "666666"
+                end
+                str = str .. "%"
+            end
+            newwcl = newwcl .. "|cff" .. color .. str .. "|r"
+        end
+        local newmsg = num .. " " .. name .. " " .. newwcl
+        if pm then
+            newmsg = newmsg .. " " .. BG.STC_y1(pm)
+        end
+        return false, newmsg, player, l, cs, t, flag, channelId, ...
+    end
+end
+
+ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID_LEADER", AddWCLColor)
+ChatFrame_AddMessageEventFilter("CHAT_MSG_RAID", AddWCLColor)

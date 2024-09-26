@@ -27,7 +27,7 @@ local FB = BG.FB1
 
 local MAXBUTTONS = 20
 local BUTTONHEIGHT = 22
-
+local itemTbl = {}
 local isCache = {}
 
 local title_table = {
@@ -55,6 +55,7 @@ local typeIDtbl = {
     "world",
     "worldboss",
     "pvp",
+    "pvp_currency"
 }
 local function GetTypeID(type)
     for i, v in ipairs(typeIDtbl) do
@@ -148,7 +149,11 @@ local function FilterItem(FB, itemID, EquipLocs, type, hard, ii, otherID) -- 重
         end
     end
     if not (yes and (typeID == 2 or typeID == 4)) then return end
-    if BG.FilterAll(itemID, typeID, EquipLoc, subclassID) then return end
+    if not itemTbl[itemID] then
+        itemTbl[itemID] = {}
+        itemTbl[itemID].filter = BG.FilterAll(itemID, typeID, EquipLoc, subclassID)
+    end
+    if itemTbl[itemID].filter then return end
     if type == "raid" then -- 团本掉落
         local color = "|cff" .. "00BFFF"
         if strfind(hard, "10") then
@@ -272,9 +277,9 @@ local function FilterItem(FB, itemID, EquipLocs, type, hard, ii, otherID) -- 重
         if classID then
             local className, classFile = GetClassInfo(classID)
             local _, _, _, colorStr = GetClassColor(classFile)
-            get = "|cff" .. color .. FBname .. "|c" .. colorStr .. className .. BG.STC_y1(QUESTS_LABEL) .. RR .. exText .. AddPrice(itemID)
+            get = "|cff" .. color .. FBname .. "|c" .. colorStr .. className .. BG.STC_y1(QUESTS_LABEL) .. RR .. exText .. AddPrice(itemID) .. RR
         else
-            get = "|cff" .. color .. FBname .. BG.STC_y1(faction .. QUESTS_LABEL) .. RR .. exText .. AddPrice(itemID)
+            get = "|cff" .. color .. FBname .. BG.STC_y1(faction .. QUESTS_LABEL) .. RR .. exText .. AddPrice(itemID) .. RR
         end
 
         local a = {
@@ -531,8 +536,54 @@ local function FilterItem(FB, itemID, EquipLocs, type, hard, ii, otherID) -- 重
             haved = CheckHaved(itemID)
         }
         return a
+    elseif type == "pvp_currency" then -- 牌子
+        local v = otherID
+        local count = v.count
+        local currencyID = v.currencyID
+        local phase = v.phase
+        local phaseText = ""
+        if phase then
+            phaseText = " |cff808080<" .. phase .. ">|r"
+        end
+        local otherItemID1 = v.otherItemID1
+        local otherItemID1Count = v.otherItemID1Count
+        local otherText = ""
+        if otherItemID1 then
+            local otherItemID1CountText = ""
+            if otherItemID1Count and otherItemID1Count ~= 1 then
+                otherItemID1CountText = "x" .. otherItemID1Count
+            end
+            local name, link, quality, level, _, _, _, _, EquipLoc, Texture, _, typeID, subclassID, bindType = GetItemInfo(otherItemID1)
+            otherText = " + " .. AddTexture(Texture) .. link .. otherItemID1CountText
+        end
+
+        local name = C_CurrencyInfo.GetCurrencyInfo(currencyID).name
+        local tex = C_CurrencyInfo.GetCurrencyInfo(currencyID).iconFileID
+        local quantity = C_CurrencyInfo.GetCurrencyInfo(currencyID).quantity
+        local color = "00FF00"
+        if count then
+            if quantity < count then
+                color = "FF0000"
+            end
+        else
+            count = ""
+        end
+        local get = BG.STC_y1(AddTexture(tex) .. name .. " " .. "|cff" .. color .. count .. RR) .. AddPrice(itemID) .. otherText .. phaseText
+
+        local a = {
+            itemID = itemID,
+            link = link,
+            level = level,
+            quality = quality,
+            texture = Texture,
+            get = get,
+            bindType = bindType,
+            type = GetTypeID(type),
+            haved = CheckHaved(itemID)
+        }
+        return a
     end
-    -- 团本 任务 套装 牌子 声望 专业 5人 世界掉落 世界boss PVP 赛季服货币/牌子
+    -- 团本 任务 套装 牌子 声望 专业 5人 世界掉落 世界boss PVP 赛季服货币/牌子 PVP货币
 end
 local function Mode(FB, count1, tbl, EquipLocs, itemID, type, hard, ii, k)
     if EquipLocs then
@@ -680,10 +731,16 @@ local function CheckItemCache(EquipLocs, checkFB) -- 不传入参数时是检查
         end
         -- PVP
         if onlyCheckCache or not BiaoGe.ItemLib.fitlerGet.pvp then
-            for k, v in pairs(BG.Loot[FB].Pvp) do
-                for i, itemID in ipairs(BG.Loot[FB].Pvp[k]) do
+            for k, v in pairs(BG.Loot[FB].PVP) do
+                for i, itemID in ipairs(BG.Loot[FB].PVP[k]) do
                     count1, tbl = Mode(FB, count1, tbl, EquipLocs, itemID, "pvp", hard, ii, k)
                 end
+            end
+        end
+        -- PVP货币
+        if onlyCheckCache or not BiaoGe.ItemLib.fitlerGet.pvp then
+            for itemID, v in pairs(BG.Loot[FB].PVP_currency) do
+                count1, tbl = Mode(FB, count1, tbl, EquipLocs, itemID, "pvp_currency", hard, ii, v)
             end
         end
     end
@@ -882,18 +939,18 @@ local function GetItemLibTable(num, EquipLocs)
 
     -- 删除重复装备，合并获取途径
     local newtbl = {}
-    local seen = {}
+    local same = {}
     for _, v in ipairs(tbl) do
-        if not seen[v.itemID] then
-            table.insert(newtbl, v)
-            seen[v.itemID] = true
+        if not same[v.itemID] then
+            same[v.itemID] = v
+            same[v.itemID].getTbl = {}
+            tinsert(same[v.itemID].getTbl, same[v.itemID].get)
         else
-            for i, vv in ipairs(newtbl) do
-                if v.itemID == vv.itemID then
-                    vv.get = vv.get .. "\n" .. v.get
-                end
-            end
+            tinsert(same[v.itemID].getTbl, v.get)
         end
+    end
+    for k, v in pairs(same) do
+        tinsert(newtbl, v)
     end
 
     -- 排序
@@ -903,20 +960,9 @@ local function GetItemLibTable(num, EquipLocs)
     BG.itemLibItemTbl = newtbl
     return newtbl
 end
-local function ShowHideScrollBar(num)
-    if num == 1 then
-        _G["BG.ItemLibMainFrameScrollBarScrollDownButton"]:Show()
-        _G["BG.ItemLibMainFrameScrollBarScrollUpButton"]:Show()
-        _G["BG.ItemLibMainFrameScrollBar"]:Show()
-    else
-        _G["BG.ItemLibMainFrameScrollBarScrollDownButton"]:Hide()
-        _G["BG.ItemLibMainFrameScrollBarScrollUpButton"]:Hide()
-        _G["BG.ItemLibMainFrameScrollBar"]:Hide()
-    end
-end
 local function SetItemLib(num, itemtbale)
     -- 先隐藏之前的列表内容
-    ShowHideScrollBar(0)
+    BG.ItemLibMainFrame.scroll.ScrollBar:Hide()
     local count = BG.ItemLibMainFrame[num].buttoncount
     if count then
         for i = 1, count do
@@ -924,13 +970,9 @@ local function SetItemLib(num, itemtbale)
         end
     end
 
-    if #itemtbale > MAXBUTTONS then
-        ShowHideScrollBar(1)
-    end
-
     for ii, vv in ipairs(itemtbale) do
         local right
-        local i_table = { ii, vv.level, (AddTexture(vv.texture) .. vv.link), vv.get }
+        local i_table = { ii, vv.level, (AddTexture(vv.texture) .. vv.link), vv.getTbl[1] }
         for i, v in ipairs(title_table) do
             local f = CreateFrame("Frame", nil, right or BG.ItemLibMainFrame[num])
             if i == #title_table then
@@ -959,7 +1001,11 @@ local function SetItemLib(num, itemtbale)
             f.Text:SetJustifyH(title_table[i].JustifyH)
             f.Text:SetWidth(f:GetWidth())
             f.Text:SetWordWrap(false)
-            f.Text:SetText(i_table[i])
+            if i == 4 and #vv.getTbl > 1 then
+                f.Text:SetText(i_table[i] .. "\n\n")
+            else
+                f.Text:SetText(i_table[i])
+            end
             if i == 1 then
                 f.Text:SetTextColor(RGB(BG.dis))
             end
@@ -976,17 +1022,7 @@ local function SetItemLib(num, itemtbale)
 
             f:SetScript("OnMouseDown", function(self)
                 if IsShiftKeyDown() then
-                    if AuctionatorShoppingFrame and AuctionatorShoppingFrame:IsVisible() then
-                        ChatEdit_InsertLink(vv.link)
-                    elseif AuctionFrameBrowse and AuctionFrameBrowse:IsVisible() then
-                        ChatEdit_InsertLink(vv.link)
-                    else
-                        local f = GetCurrentKeyBoardFocus()
-                        if not f then
-                            ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
-                        end
-                        ChatEdit_InsertLink(vv.link)
-                    end
+                    BG.InsertLink(vv.link)
                 elseif IsAltKeyDown() then
                     if BG.ItemLibMainFrame[num]["button" .. ii].item.hope:IsVisible() then return end
                     local itemID = GetItemInfoInstant(vv.link)
@@ -1058,14 +1094,22 @@ local function SetItemLib(num, itemtbale)
             end)
 
             f:SetScript("OnEnter", function(self)
-                if self.onenter and i ~= 3 then
+                if i == 4 and #vv.getTbl > 1 then
+                    BiaoGeTooltip2:SetOwner(self, "ANCHOR_TOPRIGHT", 0, 0)
+                    BiaoGeTooltip2:ClearLines()
+                    local text = BG.STC_w1(L["多个获取途径"]) .. NN .. NN
+                    for i, v in ipairs(vv.getTbl) do
+                        text = text .. v .. NN
+                    end
+                    BiaoGeTooltip2:SetText(text)
+                elseif self.onenter and i ~= 3 then
                     BiaoGeTooltip2:SetOwner(self, "ANCHOR_TOPRIGHT", 0, 0)
                     BiaoGeTooltip2:ClearLines()
                     BiaoGeTooltip2:AddLine(self.onenter, 1, 1, 1, false)
                     BiaoGeTooltip2:Show()
                 end
                 local itemID = GetItemInfoInstant(vv.link)
-                if BG.ButtonIsInRight(BG.MainFrame, 0.67) then
+                if BG.ButtonIsInRight(BG.ItemLibMainFrame["bg" .. num]) then
                     GameTooltip:SetOwner(BG.ItemLibMainFrame["bg" .. num].tooltip2, "ANCHOR_BOTTOMLEFT", 0, 0)
                 else
                     GameTooltip:SetOwner(BG.ItemLibMainFrame["bg" .. num].tooltip, "ANCHOR_BOTTOMRIGHT", 0, 0)
@@ -1074,11 +1118,22 @@ local function SetItemLib(num, itemtbale)
                 GameTooltip:SetItemByID(itemID)
                 GameTooltip:Show()
                 BG.ItemLibMainFrame[num]["button" .. ii].ds:Show()
+
+                if IsControlKeyDown() then
+                    SetCursor("Interface/Cursor/Inspect")
+                elseif IsAltKeyDown() then
+                    SetCursor("interface/cursor/quest")
+                end
+                BG.canShowInspectCursor = true
+                BG.canShowHopeCursor = true
             end)
             f:SetScript("OnLeave", function(self)
                 GameTooltip:Hide()
                 BiaoGeTooltip2:Hide()
                 BG.ItemLibMainFrame[num]["button" .. ii].ds:Hide()
+                SetCursor(nil)
+                BG.canShowInspectCursor = false
+                BG.canShowHopeCursor = false
             end)
 
             if i == 3 and vv.bindType == 2 then -- 装绑
@@ -1179,6 +1234,20 @@ local function UpdateTiptext(num, itemtbale)
         BG.ItemLibMainFrame[num]["noItem"]:Hide()
     end
 
+    if not BG.ItemLibMainFrame[num].notUpdateDBText then
+        local t = BG.ItemLibMainFrame[num]:CreateFontString()
+        t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+        t:SetPoint("TOPLEFT", BG.ItemLibMainFrame[num]["title" .. 3], "BOTTOMLEFT", 0, -30)
+        t:SetTextColor(1, 0, 0)
+        t:SetText(L["作者不再更新该版本及后续版本的装备库，实在抱歉。"])
+        t:Hide()
+        BG.ItemLibMainFrame[num].notUpdateDBText = t
+    end
+    BG.ItemLibMainFrame[num].notUpdateDBText:Hide()
+    if FB == "BWLsod" or FB == "ZUGsod" then
+        BG.ItemLibMainFrame[num].notUpdateDBText:Show()
+    end
+
     local P = BG.GetFBinfo(FB, "phase")
     local B = ""
     for i, v in ipairs(BG.invtypetable) do
@@ -1208,8 +1277,11 @@ local function UpdateItemLib(num, EquipLocs)
     UpdateTiptext(num, itemtbale)
 end
 function BG.UpdateAllItemLib(num)
+    if not BG.ItemLibMainFrame:IsVisible() then return end
+    BG.itemLibNeedUpdate = false
     local num = num or 1
     local EquipLocs = BiaoGe["ItemLibInvType"][num]
+    wipe(itemTbl)
     UpdateItemLib(num, EquipLocs)
 end
 
@@ -1240,7 +1312,7 @@ BG.CheckItemCache = CheckItemCache
 
 -- 更新心愿装备
 do
-    local function GetEquipLocName(EquipLoc) -- 返回该装备部位对应的invtypetable名称
+    function BG.GetEquipLocName(EquipLoc) -- 返回该装备部位对应的invtypetable名称
         for i, v in ipairs(BG.invtypetable) do
             for ii, _EquipLoc in ipairs(BG.invtypetable[i].key) do
                 if EquipLoc == _EquipLoc then
@@ -1249,6 +1321,7 @@ do
             end
         end
     end
+
     local function CheckIsSave_ItemLib_RightHope(itemID)
         for i, v in ipairs(BG.invtypetable) do
             local EquipLoc = v.name2
@@ -1264,7 +1337,7 @@ do
     function BG.UpdateItemLib_RightHope(itemID, ShoworHide) -- 更新心愿汇总，ShoworHide：1为添加装备，0为删除装备
         local FB = BG.FB1
         local name, link, quality, level, _, _, _, _, EquipLoc, Texture, _, typeID, subclassID, bindType = GetItemInfo(itemID)
-        local EquipLoc = GetEquipLocName(EquipLoc)
+        local EquipLoc = BG.GetEquipLocName(EquipLoc)
         if not EquipLoc then return end
         -- 只需历遍对应部位的心愿格子
         for i = 1, maxhope do
@@ -1608,6 +1681,8 @@ function BG.ItemLibUI()
         scroll:SetPoint("BOTTOMRIGHT", -30, 5)
         scroll.ScrollBar.scrollStep = BUTTONHEIGHT * 4
         BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+        BG.HookScrollBarShowOrHide(scroll)
+        BG.ItemLibMainFrame.scroll = scroll
 
         local frame = CreateFrame("Frame", nil, scroll)
         frame:SetSize(1, 1)
@@ -1733,10 +1808,11 @@ function BG.ItemLibUI()
                     { name = L["团本：10人"], name2 = "raid10", },
                     { name = L["团本：英雄难度"], name2 = "raidhero", },
                     { name = L["团本：普通难度"], name2 = "raidnormal", },
-                    -- { name = L["5人本"], name2 = "fb5", },
+                    { name = L["5人本"], name2 = "fb5", },
                     { name = L["牌子/货币"], name2 = "currency", },
                     { name = L["声望"], name2 = "faction", },
                     { name = L["专业"], name2 = "profession", },
+                    { name = L["PVP"], name2 = "pvp", },
                 }
             elseif BG.IsCTM then
                 tbl = {
@@ -2110,11 +2186,7 @@ function BG.ItemLibUI()
                             local itemID = GetItemInfoInstant(self:GetText())
                             if itemID then
                                 local _, link = GetItemInfo(itemID)
-                                local f = GetCurrentKeyBoardFocus()
-                                if not f then
-                                    ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
-                                end
-                                ChatEdit_InsertLink(link)
+                                BG.InsertLink(link)
                             end
                         elseif IsControlKeyDown() then
                             local itemID = GetItemInfoInstant(self:GetText())
@@ -2160,7 +2232,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
         if not BG.itemLibCaches[BG.FB1] then
             BG.CacheAndUpdateAllItemLib()
         else
-            if BG.lastItemLibFB ~= BG.FB1 then
+            if BG.lastItemLibFB ~= BG.FB1 or BG.itemLibNeedUpdate then
                 BG.UpdateAllItemLib()
             end
             BG.UpdateItemLib_LeftHope_All()

@@ -7275,7 +7275,14 @@
         "AQINSTANZ",
         "AQSHOWNQUEST",
         "AQTHISISSHOWN",
-        "LeaveParty"
+        "LeaveParty",
+        "XLootFrame",
+        "ContainerFrameItemButton_OnLeave",
+        "TradePlayerInputMoneyInsetBg",
+        "GetFactionInfoByID",
+        "STOP_Database",
+        "achievementFunctions",
+        "TradeRecipientItem1ItemButton"
     ],
     "Lua.diagnostics.disable": [
         "inject-field",
@@ -7284,6 +7291,7 @@
         "cast-local-type",
         "need-check-nil",
         "missing-fields",
-        "redundant-parameter"
+        "redundant-parameter",
+        "assign-type-mismatch"
     ]
 }

@@ -12,8 +12,6 @@ local RGB_16 = ns.RGB_16
 local GetClassRGB = ns.GetClassRGB
 local SetClassCFF = ns.SetClassCFF
 local GetText_T = ns.GetText_T
-local FrameDongHua = ns.FrameDongHua
-local FrameHide = ns.FrameHide
 local AddTexture = ns.AddTexture
 local GetItemID = ns.GetItemID
 
@@ -55,6 +53,11 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
     local addonName = "MeetingHorn"
     if not IsAddOnLoaded(addonName) then return end
     local MeetingHorn = LibStub("AceAddon-3.0"):GetAddon(addonName)
+    local LFG = MeetingHorn:GetModule('LFG', 'AceEvent-3.0', 'AceTimer-3.0', 'AceComm-3.0', 'LibCommSocket-3.0')
+    local Activity = MeetingHorn:GetClass('Activity')
+
+    local ver = GetAddOnMetadata(addonName, "Version"):gsub("%-%d+", ""):gsub("%D", "")
+    ver = tonumber(ver)
 
     -- 历史搜索记录
     do
@@ -142,7 +145,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                     else
                         edit:SetText(v)
                     end
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end)
             end
         end
@@ -167,7 +170,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
             if text ~= "" then
                 tinsert(BiaoGe.MeetingHorn[RealmId][player], edit:GetText())
                 CreateHistory()
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end
         end)
 
@@ -187,8 +190,6 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
 
     -- 不自动退出集结号频道
     do
-        local LFG = MeetingHorn:GetModule('LFG', 'AceEvent-3.0', 'AceTimer-3.0', 'AceComm-3.0', 'LibCommSocket-3.0')
-
         MeetingHorn.MainPanel:HookScript("OnHide", function(self)
             C_Timer.After(0.5, function()
                 if BiaoGe.options["MeetingHorn_always"] == 1 then
@@ -200,17 +201,14 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
 
     -- 按人数排序
     do
-        local Browser = MeetingHorn.MainPanel.Browser
-
+        local Browser = MeetingHorn:GetClass('UI.Browser', 'Frame')
         local bt = MeetingHorn.MainPanel.Browser.Header3
         local name = "MeetingHorn_members"
-        if BiaoGe.options[name] == 1 then
-            bt:SetEnabled(true)
-        end
 
-        function Browser:Sort()
+        BG.MeetingHorn.BrowserSort_oldFuc = Browser.Sort
+        BG.MeetingHorn.BrowserSort_newFuc = function(self)
             sort(self.ActivityList:GetItemList(), function(a, b)
-                if not BG.IsVanilla then
+                if not self.sortId then
                     local acl, bcl = a:GetCertificationLevel(), b:GetCertificationLevel()
                     if acl or bcl then
                         if acl and bcl then
@@ -219,29 +217,43 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                             return acl
                         end
                     end
-                end
-                if not self.sortId then
                     return false
                 end
 
                 if self.sortId == 3 then -- 按队伍人数排序
                     local aid, bid = a:GetMembers(), b:GetMembers()
-                    if aid and bid then
-                        if aid == bid then
-                            local aid, bid = a:GetActivityId(), b:GetActivityId()
+                    if aid or bid then
+                        if aid and bid then
                             if aid == bid then
-                                return a:GetTick() < b:GetTick()
-                            else
-                                return aid < bid
+                                local aid, bid = a:GetActivityId(), b:GetActivityId()
+                                if aid == bid then
+                                    return a:GetTick() < b:GetTick()
+                                else
+                                    return aid < bid
+                                end
                             end
-                        end
-                        if self.sortOrder == 0 then
-                            return aid > bid
+                            if self.sortOrder == 0 then
+                                return aid > bid
+                            else
+                                return bid > aid
+                            end
                         else
-                            return bid > aid
+                            return aid
                         end
                     end
                 elseif self.sortId == 1 then -- 按副本排序
+                    if not BG.IsVanilla then
+                        local acl, bcl = a:GetCertificationLevel(), b:GetCertificationLevel()
+                        if acl or bcl then
+                            if acl and bcl then
+                                if acl ~= bcl then
+                                    return acl > bcl
+                                end
+                            else
+                                return acl
+                            end
+                        end
+                    end
                     local aid, bid = a:GetActivityId(), b:GetActivityId()
                     if aid == bid then
                         return a:GetTick() < b:GetTick()
@@ -278,9 +290,13 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                 self.Sorter:Hide()
             end
         end
+        if BiaoGe.options[name] == 1 then
+            bt:SetEnabled(true)
+            Browser.Sort = BG.MeetingHorn.BrowserSort_newFuc
+        end
     end
 
-    -- 密语增强
+    -- 密语模板
     do
         local lastfocus
 
@@ -291,11 +307,13 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
         bt:SetSize(120, 22)
         if BG.IsVanilla then
             bt:SetPoint("BOTTOMRIGHT", MeetingHorn.MainPanel, "BOTTOMRIGHT", -4, 4)
+        elseif ver >= 200 then
+            bt:SetPoint("RIGHT", Browser.ApplyLeaderBtn, "LEFT", -0, 0)
         else
             bt:SetPoint("RIGHT", Browser.RechargeBtn, "LEFT", -10, 0)
         end
         bt:SetText(L["密语模板"])
-        bt:SetFrameLevel(4)
+        bt:SetFrameLevel(10)
         BG.MeetingHorn.WhisperButton = bt
         if BiaoGe.options["MeetingHorn_whisper"] ~= 1 then
             bt:Hide()
@@ -308,7 +326,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                 BG.MeetingHorn.WhisperFrame:Show()
                 BiaoGe.MeetingHornWhisper.WhisperFrame = true
             end
-            PlaySound(BG.sound1, "Master")
+            BG.PlaySound(1)
         end)
 
         -- 背景框
@@ -342,7 +360,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
         f.CloseButton:SetPoint("TOPRIGHT", 3, 3)
         f.CloseButton:HookScript("OnClick", function()
             BiaoGe.MeetingHornWhisper.WhisperFrame = nil
-            PlaySound(BG.sound1, "Master")
+            BG.PlaySound(1)
         end)
 
         -- 标题
@@ -380,128 +398,161 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
         -- 成就
         local AchievementTitle, AchievementTitleID, AchievementEdit, AchievementCheckButton
         if not BG.IsVanilla then
-            do
-                local t = f:CreateFontString()
-                t:SetPoint("TOPLEFT", 15, -30)
-                t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
-                t:SetTextColor(RGB(BG.g1))
-                t:SetText(L["成就"])
-                AchievementTitle = t
+            local onEnterTextTbl = {
+                "ULD(25)",
+                2895,
+                3037,
+                3164,
+                3163,
+                3189, -- 烈火金刚
+                3184, -- 珍贵的宝箱
+                2944,
+                3059,
+                "ULD(10)",
+                2894,
+                3036,
+                3159,
+                3158,
+                3180,
+                3182,
+                2941,
+                3058,
+                -- "RS",
+                -- 4816,
+                -- 4815,
+                -- 4818,
+                -- 4817,
+                -- "ICC(25)",
+                -- 4637,
+                -- 4608,
+                -- 4603,
+                -- 4635,
+                -- 4634,
+                -- 4633,
+                -- 4632,
+                -- "ICC(10)",
+                -- 4636,
+                -- 4532,
+                -- 4602,
+                -- 4631,
+                -- 4630,
+                -- 4629,
+                -- 4628,
+            }
+            local t = f:CreateFontString()
+            t:SetPoint("TOPLEFT", 15, -30)
+            t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            t:SetTextColor(RGB(BG.g1))
+            t:SetText(L["成就"])
+            AchievementTitle = t
 
-                local l = f:CreateLine()
-                l:SetColorTexture(RGB("808080", 1))
-                l:SetStartPoint("BOTTOMLEFT", t, -5, -2)
-                l:SetEndPoint("BOTTOMLEFT", t, f.width - 25, -2)
-                l:SetThickness(1)
+            local l = f:CreateLine()
+            l:SetColorTexture(RGB("808080", 1))
+            l:SetStartPoint("BOTTOMLEFT", t, -5, -2)
+            l:SetEndPoint("BOTTOMLEFT", t, f.width - 25, -2)
+            l:SetThickness(1)
 
-                local t = f:CreateFontString()
-                t:SetPoint("TOPLEFT", AchievementTitle, "BOTTOMLEFT", 0, -8)
-                t:SetFont(BIAOGE_TEXT_FONT, 14, "OUTLINE")
-                t:SetTextColor(RGB("FFFFFF"))
-                t:SetText(L["成就ID："])
-                AchievementTitleID = t
+            local t = f:CreateFontString()
+            t:SetPoint("TOPLEFT", AchievementTitle, "BOTTOMLEFT", 0, -8)
+            t:SetFont(BIAOGE_TEXT_FONT, 14, "OUTLINE")
+            t:SetTextColor(RGB("FFFFFF"))
+            t:SetText(L["成就ID："])
+            AchievementTitleID = t
 
-                -- 编辑框
-                local edit = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
-                edit:SetSize(80, 20)
-                edit:SetPoint("LEFT", t, "RIGHT", 5, 0)
-                edit:SetAutoFocus(false)
-                edit:SetNumeric(true)
-                if BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID then
-                    edit:SetText(BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID)
-                end
-                AchievementEdit = edit
-                edit:HookScript("OnEditFocusGained", function(self, enter)
-                    lastfocus = edit
-                end)
-                edit:SetScript("OnMouseDown", function(self, enter)
-                    if enter == "RightButton" then
-                        edit:SetEnabled(false)
-                        edit:SetText("")
-                    end
-                end)
-                edit:SetScript("OnMouseUp", function(self, enter)
-                    if enter == "RightButton" then
-                        edit:SetEnabled(true)
-                    end
-                end)
-                edit:SetScript("OnEnterPressed", function(self)
-                    self:ClearFocus()
-                end)
-                edit:SetScript("OnEnter", function(self)
-                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
-                    GameTooltip:ClearLines()
-                    GameTooltip:AddLine(L["成就ID参考"], 1, 1, 1)
-                    GameTooltip:AddLine(" ")
-                    GameTooltip:AddLine("RS", 1, 1, 1)
-                    GameTooltip:AddLine("4816: " .. GetAchievementLink(4816))
-                    GameTooltip:AddLine("4815: " .. GetAchievementLink(4815))
-                    GameTooltip:AddLine("4818: " .. GetAchievementLink(4818))
-                    GameTooltip:AddLine("4817: " .. GetAchievementLink(4817))
-                    GameTooltip:AddLine("ICC25人", 1, 1, 1)
-                    GameTooltip:AddLine("4637: " .. GetAchievementLink(4637))
-                    GameTooltip:AddLine("4608: " .. GetAchievementLink(4608))
-                    GameTooltip:AddLine("4603: " .. GetAchievementLink(4603))
-
-                    GameTooltip:AddLine("4635: " .. GetAchievementLink(4635))
-                    GameTooltip:AddLine("4634: " .. GetAchievementLink(4634))
-                    GameTooltip:AddLine("4633: " .. GetAchievementLink(4633))
-                    GameTooltip:AddLine("4632: " .. GetAchievementLink(4632))
-
-                    GameTooltip:AddLine("ICC10人", 1, 1, 1)
-                    GameTooltip:AddLine("4636: " .. GetAchievementLink(4636))
-                    GameTooltip:AddLine("4532: " .. GetAchievementLink(4532))
-                    GameTooltip:AddLine("4602: " .. GetAchievementLink(4602))
-
-                    GameTooltip:AddLine("4631: " .. GetAchievementLink(4631))
-                    GameTooltip:AddLine("4630: " .. GetAchievementLink(4630))
-                    GameTooltip:AddLine("4629: " .. GetAchievementLink(4629))
-                    GameTooltip:AddLine("4628: " .. GetAchievementLink(4628))
-                    GameTooltip:Show()
-                end)
-                BG.GameTooltip_Hide(edit)
-
-                local bt = CreateFrame("CheckButton", nil, f, "ChatConfigCheckButtonTemplate")
-                bt:SetSize(25, 25)
-                bt:SetPoint("TOPLEFT", AchievementTitleID, "BOTTOMLEFT", 0, -5)
-                bt:SetHitRectInsets(0, -BG.MeetingHorn.WhisperFrame.width + 50, 0, 0)
-                bt:SetChecked(true)
-                if BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose == 1 then
-                    bt:SetChecked(true)
-                elseif BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose == 0 then
-                    bt:SetChecked(false)
-                end
-                bt.Text:SetTextColor(RGB(BG.dis))
-                bt.Text:SetWidth(BG.MeetingHorn.WhisperFrame.width - 50)
-                bt.Text:SetWordWrap(false)
-                AchievementCheckButton = bt
-                bt:SetScript("OnClick", function(self)
-                    if self:GetChecked() then
-                        BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose = 1
-                    else
-                        BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose = 0
-                    end
-                    PlaySound(BG.sound1, "Master")
-                end)
-                bt:SetScript("OnEnter", function(self)
-                    if edit:GetText() ~= "" and GetAchievementLink(edit:GetText()) then
-                        GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
-                        GameTooltip:ClearLines()
-                        GameTooltip:SetHyperlink(GetAchievementLink(edit:GetText()))
-                    end
-                end)
-                BG.GameTooltip_Hide(bt)
-
-                edit:SetScript("OnTextChanged", function(self)
-                    if self:GetText() ~= "" and GetAchievementLink(self:GetText()) then
-                        bt.Text:SetText(GetAchievementLink(self:GetText()))
-                        BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID = self:GetText()
-                    else
-                        bt.Text:SetText(L["当前没有成就"])
-                        BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID = nil
-                    end
-                end)
+            -- 编辑框
+            local edit = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
+            edit:SetSize(80, 20)
+            edit:SetPoint("LEFT", t, "RIGHT", 5, 0)
+            edit:SetAutoFocus(false)
+            edit:SetNumeric(true)
+            if BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID then
+                edit:SetText(BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID)
             end
+            AchievementEdit = edit
+            edit:HookScript("OnEditFocusGained", function(self, enter)
+                lastfocus = edit
+            end)
+            edit:SetScript("OnMouseDown", function(self, enter)
+                if enter == "RightButton" then
+                    edit:SetEnabled(false)
+                    edit:SetText("")
+                end
+            end)
+            edit:SetScript("OnMouseUp", function(self, enter)
+                if enter == "RightButton" then
+                    edit:SetEnabled(true)
+                end
+            end)
+            edit:SetScript("OnEnterPressed", function(self)
+                self:ClearFocus()
+            end)
+            edit:SetScript("OnEnter", function(self)
+                GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
+                GameTooltip:ClearLines()
+                GameTooltip:AddLine(L["成就ID参考"], 1, 1, 1)
+                for i, ID in ipairs(onEnterTextTbl) do
+                    if tonumber(ID) then
+                        if select(4, GetAchievementInfo(ID)) then
+                            local r, g, b = 1, .82, 0
+                            GameTooltip:AddLine(ID .. ": " .. GetAchievementLink(ID), r, g, b)
+                        else
+                            local r, g, b = .5, .5, .5
+                            GameTooltip:AddLine(ID .. ": " .. GetAchievementLink(ID):gsub("|cff......", ""):gsub("|r", ""), r, g, b)
+                        end
+                    else
+                        GameTooltip:AddLine(" ")
+                        GameTooltip:AddLine(ID, 1, 1, 1)
+                    end
+                end
+                GameTooltip:Show()
+            end)
+            BG.GameTooltip_Hide(edit)
+
+            local bt = CreateFrame("CheckButton", nil, f, "ChatConfigCheckButtonTemplate")
+            bt:SetSize(25, 25)
+            bt:SetPoint("TOPLEFT", AchievementTitleID, "BOTTOMLEFT", 0, -5)
+            bt:SetHitRectInsets(0, -BG.MeetingHorn.WhisperFrame.width + 50, 0, 0)
+            bt:SetChecked(true)
+            if BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose == 1 then
+                bt:SetChecked(true)
+            elseif BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose == 0 then
+                bt:SetChecked(false)
+            end
+            bt.Text:SetTextColor(.5, .5, .5)
+            bt.Text:SetWidth(BG.MeetingHorn.WhisperFrame.width - 50)
+            bt.Text:SetWordWrap(false)
+            AchievementCheckButton = bt
+            bt:SetScript("OnClick", function(self)
+                if self:GetChecked() then
+                    BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose = 1
+                else
+                    BiaoGe.MeetingHornWhisper[RealmId][player].AchievementChoose = 0
+                end
+                BG.PlaySound(1)
+            end)
+            bt:SetScript("OnEnter", function(self)
+                if edit:GetText() ~= "" and GetAchievementLink(edit:GetText()) then
+                    GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
+                    GameTooltip:ClearLines()
+                    GameTooltip:SetHyperlink(GetAchievementLink(edit:GetText()))
+                end
+            end)
+            BG.GameTooltip_Hide(bt)
+
+            edit:SetScript("OnTextChanged", function(self)
+                if self:GetText() ~= "" and GetAchievementLink(self:GetText()) then
+                    local text = GetAchievementLink(self:GetText())
+                    if not select(4, GetAchievementInfo(self:GetText())) then
+                        text = text:gsub("|cff......", "|cff808080")
+                    end
+                    bt.Text:SetText(text)
+
+                    BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID = self:GetText()
+                else
+                    bt.Text:SetText(L["当前没有成就"])
+                    BiaoGe.MeetingHornWhisper[RealmId][player].AchievementID = nil
+                end
+            end)
         end
 
         -- 装等
@@ -544,7 +595,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                 else
                     BiaoGe.MeetingHornWhisper[RealmId][player].iLevelChoose = 0
                 end
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end)
         end
 
@@ -594,7 +645,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                 else
                     BiaoGe.MeetingHornWhisper[RealmId][player].otherChoose1 = 0
                 end
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end)
 
             local edit = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
@@ -659,7 +710,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                 else
                     BiaoGe.MeetingHornWhisper[RealmId][player].otherChoose2 = 0
                 end
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end)
 
             local edit = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
@@ -761,7 +812,6 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
                 end
             end)
 
-            local LFG = MeetingHorn:GetModule('LFG', 'AceEvent-3.0', 'AceTimer-3.0', 'AceComm-3.0', 'LibCommSocket-3.0')
             function Browser:CreateActivityMenu(activity)
                 local text1 = SendWhisper()
                 if text1 ~= " " then
@@ -930,73 +980,68 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
             end)
 
             local edit = ChatEdit_ChooseBoxForSend()
-            local dropDown = LibBG:Create_UIDropDownMenu(nil, edit)
-            edit:HookScript("OnMouseUp", function(self, button)
-                if BiaoGe.options["MeetingHorn_whisper"] ~= 1 then return end
-                if button == "RightButton" then
-                    local text1 = SendWhisper()
-                    if text1 ~= " " then
-                        text1 = text1:sub(2)
-                    end
-                    local text2 = SendWhisper("onlylevel")
-                    if text2 ~= " " then
-                        text2 = text2:sub(2)
-                    end
-                    local menu = {
-                        {
-                            text = L["密语模板"],
-                            notCheckable = true,
-                            tooltipTitle = L["使用密语模板"],
-                            tooltipText = text1,
-                            tooltipOnButton = true,
-                            func = function()
-                                ChatEdit_ActivateChat(edit)
-                                local text = SendWhisper()
-                                text = text:gsub("^%s", "")
-                                edit:SetCursorPosition(strlen(edit:GetText()))
-                                ChatEdit_InsertLink(text)
-                            end
-                        },
-                        {
-                            text = L["装等+职业"],
-                            notCheckable = true,
-                            tooltipTitle = L["装等+职业"],
-                            tooltipText = text2,
-                            tooltipOnButton = true,
-                            func = function()
-                                ChatEdit_ActivateChat(edit)
-                                local text = SendWhisper("onlylevel")
-                                text = text:gsub("^%s", "")
-                                edit:SetCursorPosition(strlen(edit:GetText()))
-                                ChatEdit_InsertLink(text)
-                            end
-                        },
-                        {
-                            text = CANCEL,
-                            notCheckable = true,
-                            func = function(self)
-                                LibBG:CloseDropDownMenus()
-                            end,
+            if edit then
+                local dropDown = LibBG:Create_UIDropDownMenu(nil, edit)
+                edit:HookScript("OnMouseUp", function(self, button)
+                    if BiaoGe.options["MeetingHorn_whisper"] ~= 1 then return end
+                    if button == "RightButton" then
+                        local text1 = SendWhisper()
+                        if text1 ~= " " then
+                            text1 = text1:sub(2)
+                        end
+                        local text2 = SendWhisper("onlylevel")
+                        if text2 ~= " " then
+                            text2 = text2:sub(2)
+                        end
+                        local menu = {
+                            {
+                                text = L["密语模板"],
+                                notCheckable = true,
+                                tooltipTitle = L["使用密语模板"],
+                                tooltipText = text1,
+                                tooltipOnButton = true,
+                                func = function()
+                                    ChatEdit_ActivateChat(edit)
+                                    local text = SendWhisper()
+                                    text = text:gsub("^%s", "")
+                                    edit:SetCursorPosition(strlen(edit:GetText()))
+                                    ChatEdit_InsertLink(text)
+                                end
+                            },
+                            {
+                                text = L["装等+职业"],
+                                notCheckable = true,
+                                tooltipTitle = L["装等+职业"],
+                                tooltipText = text2,
+                                tooltipOnButton = true,
+                                func = function()
+                                    ChatEdit_ActivateChat(edit)
+                                    local text = SendWhisper("onlylevel")
+                                    text = text:gsub("^%s", "")
+                                    edit:SetCursorPosition(strlen(edit:GetText()))
+                                    ChatEdit_InsertLink(text)
+                                end
+                            },
+                            {
+                                text = CANCEL,
+                                notCheckable = true,
+                                func = function(self)
+                                    LibBG:CloseDropDownMenus()
+                                end,
+                            }
                         }
-                    }
-                    LibBG:EasyMenu(menu, dropDown, "cursor", 0, 20, "MENU", 2)
-                end
-            end)
+                        LibBG:EasyMenu(menu, dropDown, "cursor", 0, 20, "MENU", 2)
+                    end
+                end)
+            end
         end
     end
 
     -- 多个关键词搜索
     do
-        local Activity = MeetingHorn:GetClass('Activity')
-        local LFG = MeetingHorn:GetModule('LFG', 'AceEvent-3.0', 'AceTimer-3.0', 'AceComm-3.0', 'LibCommSocket-3.0')
-
-        local function Search(text, pattern)
-            if not text then
-                return false
-            end
-            return text:find(pattern, nil, true)
-        end
-        function Activity:Match(path, activityId, modeId, search)
+        local name = "MeetingHorn_members"
+        BG.MeetingHorn.ActivityMatch_oldFuc = Activity.Match
+        BG.MeetingHorn.ActivityMatch_newFuc = function(self, path, activityId, modeId, search)
             if path and path ~= self:GetPath() then
                 return false
             end
@@ -1006,36 +1051,142 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
             if modeId and modeId ~= self.modeId then
                 return false
             end
+
+            if not search then return true end
+
+            if type(search) == "string" then
+                local yes = 0
+                local num = 0
+                local str = (self.data.nameLower or "") .. (self.data.shortNameLower or "") ..
+                    (self.commentLower or "")
+                for s_and in search:gmatch("%S+") do
+                    num = num + 1
+                    for _, v in pairs({ strsplit("/", s_and) }) do
+                        if str:find(v, nil, true) then
+                            yes = yes + 1
+                            break
+                        end
+                    end
+                end
+                if yes ~= num then
+                    return false
+                end
+            elseif type(search) == "table" then
+                for _, s in ipairs(search) do
+                    local str = (self.data.nameLower or "") .. (self.data.shortNameLower or "") ..
+                        (self.commentLower or "")
+                    if str:find(s, nil, true) then
+                        return true
+                    end
+                end
+                return false
+            end
+
             if MeetingHorn.db.profile.options.activityfilter and LFG:IsFilter(self.commentLower) then
                 return false
             end
 
-            if BiaoGe.options["MeetingHorn_search"] == 1 then
-                if search then
-                    local yes = 0
-                    local num = 0
-                    local str = (self.data.nameLower or "") .. (self.data.shortNameLower or "") ..
-                        (self.commentLower or "")
-                    for s_and in search:gmatch("%S+") do
-                        num = num + 1
-                        for _, v in pairs({ strsplit("/", s_and) }) do
-                            if str:find(v, nil, true) then
-                                yes = yes + 1
-                                break
-                            end
-                        end
-                    end
-                    if yes ~= num then
-                        return false
-                    end
-                end
-            else
-                if search and (not Search(self.data.nameLower, search) and not Search(self.data.shortNameLower, search) and
-                        not Search(self.commentLower, search) and not Search(self.leaderLower, search)) then
-                    return false
-                end
-            end
             return true
         end
+        if BiaoGe.options[name] == 1 then
+            Activity.Match = BG.MeetingHorn.ActivityMatch_newFuc
+        end
+    end
+
+    -- 星团长聊天标记
+    do
+        if ver < 200 then return end
+
+        local function StarTexture(currentLevel)
+            return "Interface/AddOns/MeetingHorn/Media/certification_icon_" .. currentLevel
+        end
+        local function AddStarRaidLeader(self, text, ...)
+            if BiaoGe.options["MeetingHorn_starRaidLeader"] ~= 1 then return self.oldFunc_BiaoGe(self, text, ...) end
+            local isChannel = text:find("|Hchannel:channel:%d+.-|h")
+            local name = text:match("|Hplayer:(.-):.-|h")
+            if not (isChannel and name) then return self.oldFunc_BiaoGe(self, text, ...) end
+            name = strsplit("-", name)
+            local currentLevel = MeetingHorn.db.realm.starRegiment.regimentData[name]
+            if not currentLevel then return self.oldFunc_BiaoGe(self, text, ...) end
+            currentLevel = currentLevel.level
+            text = gsub(text, "(|Hchannel:channel:%d+|h.-|h)%s-(|Hplayer:.+|h.+|h)",
+                "%1"
+                .. "|T" .. StarTexture(currentLevel) .. ":18:18:0:0:100:100:42:60:10:90|t"
+                .. "%2")
+            return self.oldFunc_BiaoGe(self, text, ...)
+        end
+        for i = 1, NUM_CHAT_WINDOWS do
+            if i ~= 2 then
+                local chatFrame = _G["ChatFrame" .. i]
+                chatFrame.oldFunc_BiaoGe = chatFrame.AddMessage
+                chatFrame.AddMessage = AddStarRaidLeader
+            end
+        end
+
+        -- 右键菜单
+        hooksecurefunc("UnitPopup_ShowMenu", function(dropdown, which, unit, _name, userData)
+            -- pt(which, unit, _name)
+            if BiaoGe.options["MeetingHorn_starRaidLeader"] ~= 1 then return end
+            if (UIDROPDOWNMENU_MENU_LEVEL > 1) then return end
+            local name, realm
+            if unit then
+                name, realm = UnitName(unit)
+            elseif _name then
+                name, realm = strsplit("-", _name)
+            end
+            if not name then return end
+            if realm and realm ~= GetRealmName() then return end
+            local currentLevel = MeetingHorn.db.realm.starRegiment.regimentData[name]
+            if not currentLevel then return end
+            currentLevel = currentLevel.level
+            -- local currentLevel = 2
+            local bt = _G.DropDownList1Button1
+            bt:SetText(bt:GetText() .. "|T" .. StarTexture(currentLevel) .. ":17:50:0:0:100:100:0:60:10:90|t")
+        end)
+
+        -- 鼠标悬停
+        local CD
+        local function SetTooltip(unit)
+            local name = UnitName(unit)
+            local currentLevel = MeetingHorn.db.realm.starRegiment.regimentData[name]
+            if not currentLevel then return end
+            currentLevel = currentLevel.level
+            -- local currentLevel = 2
+            local nameNum
+            local ii = 1
+            while _G["GameTooltipTextLeft" .. ii] do
+                local text = _G["GameTooltipTextLeft" .. ii]:GetText()
+                if text and text:find(name) then
+                    nameNum = ii
+                    break
+                end
+                ii = ii + 1
+            end
+            if not nameNum then return end
+            local nextText = _G["GameTooltipTextLeft" .. nameNum + 1]
+            if nextText and nextText:GetText() then
+                nextText:SetText("|T" .. StarTexture(currentLevel) .. ":17:60:0:0:100:100:0:60:15:85|t" .. "\n" .. nextText:GetText())
+                nextText:SetWidth(nextText:GetWidth() + 2)
+            end
+            GameTooltip:Show()
+        end
+        GameTooltip:HookScript("OnTooltipSetUnit", function(self)
+            if BiaoGe.options["MeetingHorn_starRaidLeader"] ~= 1 then return end
+            local unit = "mouseover"
+            if not (UnitIsPlayer(unit) and UnitIsSameServer(unit)) then return end
+            if CD then return end
+            CD = true
+            BG.After(0, function() CD = false end)
+            SetTooltip(unit)
+        end)
+
+        hooksecurefunc(GameTooltip, "SetUnit", function(self, unit)
+            if BiaoGe.options["MeetingHorn_starRaidLeader"] ~= 1 then return end
+            if not (UnitIsPlayer(unit) and UnitIsSameServer(unit)) then return end
+            if CD then return end
+            CD = true
+            BG.After(0, function() CD = false end)
+            SetTooltip(unit)
+        end)
     end
 end)

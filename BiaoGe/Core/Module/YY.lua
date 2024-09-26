@@ -237,8 +237,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             for i = 1, #numOptions do
                 local bt = CreateFrame("CheckButton", nil, PingJiaGroup, "UIRadioButtonTemplate")
                 bt:SetPoint("TOPLEFT", ((i - 1) * 60), -3)
-                bt:SetSize(18, 18)
-                bt:SetHitRectInsets(0, -30, 0, 0)
+                bt:SetSize(15, 15)
                 if i == 2 then
                     bt:SetChecked(true)
                     BG.YYMainFrame.new.pingjia = i
@@ -251,6 +250,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 bt.Text:SetPoint("LEFT", bt, "RIGHT", 0, 0)
                 bt.Text:SetText(numOptions[i].name)
                 bt.Text:SetTextColor(RGB(numOptions[i].color))
+                bt:SetHitRectInsets(0, -bt.Text:GetWidth(), -5, -5)
 
                 bt:SetScript("OnClick", function(self)
                     for _, radioButton in ipairs(BG.YYMainFrame.new.pingjiaButtons) do
@@ -264,7 +264,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     self:SetChecked(true)
                     BG.YYMainFrame.new.pingjia = i
 
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end)
             end
             n = n + 1
@@ -300,6 +300,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             scroll:SetPoint("CENTER")
             scroll.ScrollBar.scrollStep = BG.scrollStep
             BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+            BG.HookScrollBarShowOrHide(scroll)
             scroll:SetScrollChild(edit)
             BG.YYMainFrame.new.scroll = scroll
 
@@ -378,7 +379,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 Y.SetAll()
                 Y.EscXiuGai()
 
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end
 
             local bt = CreateFrame("Button", nil, BG.YYMainFrame.new, "UIPanelButtonTemplate")
@@ -404,7 +405,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             BG.YYMainFrame.new.buttonesc = bt
             bt:SetScript("OnClick", function(self)
                 Y.EscXiuGai()
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end)
             bt:SetScript("OnShow", function(self)
                 BG.YYMainFrame.new.buttonrepeat:Hide()
@@ -424,7 +425,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             bt:SetScript("OnClick", function(self)
                 Y.XiuGai(self, "new")
                 bt:Hide()
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end)
         end
     end
@@ -512,6 +513,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         scroll:SetPoint("BOTTOMRIGHT", BG.YYMainFrame.my, -27, 5)
         scroll.ScrollBar.scrollStep = BG.scrollStep
         BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+        BG.HookScrollBarShowOrHide(scroll)
         scroll:SetScrollChild(f)
 
         function Y.Pingjia(text)
@@ -631,7 +633,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     Y.XiuGai(self)
                 end
             end
-            PlaySound(BG.sound1, "Master")
+            BG.PlaySound(1)
         end
         function Y.SetAll()
             -- 先隐藏之前的列表内容
@@ -774,7 +776,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             end)
             -- 查询按钮
             function Y.SearchButtonOnClick()
-                if not BG.YYchannelId then
+                if not BG.YYchannelID then
                     local msg = format(L["查询正在初始化，请稍后再试"])
                     UIErrorsFrame:AddMessage(msg, YELLOW_FONT_COLOR:GetRGB())
                     return
@@ -808,7 +810,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 local previous_date = date("%y%m%d", previous_time)            -- 格式化为日期字符串
 
                 local sendtext = "yy" .. yy .. "," .. previous_date
-                SendChatMessage(sendtext, "CHANNEL", nil, BG.YYchannelId)
+                SendChatMessage(sendtext, "CHANNEL", nil, BG.YYchannelID)
                 bt:SetEnabled(false)
                 edit:SetEnabled(false)
                 edit:SetTextColor(RGB(BG.dis))
@@ -858,9 +860,9 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                                 yy, BG.YYMainFrame.searchText.sumpingjia[0], BG.YYMainFrame.searchText.sumpingjia[1],
                                 BG.YYMainFrame.searchText.sumpingjia[2], BG.YYMainFrame.searchText.sumpingjia[3], link))
                             BG.FrameTradeMsg:AddMessage(msg)
-                            local cd = 5
+                            local cd = 10
                             if Size(BG.YYMainFrame.searchText.all) == 1 then
-                                cd = 3
+                                cd = 10
                             end
                             BG.OnUpdateTime(function(self, elapsed)
                                 self.timeElapsed = self.timeElapsed + elapsed
@@ -905,7 +907,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                         self:Hide()
                     end
                 end)
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end
 
             local bt = CreateFrame("Button", nil, BG.YYMainFrame.search, "UIPanelButtonTemplate")
@@ -973,7 +975,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                         Y.DefaultResult()
                         LibBG:UIDropDownMenu_SetText(BG.YYMainFrame.DropDown, L["无"])
                         BG.ClearFocus()
-                        PlaySound(BG.sound1, "Master")
+                        BG.PlaySound(1)
                     end
                     LibBG:UIDropDownMenu_AddButton(info)
 
@@ -984,7 +986,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                             Y.SetResult(i)
                             LibBG:UIDropDownMenu_SetText(BG.YYMainFrame.DropDown, Y.DropDownColor(v, "yy"))
                             BG.ClearFocus()
-                            PlaySound(BG.sound1, "Master")
+                            BG.PlaySound(1)
                         end
                         LibBG:UIDropDownMenu_AddButton(info)
                     end
@@ -1042,8 +1044,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             for i = 1, #numOptions do
                 local bt = CreateFrame("CheckButton", nil, PingJiaGroup, "UIRadioButtonTemplate")
                 bt:SetPoint("LEFT", ((i - 1) * 120), 2)
-                bt:SetSize(18, 18)
-                bt:SetHitRectInsets(0, -60, 0, 0)
+                bt:SetSize(15, 15)
                 if i == BiaoGe.YYdb.historyFilter + 1 then
                     bt:SetChecked(true)
                 end
@@ -1055,6 +1056,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 bt.Text:SetPoint("LEFT", bt, "RIGHT", 0, 0)
                 bt.Text:SetText(numOptions[i].name .. L[" (0个)"])
                 bt.Text:SetTextColor(RGB(numOptions[i].color))
+                bt:SetHitRectInsets(0, -bt.Text:GetWidth(), -5, -5)
 
                 bt:SetScript("OnClick", function(self)
                     for _, radioButton in ipairs(BG.YYMainFrame.resultPingjia.pingjiaButtons) do
@@ -1067,7 +1069,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     if LibBG:UIDropDownMenu_GetText(BG.YYMainFrame.DropDown) ~= L["无"] then
                         Y.SetResult(BG.YYMainFrame.historyNum)
                     end
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end)
             end
         end
@@ -1129,6 +1131,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             scroll:SetPoint("BOTTOMRIGHT", BG.YYMainFrame.result, -27, 5)
             scroll.ScrollBar.scrollStep = BG.scrollStep
             BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+            BG.HookScrollBarShowOrHide(scroll)
             scroll:SetScrollChild(f)
 
             local function OnEnter(self)
@@ -1296,9 +1299,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     return false, link, player, l, cs, t, flag, channelId, ...
                 end
             end
-
-            msg = msg:gsub(Y.yykey, CreateLinkForGsub)
-            msg = msg:gsub(Y.yykey2, CreateLinkForGsub)
+            msg = msg:gsub(Y.yykey, CreateLinkForGsub):gsub(Y.yykey2, CreateLinkForGsub)
             return false, msg, player, l, cs, t, flag, channelId, ...
         end
 
@@ -1322,7 +1323,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
 
         function BG.OnClickYYXiangXi(yy)
             BG.MainFrame:Show()
-            BG.ClickTabButton(BG.tabButtons, BG.YYMainFrameTabNum)
+            BG.ClickTabButton(BG.YYMainFrameTabNum)
             for i, v in ipairs(BiaoGe.YYdb.history) do
                 if tonumber(yy) == tonumber(v.yy) then
                     BG.YYMainFrame.historyNum = i
@@ -1379,6 +1380,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         end
 
         local function OnHyperlinkEnter(self, link)
+            if not link then return end
             local arg1, arg2, arg3, arg4 = strsplit(":", link)
             local yy = arg4
             if arg2 == "BiaoGeYY" and arg3 == L["详细"] and arg4 then
@@ -1453,17 +1455,12 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         local function OnHyperlinkLeave(self, link)
             GameTooltip:Hide()
         end
-        -- local f = CreateFrame("Frame")
-        -- f:RegisterEvent("PLAYER_ENTERING_WORLD")
-        -- f:SetScript("OnEvent", function(self, even, isLogin, isReload)
-        --     if not (isLogin or isReload) then return end
         local i = 1
         while _G["ChatFrame" .. i] do
             _G["ChatFrame" .. i]:HookScript("OnHyperlinkEnter", OnHyperlinkEnter)
             _G["ChatFrame" .. i]:HookScript("OnHyperlinkLeave", OnHyperlinkLeave)
             i = i + 1
         end
-        -- end)
     end
 
     ------------------记录团长发过的YY号------------------
@@ -1651,7 +1648,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         end)
     end
 
-    ------------------击杀尾王后弹出评价系统------------------
+    ------------------快速评价------------------
     do
         BG.EndPJ = {}
 
@@ -1686,51 +1683,52 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         -- UI
         do
             local f = CreateFrame("Frame", "BG.EndPJ.new", UIParent, "BackdropTemplate")
-            f:SetBackdrop({
-                bgFile = "Interface/ChatFrame/ChatFrameBackground",
-                edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
-                edgeSize = 32,
-                insets = { left = 3, right = 3, top = 3, bottom = 3 }
-            })
-            f:SetBackdropColor(0, 0, 0, 0.8)
-            f:SetSize(340, 210)
-            f:SetPoint("TOP", 0, -300)
-            f:SetClampedToScreen(true)
-            f:SetFrameStrata("FULLSCREEN_DIALOG")
-            f:SetFrameLevel(190)
-            f:EnableMouse(true)
-            f:SetMovable(true)
-            BG.EndPJ.new = f
-            tinsert(UISpecialFrames, "BG.EndPJ.new") -- 按ESC可关闭插件
-            f:SetScript("OnMouseUp", function(self)
-                self:StopMovingOrSizing()
-            end)
-            f:SetScript("OnMouseDown", function(self)
-                BG.EndPJ.new.yy:ClearFocus()
-                self:StartMoving()
-            end)
-            f:SetScript("OnShow", function()
-                BG.EndPJ.new.yy:SetText("")
-                BG.EndPJ.new.pingjia = 2
-                BG.EndPJ.new.pingjiaButtons[1]:SetChecked(false)
-                BG.EndPJ.new.pingjiaButtons[2]:SetChecked(true)
-                BG.EndPJ.new.pingjiaButtons[3]:SetChecked(false)
-                BG.EndPJ.new.buttonsave:SetEnabled(true)
-
-                for _, edit in pairs(BG.EndPJ.textcolor_table) do
-                    edit:SetTextColor(RGB("FFFF00"))
-                end
-
-                -- 历遍团长YY记录
-                BG.EndPJ.new.yy:SetText(GetLeaderYY())
-
-                BG.ClearFocus()
-                PlaySoundFile(BG.sound2, "Master")
-                BG.After(1.5, function()
-                    PlaySoundFile(BG["sound_pingjia" .. BiaoGe.options.Sound], "Master")
+            do
+                f:SetBackdrop({
+                    bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                    edgeFile = "Interface/DialogFrame/UI-DialogBox-Border",
+                    edgeSize = 32,
+                    insets = { left = 3, right = 3, top = 3, bottom = 3 }
+                })
+                f:SetBackdropColor(0, 0, 0, 0.8)
+                f:SetSize(340, 250)
+                f:SetPoint("TOP", 0, -300)
+                f:SetClampedToScreen(true)
+                f:SetFrameStrata("FULLSCREEN_DIALOG")
+                f:SetFrameLevel(190)
+                f:EnableMouse(true)
+                f:SetMovable(true)
+                BG.EndPJ.new = f
+                tinsert(UISpecialFrames, "BG.EndPJ.new") -- 按ESC可关闭插件
+                f:SetScript("OnMouseUp", function(self)
+                    self:StopMovingOrSizing()
                 end)
-            end)
+                f:SetScript("OnMouseDown", function(self)
+                    BG.EndPJ.new.yy:ClearFocus()
+                    self:StartMoving()
+                end)
+                f:SetScript("OnShow", function()
+                    BG.EndPJ.new.yy:SetText("")
+                    BG.EndPJ.new.pingjia = 1
+                    BG.EndPJ.new.pingjiaButtons[1]:SetChecked(true)
+                    BG.EndPJ.new.pingjiaButtons[2]:SetChecked(false)
+                    BG.EndPJ.new.pingjiaButtons[3]:SetChecked(false)
+                    BG.EndPJ.new.buttonsave:SetEnabled(true)
 
+                    for _, edit in pairs(BG.EndPJ.textcolor_table) do
+                        edit:SetTextColor(RGB("00FF00"))
+                    end
+
+                    -- 历遍团长YY记录
+                    BG.EndPJ.new.yy:SetText(GetLeaderYY())
+
+                    BG.ClearFocus()
+                    BG.PlaySound(2)
+                    BG.After(2.5, function()
+                        PlaySoundFile(BG["sound_pingjia" .. BiaoGe.options.Sound], "Master")
+                    end)
+                end)
+            end
             -- 大标题
             do
                 local t = f:CreateTexture(nil, "ARTWORK")
@@ -1759,7 +1757,6 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 l:SetThickness(1)
             end
 
-
             BG.EndPJ.textcolor_table = {} -- 用于根据所选评价给输入框设置相应颜色
             local height = 22             -- 每行高度
             local height_start = -65
@@ -1775,7 +1772,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 for i, _ in ipairs(text_table) do
                     local f = CreateFrame("Frame", nil, BG.EndPJ.new)
                     f:SetPoint("TOPLEFT", 5, height_start - height * (i - 1))
-                    f:SetSize(90, 20)
+                    f:SetSize(80, 20)
                     f.Text = f:CreateFontString()
                     f.Text:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
                     f.Text:SetAllPoints()
@@ -1789,8 +1786,8 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             -- YY号
             do
                 local edit = CreateFrame("EditBox", nil, BG.EndPJ.new, "InputBoxTemplate")
-                edit:SetSize(150, 20)
-                edit:SetPoint("TOPLEFT", 110, height_start - height * n)
+                edit:SetSize(190, 20)
+                edit:SetPoint("TOPLEFT", 100, height_start - height * n)
                 edit:SetAutoFocus(false)
                 edit:SetNumeric(true)
                 edit:SetTextColor(RGB("FFFF00"))
@@ -1842,7 +1839,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             -- 评价
             do
                 local PingJiaGroup = CreateFrame("Frame", nil, BG.EndPJ.new)
-                PingJiaGroup:SetPoint("TOPLEFT", 110, height_start - height * n)
+                PingJiaGroup:SetPoint("TOPLEFT", 100, height_start - height * n)
                 PingJiaGroup:SetSize(1, 1)
                 local numOptions = {
                     { name = L["好评"], color = "00FF00" },
@@ -1853,8 +1850,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 for i = 1, #numOptions do
                     local bt = CreateFrame("CheckButton", nil, PingJiaGroup, "UIRadioButtonTemplate")
                     bt:SetPoint("TOPLEFT", -5 + ((i - 1) * 60), -3)
-                    bt:SetSize(20, 20)
-                    bt:SetHitRectInsets(0, -30, 0, 0)
+                    bt:SetSize(15, 15)
                     if i == 2 then
                         bt:SetChecked(true)
                         BG.EndPJ.new.pingjia = i
@@ -1866,6 +1862,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     bt.Text:SetPoint("LEFT", bt, "RIGHT", 0, 0)
                     bt.Text:SetText(numOptions[i].name)
                     bt.Text:SetTextColor(RGB(numOptions[i].color))
+                    bt:SetHitRectInsets(0, -bt.Text:GetWidth(), -5, -5)
 
                     bt:SetScript("OnClick", function(self)
                         for _, radioButton in ipairs(BG.EndPJ.new.pingjiaButtons) do
@@ -1879,7 +1876,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                         self:SetChecked(true)
                         BG.EndPJ.new.pingjia = i
 
-                        PlaySound(BG.sound1, "Master")
+                        BG.PlaySound(1)
                     end)
                 end
                 n = n + 1
@@ -1896,8 +1893,8 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 })
                 f:SetBackdropColor(0, 0, 0, 0.2)
                 f:SetBackdropBorderColor(1, 1, 1, 0.6)
-                f:SetSize(156, height * 2)
-                f:SetPoint("TOPLEFT", 107, height_start - height * n - 2)
+                f:SetSize(200, height * 2)
+                f:SetPoint("TOPLEFT", 95, height_start - height * n - 2)
                 local edit = CreateFrame("EditBox", nil, f)
                 edit:SetWidth(f:GetWidth())
                 edit:SetAutoFocus(false)
@@ -1915,6 +1912,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                 scroll:SetPoint("CENTER")
                 scroll.ScrollBar.scrollStep = BG.scrollStep
                 BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+                BG.HookScrollBarShowOrHide(scroll)
                 scroll:SetScrollChild(edit)
                 n = n + 2
 
@@ -1962,6 +1960,81 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     end
                 end)
             end
+            -- 短词
+            do
+                local goodTbl = {
+                    L["指挥很好"],
+                    L["非常效率"],
+                    L["没有团双"],
+                    L["稳如老狗"],
+                    L["又快又黑=。="],
+                }
+                local badTbl = {
+                    L["指挥很烂"],
+                    L["拼多多团"],
+                    L["强X装备"],
+                    L["黑金"],
+                    L["毛装备"],
+                    L["只罚野人不罚亲友"],
+                }
+                local f1 = CreateFrame("Frame", nil, BG.EndPJ.new)
+                f1:SetPoint("BOTTOM", BG.EndPJ.new, -5, 73)
+                f1:SetHeight(18)
+                f1.buttons = {}
+                f1.width=0
+                f1.r, f1.g, f1.b = 0, 1, 0
+
+                local f2 = CreateFrame("Frame", nil, BG.EndPJ.new)
+                f2:SetPoint("BOTTOM", BG.EndPJ.new, -5, 50)
+                f2:SetHeight(18)
+                f2.buttons = {}
+                f2.width=0
+                f2.r, f2.g, f2.b = 1, 0, 0
+
+                local function CreateButton(f, text)
+                    local r, g, b = f.r, f.g, f.b
+                    local bt = CreateFrame("Button", nil, f, "BackdropTemplate")
+                    bt:SetBackdrop({
+                        bgFile = "Interface/ChatFrame/ChatFrameBackground",
+                    })
+                    bt:SetBackdropColor(r, g, b, .2)
+                    bt:SetSize(0, 18)
+                    if #f.buttons == 0 then
+                        bt:SetPoint("LEFT")
+                    else
+                        bt:SetPoint("LEFT", f.buttons[#f.buttons], "RIGHT", 3, 0)
+                    end
+                    tinsert(f.buttons, bt)
+                    local t = bt:CreateFontString()
+                    t:SetFont(BIAOGE_TEXT_FONT, 12, "OUTLINE")
+                    t:SetPoint("CENTER")
+                    t:SetTextColor(r, g, b)
+                    t:SetText(text)
+                    bt:SetFontString(t)
+                    bt:SetWidth(t:GetWrappedWidth() + 2)
+                    f.width = f.width + bt:GetWidth()
+                    f:SetWidth(f.width)
+
+                    bt:SetScript("OnClick", function()
+                        BG.PlaySound(1)
+                        BG.EndPJ.new.edit:Insert(text .. " ")
+                    end)
+                    bt:SetScript("OnEnter", function(self)
+                        bt:SetBackdropColor(1, 1, 1, .2)
+                        t:SetTextColor(1, 1, 1)
+                    end)
+                    bt:SetScript("OnLeave", function(self)
+                        bt:SetBackdropColor(r, g, b, .2)
+                        t:SetTextColor(r, g, b)
+                    end)
+                end
+                for i, text in ipairs(goodTbl) do
+                    CreateButton(f1,text)
+                end
+                for i, text in ipairs(badTbl) do
+                    CreateButton(f2,text)
+                end
+            end
             -- 保存
             do
                 function OnClick(self)
@@ -1997,12 +2070,12 @@ frame:SetScript("OnEvent", function(self, event, addonName)
                     SendSystemMessage(BG.BG .. format(L["|cff%s感谢你的评价：YY%s，>>%s<<%s。|r"],
                         Y.PingjiaColor(a.pingjia), a.yy, Y.Pingjia(a.pingjia), liyou))
 
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end
 
                 local bt = CreateFrame("Button", nil, BG.EndPJ.new, "UIPanelButtonTemplate")
-                bt:SetSize(80, 25)
-                bt:SetPoint("TOPRIGHT", BG.EndPJ.new, "TOP", -30, height_start - 10 - height * n)
+                bt:SetSize(115, 25)
+                bt:SetPoint("BOTTOMRIGHT", BG.EndPJ.new, "BOTTOM", -5, 20)
                 bt:SetText(L["保存"])
                 BG.EndPJ.new.buttonsave = bt
                 bt:SetScript("OnClick", OnClick)
@@ -2027,13 +2100,13 @@ frame:SetScript("OnEvent", function(self, event, addonName)
             -- 取消
             do
                 local bt = CreateFrame("Button", nil, BG.EndPJ.new, "UIPanelButtonTemplate")
-                bt:SetSize(80, 25)
-                bt:SetPoint("TOPLEFT", BG.EndPJ.new, "TOP", 30, height_start - 10 - height * n)
+                bt:SetSize(115, 25)
+                bt:SetPoint("BOTTOMLEFT", BG.EndPJ.new, "BOTTOM", 5, 20)
                 bt:SetText(L["退出"])
                 BG.EndPJ.new.escsave = bt
                 bt:SetScript("OnClick", function()
                     BG.EndPJ.new:Hide()
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end)
             end
             -- 底下文字
@@ -2148,25 +2221,21 @@ end)
 local f = CreateFrame("Frame")
 f:RegisterEvent("CHANNEL_UI_UPDATE")
 f:SetScript("OnEvent", function(self, even)
-    if even == "CHANNEL_UI_UPDATE" then
-        local i = 1
-        while _G["ChatFrame" .. i] do
-            ChatFrame_RemoveChannel(_G["ChatFrame" .. i], YY)
-            ChatFrame_RemoveChannel(_G["ChatFrame" .. i], "MeetingHorn")
-            i = i + 1
-        end
+    local i = 1
+    while _G["ChatFrame" .. i] do
+        ChatFrame_RemoveChannel(_G["ChatFrame" .. i], YY)
+        ChatFrame_RemoveChannel(_G["ChatFrame" .. i], "MeetingHorn")
+        i = i + 1
+    end
 
-        local channels = { GetChannelList() }
-        for i = 1, #channels, 3 do
-            if channels[i + 1] == YY then
-                BG.YYchannelId = channels[i]
-                return
-            end
-        end
-        BG.YYchannelId = nil
-        if BiaoGe.YYdb.share ~= 1 then
-            LeaveChannelByName(YY)
-        end
+    local channelID, channelName = GetChannelName(YY)
+    if not channelName then
+        BG.YYchannelID = nil
+    else
+        BG.YYchannelID = channelID
+    end
+    if BiaoGe.YYdb.share ~= 1 then
+        LeaveChannelByName(YY)
     end
 end)
 
@@ -2202,7 +2271,7 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
 
                 if value.channelName == YY then
                     BlizzardOptionsPanel_CheckButton_Disable(checkBox)
-                    BG.YYchannelId = i
+                    BG.YYchannelID = i
                 end
             end
         end
@@ -2217,57 +2286,22 @@ BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload
     end)
 
     -- 初始化频道
-    local channels = { GetChannelList() }
-    for i = 1, #channels, 3 do
-        if channels[i + 1] == YY then
-            BG.YYchannelId = channels[i]
-            return
+    local channelID, channelName = GetChannelName(YY)
+    if not channelName then
+        BG.YYchannelID = nil
+    else
+        BG.YYchannelID = channelID
+    end
+
+    local function JoinYY()
+        if not BG.YYchannelID and BiaoGe.YYdb.share == 1 then
+            local channels = { GetChannelList() }
+            if channels and #channels > 3 then
+                JoinPermanentChannel(YY, nil, 1)
+            else
+                BG.After(3, JoinYY)
+            end
         end
     end
-    BG.YYchannelId = nil
-
-    local first = true
-    BG.MainFrame:HookScript("OnShow", function(self)
-        if first then
-            first = nil
-            if not BG.YYchannelId and BiaoGe.YYdb.share == 1 then
-                JoinPermanentChannel(YY, nil, 1)
-                SendSystemMessage(BG.BG .. format(L["YY评价模块初始化成功，已自动加入%s频道，用于共享和查询YY大众评价。"], YY))
-            end
-        end
-    end)
+    JoinYY()
 end)
-
-
--- 废弃代码
---[[             msg = gsub(msg, "[yY][yY][：: ]*(%d+)", "YY%1")
-            msg = gsub(msg, "(%d+)%s*[yY][yY]", "%1YY")
-
-            local yykey = "YY%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d+"
-            local yykey2 = "%d+%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*%s*%d*YY"
-            local last
-            for yy in string.gmatch(msg, yykey) do
-                local cleanedYY = gsub(yy, "%D", "")     -- 把非数字的格式删掉，只保留YY号码数字
-                local s, e = strfind(msg, yy, last or 1) -- 查找yy字符串的开始和结束位置
-                local t1 = strsub(msg, 1, s - 1)
-                local t2 = strsub(msg, e + 1)
-                local link = CreateLink(cleanedYY)
-                local newmsg = t1 .. link .. t2
-                local s, e = strfind(newmsg, link, last or 1, true)
-                msg = newmsg
-                last = e + 1
-            end
-            for yy in string.gmatch(msg, yykey2) do
-                local cleanedYY = gsub(yy, "%D", "")     -- 把非数字的格式删掉，只保留YY号码数字
-                local s, e = strfind(msg, yy, last or 1) -- 查找yy字符串的开始和结束位置
-                local t1 = strsub(msg, 1, s - 1)
-                local t2 = strsub(msg, e + 1)
-                local link = CreateLink(cleanedYY)
-                local newmsg = t1 .. link .. t2
-                local s, e = strfind(newmsg, link, last or 1, true)
-                msg = newmsg
-                last = e + 1
-            end
-            if last then
-                return false, msg, player, l, cs, t, flag, channelId, ...
-            end ]]

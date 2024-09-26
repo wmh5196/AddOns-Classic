@@ -246,10 +246,10 @@ function BG.ZhangDanSumUI(lastbt)
                     local t = BG.SendMsgToRaid(tbl)
 
                     BG.After(t, function()
-                        local text = L["——感谢使用BiaoGe插件——"]
+                        local text = L["—感谢使用BiaoGe插件—"]
                         SendChatMessage(text, "RAID")
                     end)
-                    PlaySoundFile(BG.sound2, "Master")
+                    BG.PlaySound(2)
                 else
                     BG.SendSystemMessage(L["请选择一个账单。"])
                     BG.PlaySound(1)
@@ -304,4 +304,3 @@ function BG.ZhangDanSumUI(lastbt)
 
     return bt
 end
-

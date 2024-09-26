@@ -27,6 +27,35 @@ local frameright
 local red, greed, blue = 1, 1, 1
 local touming1, touming2 = 0.1, 0.1
 
+local function ShowTardeHighLightItem(self)
+    if not BG.History.chooseNum then return end
+    local b = self.bossnum
+    local i = self.i
+    local FB = BG.FB1
+    local tradeInfo = BG.GetGeZiTardeInfo(FB, b, i, true)
+    if tradeInfo then
+        for _, v in ipairs(tradeInfo) do
+            for b = 1, Maxb[FB] do
+                for i = 1, Maxi[FB] do
+                    local zb = BG.HistoryFrame[FB]["boss" .. b]["zhuangbei" .. i]
+                    local jine = BG.HistoryFrame[FB]["boss" .. b]["jine" .. i]
+                    if zb and FB == v.FB and b == v.b and i == v.i then
+                        local f = BG.CreateHighlightFrame(zb, nil, { 0, 1, 0, 0.5 }, 4)
+                        f:ClearAllPoints()
+                        f:SetPoint("TOPLEFT", zb, "TOPLEFT", 0, 0)
+                        f:SetPoint("BOTTOMRIGHT", jine, "BOTTOMRIGHT", 0, 0)
+                        local t = f:CreateFontString()
+                        t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+                        t:SetPoint("LEFT", jine, "RIGHT", 2, 0)
+                        t:SetTextColor(0, 1, 0)
+                        t:SetText(L["打包交易"])
+                    end
+                end
+            end
+        end
+    end
+end
+
 ------------------标题------------------
 function BG.HistoryBiaoTiUI(FB, t)
     local fontsize = 15
@@ -73,7 +102,11 @@ end
 function BG.HistoryZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
     local parent = scrollFrame or BG["HistoryFrame" .. FB]
     local bt = CreateFrame("EditBox", nil, parent, "InputBoxTemplate");
-    bt:SetSize(150, 20)
+    if BossNum(FB, b, t) <= Maxb[FB] then
+        bt:SetSize(150, 20)
+    else
+        bt:SetSize(245, 20)
+    end
     bt:SetFrameLevel(110)
     if BG.zaxiang[FB] and BossNum(FB, b, t) == Maxb[FB] - 1 and i == BG.zaxiang[FB].i then
         bt:SetPoint("TOPLEFT", frameright, "TOPLEFT", 170, -18)
@@ -91,8 +124,8 @@ function BG.HistoryZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
         end
     end
     bt:SetAutoFocus(false)
-    bt:Show()
     bt:SetEnabled(false)
+    BG.SetBorderAlpha(bt)
     local icon = bt:CreateTexture(nil, 'ARTWORK')
     icon:SetPoint('LEFT', -22, 0)
     icon:SetSize(16, 16)
@@ -112,10 +145,7 @@ function BG.HistoryZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
         local itemID = GetItemInfoInstant(itemText)
         local name, link, quality, level, _, _, _, _, _, Texture, _, typeID, _, bindType = GetItemInfo(itemText)
 
-        local num = BiaoGe.FilterClassItemDB[RealmId][player].chooseID -- 隐藏
-        if num ~= 0 then
-            BG.UpdateFilter(self)
-        end
+        BG.UpdateFilter(self)
 
         if link and itemText:find("item:") then
             -- 装备图标
@@ -134,13 +164,7 @@ function BG.HistoryZhuangBeiUI(FB, t, b, bb, i, ii, scrollFrame)
     -- 发送装备到聊天输入框
     bt:SetScript("OnMouseDown", function(self, enter)
         if IsShiftKeyDown() then
-            local f = GetCurrentKeyBoardFocus()
-            if not f then
-                ChatEdit_ActivateChat(ChatEdit_ChooseBoxForSend())
-            end
-            local text = self:GetText()
-            ChatEdit_InsertLink(text)
-            return
+            BG.InsertLink(self:GetText())
         end
     end)
     -- 鼠标悬停在装备时
@@ -184,9 +208,13 @@ function BG.HistoryMaiJiaUI(FB, t, b, bb, i, ii)
     bt:SetFrameLevel(110)
     bt:SetMaxBytes(19) --限制字数
     bt:SetAutoFocus(false)
-    bt:Show()
     bt:SetEnabled(false)
-    preWidget = bt
+    BG.SetBorderAlpha(bt)
+    if BossNum(FB, b, t) <= Maxb[FB] then
+        preWidget = bt
+    else
+        bt:Hide()
+    end
     BG.HistoryFrame[FB]["boss" .. BossNum(FB, b, t)]["maijia" .. i] = bt
 
     -- 鼠标悬停在装备时
@@ -205,10 +233,9 @@ function BG.HistoryJinEUI(FB, t, b, bb, i, ii)
     bt:SetSize(80, 20)
     bt:SetPoint("TOPLEFT", preWidget, "TOPRIGHT", 5, 0);
     bt:SetFrameLevel(110)
-    -- bt:SetNumeric(true)
     bt:SetAutoFocus(false)
-    bt:Show()
     bt:SetEnabled(false)
+    BG.SetBorderAlpha(bt)
     bt.FB = FB
     bt.bossnum = BossNum(FB, b, t)
     bt.t = t
@@ -221,10 +248,12 @@ function BG.HistoryJinEUI(FB, t, b, bb, i, ii)
     -- 鼠标悬停在装备时
     bt:SetScript("OnEnter", function(self)
         BG.HistoryFrameDs[FB .. 1]["boss" .. BossNum(FB, b, t)]["ds" .. i]:Show()
+        ShowTardeHighLightItem(self)
     end)
     bt:SetScript("OnLeave", function(self)
         BG.HistoryFrameDs[FB .. 1]["boss" .. BossNum(FB, b, t)]["ds" .. i]:Hide()
         GameTooltip:Hide()
+        BG.Hide_AllHighlight()
     end)
 end
 

@@ -74,7 +74,7 @@ local function OptionsUI()
 
     -- 子选项
     local Frames = {}
-    local biaoge, roleOverview, boss, others, config
+    local biaoge, autoAuction, roleOverview, boss, others, config
     do
         local last
 
@@ -100,7 +100,7 @@ local function OptionsUI()
             bt:SetScript("OnClick", function(self)
                 BG.HideTab(Frames, BG["Frame" .. name])
                 BiaoGe.options.lastFrame = "Frame" .. name
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end)
 
             local f = CreateFrame("Frame", nil, bt)
@@ -114,6 +114,7 @@ local function OptionsUI()
             scroll:SetPoint("BOTTOMRIGHT", SettingsPanel.Container, -35, 10)
             scroll.ScrollBar.scrollStep = BG.scrollStep
             BG.CreateSrollBarBackdrop(scroll.ScrollBar)
+            BG.HookScrollBarShowOrHide(scroll)
             scroll:SetScrollChild(frame)
             frame.scroll = scroll
 
@@ -121,6 +122,7 @@ local function OptionsUI()
         end
 
         biaoge = CreateTab("Options_biaoge", L["表格"])
+        autoAuction = CreateTab("Options_autoAuction", L["自动拍卖"])
         roleOverview = CreateTab("Options_roleOverview", L["角色总览"])
         if BG.IsWLK then
             boss = CreateTab("Options_boss", L["团本攻略"])
@@ -153,7 +155,7 @@ local function OptionsUI()
                 self:SetText(text)
                 BiaoGe.options[slider.name] = text
                 self:ClearFocus()
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end
             local function OnValueChanged(self, value)
                 self.edit:ClearFocus()
@@ -169,7 +171,7 @@ local function OptionsUI()
                         BiaoGe.options[slider.name] = value
                         slider:SetValue(value)
                         slider.edit:SetText(value)
-                        PlaySound(BG.sound1, "Master")
+                        BG.PlaySound(1)
                     end
                 end
             end
@@ -251,7 +253,7 @@ local function OptionsUI()
                 else
                     BiaoGe.options[self.name] = 0
                 end
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
             end
             local function OnEnter(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
@@ -371,7 +373,7 @@ local function OptionsUI()
                         if BG.FBCDFrame then
                             BG.FBCDFrame:SetScale(value)
                         end
-                        PlaySound(BG.sound1, "Master")
+                        BG.PlaySound(1)
                     end
                 end
             end)
@@ -419,7 +421,7 @@ local function OptionsUI()
                         f.edit:SetText(value)
                         BG.MainFrame.Bg:SetAlpha(value)
                         BG.MainFrame.TitleBg:SetAlpha(value)
-                        PlaySound(BG.sound1, "Master")
+                        BG.PlaySound(1)
                     end
                 end
             end)
@@ -503,7 +505,7 @@ local function OptionsUI()
             t:SetText(L["背景材质*"])
 
             LibBG:UIDropDownMenu_Initialize(dropDown, function(self, level)
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
                 for i, v in ipairs(table) do
                     local info = LibBG:UIDropDownMenu_CreateInfo()
                     info.text = v.name
@@ -511,7 +513,7 @@ local function OptionsUI()
                         BiaoGe.options[name] = v.tex
                         SetTex(v.tex, "alpha")
                         LibBG:UIDropDownMenu_SetText(dropDown, v.name)
-                        PlaySound(BG.sound1, "Master")
+                        BG.PlaySound(1)
                     end
                     if v.tex == BiaoGe.options[name] then
                         info.checked = true
@@ -522,8 +524,6 @@ local function OptionsUI()
         end
         h = h + 60
 
-
-        -- local h = 120
         O.CreateLine(biaoge, height - h)
         h = h + 15
         -- 自动记录装备
@@ -548,12 +548,15 @@ local function OptionsUI()
             f:HookScript("OnClick", function()
                 local name1 = "lootTime"
                 local name2 = "lootFontSize"
+                local name3 = "autolootNotice"
                 if f:GetChecked() then
                     BG.options["button" .. name1]:Show()
                     BG.options["button" .. name2]:Show()
+                    BG.options["button" .. name3]:Show()
                 else
                     BG.options["button" .. name1]:Hide()
                     BG.options["button" .. name2]:Hide()
+                    BG.options["button" .. name3]:Hide()
                 end
             end)
         end
@@ -595,10 +598,27 @@ local function OptionsUI()
                 f:Hide()
             end
         end
+        h = h + 30
+        -- 记录装备通知
+        do
+            local name = "autolootNotice"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["装备记录通知"],
+                L["自动记录装备后会在屏幕上方显示记录了什么装备、记录在哪个BOSS槽位。"],
+                -- " ",
+                -- L[""],
+            }
+            local f = O.CreateCheckButton(name, L["装备记录通知"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            local name = "autoLoot"
+            if BiaoGe.options[name] ~= 1 then
+                f:Hide()
+            end
+        end
         h = h + 80
 
-
-        -- local h = 180
         O.CreateLine(biaoge, height - h)
         h = h + 15
         -- 交易自动记账
@@ -626,18 +646,24 @@ local function OptionsUI()
                 local name3 = "tradeTime"
                 local name4 = "tradeFontSize"
                 local name5 = "tradeMoneyTop"
+                local name6 = "lastTrade"
+                local name7 = "qiankuanTrade"
                 if f:GetChecked() then
                     BG.options["button" .. name1]:Show()
                     BG.options["button" .. name2]:Show()
                     BG.options["button" .. name3]:Show()
                     BG.options["button" .. name4]:Show()
                     BG.options["button" .. name5]:Show()
+                    BG.options["button" .. name6]:Show()
+                    BG.options["button" .. name7]:Show()
                 else
                     BG.options["button" .. name1]:Hide()
                     BG.options["button" .. name2]:Hide()
                     BG.options["button" .. name3]:Hide()
                     BG.options["button" .. name4]:Hide()
                     BG.options["button" .. name5]:Hide()
+                    BG.options["button" .. name6]:Hide()
+                    BG.options["button" .. name7]:Hide()
                 end
             end)
         end
@@ -751,8 +777,41 @@ local function OptionsUI()
                 f:Hide()
             end
         end
+        h = h + 30
+        -- 最近拍卖
+        do
+            local name = "lastTrade"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["最近拍卖"],
+                L["交易时，如果你是物品分配者，在交易框右边会显示最近拍卖且可交易的装备，点击一下就能把装备放到交易里。"],
+            }
+            local f = O.CreateCheckButton(name, L["最近拍卖"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            local name = "autoTrade"
+            if BiaoGe.options[name] ~= 1 then
+                f:Hide()
+            end
+        end
+        h = h + 30
+        -- 欠款记录
+        do
+            local name = "qiankuanTrade"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["对方欠款记录"],
+                L["交易时，如果对方曾有欠款，则会在交易框下方显示其欠款记录，点击可以清除欠款。"],
+            }
+            local f = O.CreateCheckButton(name, L["对方欠款记录"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            local name = "autoTrade"
+            if BiaoGe.options[name] ~= 1 then
+                f:Hide()
+            end
+        end
         h = h + 40
-
 
         O.CreateLine(biaoge, height - h)
         h = h + 15
@@ -870,42 +929,58 @@ local function OptionsUI()
             BG.options[name .. "reset"] = 1
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
             local ontext = {
-                L["拍卖倒数"],
-                L["拍卖自动倒数。"],
-                " ",
+                L["拍卖自动倒数"],
                 L["该功能只有团长或物品分配者可用。"],
                 " ",
                 L["使用方法：右键聊天框装备时开始倒数。"],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. BG.STC_g1(L["拍卖倒数"] .. "*"), biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, BG.STC_g1(L["拍卖自动倒数"] .. "*"), biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
             f:HookScript("OnClick", function()
                 local name1 = "countDownDuration"
                 local name2 = "countDownSendChannel"
+                local name3 = "countDownStop"
                 if f:GetChecked() then
                     BG.options["button" .. name1]:Show()
                     BG.options["button" .. name2]:Show()
+                    BG.options["button" .. name3]:Show()
                 else
                     BG.options["button" .. name1]:Hide()
                     BG.options["button" .. name2]:Hide()
+                    BG.options["button" .. name3]:Hide()
                 end
             end)
         end
         -- 拍卖倒数时长
         do
             local name = "countDownDuration"
-            BG.options[name .. "reset"] = 8
+            BG.options[name .. "reset"] = 5
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
             local ontext = {
                 L["拍卖倒数时长"] .. L["|cff808080（右键还原设置）|r"],
-                L["拍卖装备倒数多久，默认是8秒。"],
+                format(L["拍卖装备倒数多久，默认是%s秒。"], BG.options[name .. "reset"]),
                 -- " ",
                 -- L[""],
             }
             local f = O.CreateSlider(name, "|cffFFFFFF" .. L["拍卖倒数时长(秒)"] .. "*" .. "|r", biaoge, 1, 20, 1, 220, height - h - 25, ontext)
             BG.options["button" .. name] = f
-            local name = "countDown"
-            if BiaoGe.options[name] ~= 1 then
+            if BiaoGe.options["countDown"] ~= 1 then
+                f:Hide()
+            end
+        end
+        h = h + 30
+        -- 倒数自动暂停
+        do
+            local name = "countDownStop"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["倒数自动暂停"],
+                L["正在自动倒数时，如果有人出价（在团队频道打出纯数字时），则自动暂停倒数。"],
+            }
+            local f = O.CreateCheckButton(name, L["倒数自动暂停"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            if BiaoGe.options["countDown"] ~= 1 then
                 f:Hide()
             end
         end
@@ -913,7 +988,7 @@ local function OptionsUI()
         -- 拍卖倒数通报频道
         do
             local name = "countDownSendChannel"
-            BG.options[name .. "reset"] = "RAID_WARNING"
+            BG.options[name .. "reset"] = "RAID"
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
 
             local function RaidText(channel)
@@ -934,13 +1009,13 @@ local function OptionsUI()
             BG.options["button" .. name] = dropDown
 
             LibBG:UIDropDownMenu_Initialize(dropDown, function(self, level)
-                PlaySound(BG.sound1, "Master")
+                BG.PlaySound(1)
                 local info = LibBG:UIDropDownMenu_CreateInfo()
                 info.text = L["通报至团队通知频道"]
                 info.func = function()
                     BiaoGe.options[name] = "RAID_WARNING"
                     LibBG:UIDropDownMenu_SetText(dropDown, RaidText(BiaoGe.options[name]))
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end
                 if BiaoGe.options[name] == "RAID_WARNING" then
                     info.checked = true
@@ -951,7 +1026,7 @@ local function OptionsUI()
                 info.func = function()
                     BiaoGe.options[name] = "RAID"
                     LibBG:UIDropDownMenu_SetText(dropDown, RaidText(BiaoGe.options[name]))
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end
                 if BiaoGe.options[name] == "RAID" then
                     info.checked = true
@@ -959,55 +1034,11 @@ local function OptionsUI()
                 LibBG:UIDropDownMenu_AddButton(info)
             end)
 
-            local name = "countDown"
-            if BiaoGe.options[name] ~= 1 then
-                dropDown:Hide()
-            end
-        end
-        h = h + 50
-
-        O.CreateLine(biaoge, height - h)
-        h = h + 15
-        -- 装备过期提醒
-        do
-            local name = "guoqiRemind"
-            BG.options[name .. "reset"] = 1
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
-            local ontext = {
-                L["装备过期提醒"],
-                L["当装备剩余可交易时间低于一定时（默认是低于30分钟），会有语音+文字提醒。每次提醒的最低间隔是5分钟，避免提醒过于频繁。"],
-                " ",
-                L["该功能只有你是团长或物品分配者时起作用。"],
-            }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. BG.STC_g1(L["装备过期提醒"] .. "*"), biaoge, 15, height - h, ontext)
-            BG.options["button" .. name] = f
-            f:HookScript("OnClick", function()
-                local name1 = "guoqiRemindMinTime"
-                if f:GetChecked() then
-                    BG.options["button" .. name1]:Show()
-                else
-                    BG.options["button" .. name1]:Hide()
-                end
-            end)
-        end
-        -- 剩余多少分钟时提醒
-        do
-            local name = "guoqiRemindMinTime"
-            BG.options[name .. "reset"] = 30
-            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
-            local ontext = {
-                L["剩余时间低于多少时提醒"] .. L["|cff808080（右键还原设置）|r"],
-                L["当装备剩余可交易时间低于该时间时，会提醒，默认是30分钟。"],
-                -- " ",
-                -- L[""],
-            }
-            local f = O.CreateSlider(name, "|cffFFFFFF" .. L["剩余时间低于多少时提醒(分)"] .. "*" .. "|r", biaoge, 1, 120, 1, 220, height - h - 25, ontext)
-            BG.options["button" .. name] = f
-            if BiaoGe.options["guoqiRemind"] ~= 1 then
+            if BiaoGe.options["countDown"] ~= 1 then
                 f:Hide()
             end
         end
-        h = h + 80
+        h = h + 50
 
         O.CreateLine(biaoge, height - h)
         h = h + 15
@@ -1074,6 +1105,48 @@ local function OptionsUI()
         end
         h = h + 40
 
+        O.CreateLine(biaoge, height - h)
+        h = h + 15
+        -- 装备过期提醒
+        do
+            local name = "guoqiRemind"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["装备过期提醒"],
+                L["当装备剩余可交易时间低于一定时（默认是低于30分钟），会有语音+文字提醒。每次提醒的最低间隔是5分钟，避免提醒过于频繁。"],
+                " ",
+                L["该功能只有你是团长或物品分配者时起作用。"],
+            }
+            local f = O.CreateCheckButton(name, BG.STC_g1(L["装备过期提醒"] .. "*"), biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            f:HookScript("OnClick", function()
+                local name1 = "guoqiRemindMinTime"
+                if f:GetChecked() then
+                    BG.options["button" .. name1]:Show()
+                else
+                    BG.options["button" .. name1]:Hide()
+                end
+            end)
+        end
+        -- 剩余多少分钟时提醒
+        do
+            local name = "guoqiRemindMinTime"
+            BG.options[name .. "reset"] = 30
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["剩余时间低于多少时提醒"] .. L["|cff808080（右键还原设置）|r"],
+                L["当装备剩余可交易时间低于该时间时，会提醒，默认是30分钟。"],
+                -- " ",
+                -- L[""],
+            }
+            local f = O.CreateSlider(name, "|cffFFFFFF" .. L["剩余时间低于多少时提醒(分)"] .. "*" .. "|r", biaoge, 1, 120, 1, 220, height - h - 25, ontext)
+            BG.options["button" .. name] = f
+            if BiaoGe.options["guoqiRemind"] ~= 1 then
+                f:Hide()
+            end
+        end
+        h = h + 80
 
         O.CreateLine(biaoge, height - h)
         h = h + 15
@@ -1088,7 +1161,7 @@ local function OptionsUI()
                 -- " ",
                 -- L[""],
             }
-            local f = O.CreateCheckButton(name, BG.STC_g1(L["进本自动清空表格*"]), biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["进本自动清空表格*"], biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
 
             -- 删除旧设置
@@ -1188,58 +1261,31 @@ local function OptionsUI()
             local name = "buttonSound"
             BG.options[name .. "reset"] = 1
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
-            if BiaoGe.options[name] == 1 then
-                BG.sound1 = SOUNDKIT.GS_TITLE_OPTION_OK
-                BG.sound2 = 569593
-            else
-                BG.sound1 = 1
-                BG.sound2 = 1
-            end
             local ontext = {
                 L["按键交互声音"],
                 L["点击按钮时的声音。"],
                 -- " ",
                 -- L[""],
             }
-            local f = O.CreateCheckButton(name, BG.STC_g1(L["按键交互声音*"]), biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["按键交互声音*"], biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
-            f:HookScript("OnClick", function()
-                if f:GetChecked() then
-                    BG.sound1 = SOUNDKIT.GS_TITLE_OPTION_OK
-                    BG.sound2 = 569593
-                else
-                    BG.sound1 = 1
-                    BG.sound2 = 1
-                end
-            end)
         end
         -- 语音提醒
         do
             local name = "Sound"
 
-            local table = {
-                AI = L["AI语音"],
-                YingXue = L["樱雪"],
-            }
-            local soundtbl = {
-                "paimai",
-                "hope",
-                "qingkong",
-                "cehuiqingkong",
-                "pingjia",
-                "alchemyReady",
-                "tailorReady",
-                "leatherworkingReady",
-                "pingjia",
-                "biaogefull",
-                "guoqi",
-                -- "",
-            }
+            local function GetName()
+                for i, v in ipairs(BG.soundTbl) do
+                    if v.ID == BiaoGe.options.Sound then
+                        return v.name
+                    end
+                end
+            end
 
             local dropDown = LibBG:Create_UIDropDownMenu(nil, biaoge)
             dropDown:SetPoint("TOPLEFT", 220, height - h - 20)
-            LibBG:UIDropDownMenu_SetWidth(dropDown, 120)
-            LibBG:UIDropDownMenu_SetText(dropDown, table[BiaoGe.options.Sound])
+            LibBG:UIDropDownMenu_SetWidth(dropDown, 180)
+            LibBG:UIDropDownMenu_SetText(dropDown, GetName())
             LibBG:UIDropDownMenu_SetAnchor(dropDown, -10, 0, "TOPRIGHT", dropDown, "BOTTOMRIGHT")
             BG.dropDownToggle(dropDown)
             BG.options["button" .. name] = dropDown
@@ -1262,19 +1308,58 @@ local function OptionsUI()
             f:SetScript("OnLeave", GameTooltip_Hide)
 
             LibBG:UIDropDownMenu_Initialize(dropDown, function(self, level)
-                for k, v in pairs(table) do
+                for _, v in ipairs(BG.soundTbl) do
                     local info = LibBG:UIDropDownMenu_CreateInfo()
-                    info.text = v
+                    info.text = v.name
                     info.func = function()
-                        BiaoGe.options[name] = k
-                        LibBG:UIDropDownMenu_SetText(dropDown, v)
-
-                        PlaySoundFile(BG["sound_" .. soundtbl[random(#soundtbl)] .. BiaoGe.options[name]], "Master")
+                        BiaoGe.options[name] = v.ID
+                        LibBG:UIDropDownMenu_SetText(dropDown, v.name)
                     end
-                    if k == BiaoGe.options[name] then
+                    if v.ID == BiaoGe.options[name] then
                         info.checked = true
                     end
                     LibBG:UIDropDownMenu_AddButton(info)
+                end
+            end)
+
+            hooksecurefunc(LibBG, "ToggleDropDownMenu", function(_, _, _, dropDown)
+                if dropDown == BG.options["button" .. name] then
+                    for i = 1, _G['L_DropDownList1'].numButtons do
+                        local button = _G["L_DropDownList1Button" .. i]
+                        if not button.playSound then
+                            local bt = CreateFrame("Button", nil, button)
+                            bt:SetSize(20, 20)
+                            bt:SetPoint("RIGHT", -2, 0)
+                            bt:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ArmoryChat")
+                            bt:GetNormalTexture():SetVertexColor(0, 1, 0)
+                            bt.num = i
+                            bt:Hide()
+                            button.playSound = bt
+                            bt:SetScript("OnClick", function(self)
+                                PlaySoundFile(BG["sound_" .. BG.soundTbl2[random(#BG.soundTbl2)].ID .. BG.soundTbl[self.num].ID], "Master")
+                            end)
+                            bt:SetScript("OnEnter", function(self)
+                                LibBG:UIDropDownMenu_StopCounting(self:GetParent():GetParent())
+                                button.Highlight:Show()
+                                bt:GetNormalTexture():SetVertexColor(1, 1, 1)
+                            end)
+                            bt:SetScript("OnLeave", function(self)
+                                LibBG:UIDropDownMenu_StartCounting(self:GetParent():GetParent())
+                                button.Highlight:Hide()
+                                GameTooltip:Hide()
+                                bt:GetNormalTexture():SetVertexColor(0, 1, 0)
+                            end)
+                        end
+                        button.playSound.num = i
+                        button.playSound:Show()
+                    end
+                else
+                    for i = 1, L_UIDROPDOWNMENU_MAXBUTTONS do
+                        local button = _G["L_DropDownList1Button" .. i]
+                        if button.playSound then
+                            button.playSound:Hide()
+                        end
+                    end
                 end
             end)
         end
@@ -1328,7 +1413,7 @@ local function OptionsUI()
                     -- " ",
                     -- L[""],
                 }
-                local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["自动获取在线人数"] .. "*", biaoge, 15, height - h, ontext)
+                local f = O.CreateCheckButton(name, L["自动获取在线人数"] .. "*", biaoge, 15, height - h, ontext)
                 BG.options["button" .. name] = f
             end
             h = h + 30
@@ -1346,7 +1431,7 @@ local function OptionsUI()
                 " ",
                 L[ [[比如支出项目为：TN10%，则该支出金额会自动更新为：总收入*10%]] ],
             }
-            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["支出百分比计算"] .. "*", biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["支出百分比计算"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
             f:HookScript("OnClick", function()
                 for _, FB in pairs(BG.FBtable) do
@@ -1359,6 +1444,21 @@ local function OptionsUI()
                     end
                 end
             end)
+        end
+        h = h + 30
+
+        -- 数字小键盘
+        do
+            local name = "NumFrame"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+
+            local ontext = {
+                L["数字小键盘"],
+                L["在可以输入数字的地方，自动显示一个数字小键盘。用鼠标就能完成数字的输入。"],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST") .. L["数字小键盘"] .. "*", biaoge, 15, height - h, ontext)
+            BG.options["button" .. name] = f
         end
         h = h + 30
 
@@ -1423,6 +1523,100 @@ local function OptionsUI()
         end
     end
 
+    -- 自动拍卖
+    do
+        local height = 0
+        local h = 30
+        -- UI缩放
+        do
+            local name = "autoAuctionScale"
+            BG.options[name .. "reset"] = "0.95"
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["UI缩放"] .. L["|cff808080（右键还原设置）|r"],
+                L["调整自动拍卖UI的大小。"],
+                -- " ",
+                -- L[""],
+            }
+            local f = O.CreateSlider(name, "|cffFFFFFF" .. L["UI缩放*"] .. "|r", autoAuction, 0.5, 1.5, 0.01, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+
+            f:SetScript("OnValueChanged", function(self, value)
+                f.edit:ClearFocus()
+                value = tonumber(string.format("%.2f", value))
+                BiaoGe.options[name] = value
+                f.edit:SetText(value)
+                BGA.AuctionMainFrame:SetScale(value)
+            end)
+            f.button:SetScript("OnClick", function(self, enter)
+                if enter == "RightButton" then
+                    if BG.options[name .. "reset"] then
+                        local value = BG.options[name .. "reset"]
+                        BiaoGe.options[name] = value
+                        f:SetValue(value)
+                        f.edit:SetText(value)
+                        BGA.AuctionMainFrame:SetScale(value)
+                        BG.PlaySound(1)
+                    end
+                end
+            end)
+        end
+        h = h + 60
+
+        O.CreateLine(autoAuction, height - h)
+        h = h + 15
+
+        -- 交易时自动摆放装备
+        do
+            local name = "autoAuctionPut"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["交易时自动摆放装备"],
+                L["交易时，如果你是物品分配者，会自动把对方所拍装备摆放到交易框。"],
+            }
+            local f = O.CreateCheckButton(name, L["交易时自动摆放装备"] .. "*", autoAuction, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+        end
+        h = h + 30
+        -- 交易时显示应收/应付金额
+        do
+            local name = "autoAuctionMoney"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["交易时显示应收或应付金额"],
+                L["交易时，根据对方或你所拍装备显示应收或应付金额。"],
+            }
+            local f = O.CreateCheckButton(name, L["交易时显示应收或应付金额"] .. "*", autoAuction, 15, height - h, ontext)
+            BG.options["button" .. name] = f
+            f:HookScript("OnClick", function()
+                local name1 = "autoAuctionQianKuan"
+                if f:GetChecked() then
+                    BG.options["button" .. name1]:Show()
+                else
+                    BG.options["button" .. name1]:Hide()
+                end
+            end)
+        end
+        h = h + 30
+        -- 交易时自动记录欠款
+        do
+            local name = "autoAuctionQianKuan"
+            BG.options[name .. "reset"] = 1
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["交易时自动记录欠款"],
+                L["交易时，会自动记录欠款。"],
+            }
+            local f = O.CreateCheckButton(name, L["交易时自动记录欠款"] .. "*", autoAuction, 40, height - h, ontext)
+            BG.options["button" .. name] = f
+            if BiaoGe.options["autoAuctionMoney"] ~= 1 then
+                f:Hide()
+            end
+        end
+    end
+
     -- 角色总览设置
     do
         local function CreateFBCDbutton(n1, n2, width, height, width2, height_jiange)
@@ -1451,9 +1645,9 @@ local function OptionsUI()
                 end
                 right = bt
                 if type ~= "fb" then
-                    bt.Text:SetText("|cff" .. color .. name2 .. RR)
+                    bt.Text:SetText("|cff" .. color .. name2:gsub("sod","") .. RR)
                 else
-                    bt.Text:SetText("|cff" .. color .. name .. RR)
+                    bt.Text:SetText("|cff" .. color .. name:gsub("sod","") .. RR)
                 end
                 bt.Text:SetWidth(width2 - 25)
                 bt.Text:SetWordWrap(false)
@@ -1473,7 +1667,7 @@ local function OptionsUI()
                         BiaoGe.FBCDchoice[name] = nil
                     end
 
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end)
                 -- 鼠标悬停提示
                 bt:SetScript("OnEnter", function(self)
@@ -1532,7 +1726,7 @@ local function OptionsUI()
                     end
                     BG.MoneyBannerUpdate()
 
-                    PlaySound(BG.sound1, "Master")
+                    BG.PlaySound(1)
                 end)
                 -- 鼠标悬停提示
                 bt:SetScript("OnEnter", function(self)
@@ -1578,7 +1772,7 @@ local function OptionsUI()
                     },
                     {
                         isTitle = true,
-                        text = "",
+                        text = "   ",
                         notCheckable = true,
                     },
                 }
@@ -1611,7 +1805,7 @@ local function OptionsUI()
 
                 local a = {
                     isTitle = true,
-                    text = "",
+                    text = "   ",
                     notCheckable = true,
                 }
                 tinsert(channelTypeMenu, a)
@@ -1626,16 +1820,15 @@ local function OptionsUI()
                 tinsert(channelTypeMenu, a)
                 LibBG:EasyMenu(channelTypeMenu, dropDown, bt, 0, 0, "MENU", 3)
             end
-            PlaySound(BG.sound1, "Master")
+            BG.PlaySound(1)
         end)
 
         -- 创建多选按钮
+        local width = 15
+        local height = -15
+        local height_jiange = 22
+        local line_height = 4
         do
-            local width = 15
-            local height = -15
-            local height_jiange = 22
-            local line_height = 4
-
             if BG.IsVanilla_Sod then
                 --团本CD
                 local text = roleOverview:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -1789,30 +1982,28 @@ local function OptionsUI()
                 height = CreateMONEYbutton(1, #BG.MONEYall_table, width, height, 65, height_jiange)
                 height = height - height_jiange * 3
             end
+        end
 
-            -- 5人本完成总览
-            if BG.IsWLK or BG.IsCTM then
-                local name = "FB5M"
-                BG.options[name .. "reset"] = 1
-                if not BiaoGe.options[name] then
-                    BiaoGe.options[name] = BG.options[name .. "reset"]
-                end
-                local ontext = {
-                    L["角色5人本完成总览"],
-                    L["在队伍查找器旁边显示角色5人本完成总览。"],
-                }
-                local f = O.CreateCheckButton(name, BG.STC_g1(L["显示角色5人本完成总览"] .. "*"), roleOverview, 15, height, ontext)
-                BG.options["button" .. name] = f
-                f:HookScript("OnClick", function()
-                    if BG.FBCD_5M_Frame then
-                        if f:GetChecked() then
-                            BG.FBCD_5M_Frame:Show()
-                        else
-                            BG.FBCD_5M_Frame:Hide()
-                        end
+        -- 5人本完成总览
+        if not BG.IsVanilla then
+            local name = "FB5M"
+            BG.options[name .. "reset"] = 0
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["角色5人本完成总览"],
+                L["在队伍查找器旁边显示角色5人本完成总览。"],
+            }
+            local f = O.CreateCheckButton(name, BG.STC_g1(L["显示角色5人本完成总览"] .. "*"), roleOverview, 15, height, ontext)
+            BG.options["button" .. name] = f
+            f:HookScript("OnClick", function()
+                if BG.FBCD_5M_Frame then
+                    if f:GetChecked() then
+                        BG.FBCD_5M_Frame:Show()
+                    else
+                        BG.FBCD_5M_Frame:Hide()
                     end
-                end)
-            end
+                end
+            end)
         end
     end
 
@@ -1890,6 +2081,8 @@ local function OptionsUI()
                     local ontext = {
                         format(L["一键指定%s"], text1),
                         format(L["在地下城和团队副本界面增加一键指定%s按钮。"], text1),
+                        " ",
+                        L["打开随机本界面时，会自动选择上一次的随机本类型，而不是傻傻地在默认类型。"],
                     }
                     local f = O.CreateCheckButton(name, format(L["一键指定%s"], text1) .. "*", others, 15, height - h, ontext)
                     BG.options["button" .. name] = f
@@ -1903,22 +2096,12 @@ local function OptionsUI()
                 if not BiaoGe.options[name] then
                     BiaoGe.options[name] = BG.options[name .. "reset"]
                 end
-                local ontext
-                if BG.IsVanilla then
-                    ontext = {
-                        L["队长模式一键分配"],
-                        L["队长分配模式时，在战利品界面增加一键分配按钮。"],
-                        " ",
-                        L["点击按钮后会把全部掉落分配给自己，只对精良/史诗装备生效，其他分类的物品不会生效。"],
-                    }
-                else
-                    ontext = {
-                        L["队长模式一键分配"],
-                        L["队长分配模式时，在战利品界面增加一键分配按钮。"],
-                        " ",
-                        L["点击按钮后会把全部掉落分配给自己，只对史诗装备或套装兑换物生效，其他分类的物品不会生效（例如橙片、任务物品等不会自动分配）。"],
-                    }
-                end
+                local ontext = {
+                    L["队长模式一键分配"],
+                    L["队长分配模式时，在战利品界面增加一键分配按钮。"],
+                    " ",
+                    L["点击按钮后会把全部可交易的物品分配给自己（橙片、任务物品等不会自动分配）。"],
+                }
 
                 local f = O.CreateCheckButton(name, L["队长模式一键分配"] .. "*", others, 15, height - h, ontext)
                 BG.options["button" .. name] = f
@@ -2041,126 +2224,181 @@ local function OptionsUI()
             h = h + 45
         end
 
-        -- 集结号
-        do
-            local function Update_OnShow(f, name)
-                f:SetScript("OnShow", function(self)
-                    if BiaoGe.options[name] == 1 then
-                        f:SetChecked(true)
-                    else
-                        f:SetChecked(false)
-                    end
-                end)
-            end
-
+        -- AtlasLoot
+        if BG.IsWLK then
             local text = others:CreateFontString(nil, "ARTWORK", "GameFontNormal")
             text:SetPoint("TOPLEFT", width, height - h)
-            text:SetText(BG.STC_g1(L["集结号"]))
+            text:SetText(BG.STC_g1("AtlasLoot"))
             height = height - height_jiange
 
             O.CreateLine(others, height - h + line_height)
 
-            -- 不自动退出集结号频道
-            local name1, ontext1, f1
+            -- 更好的选择
             do
-                name1 = "MeetingHorn_always"
-                BG.options[name1 .. "reset"] = 0
-                if not BiaoGe.options[name1] then
-                    BiaoGe.options[name1] = BG.options[name1 .. "reset"]
-                end
-                ontext1 = {
-                    L["不自动退出集结号频道"],
-                    L["这样你可以一直同步集结号的组队消息，让你随时打开集结号都能查看全部活动。"],
-                }
-                f1 = O.CreateCheckButton(name1, L["不自动退出集结号频道"] .. "*", others, 15, height - h, ontext1)
-                BG.options["button" .. name1] = f1
-                Update_OnShow(f1, name1)
-            end
-            h = h + 30
-
-            -- 历史搜索记录
-            local name2, ontext2, f2
-            do
-                name2 = "MeetingHorn_history"
-                BG.options[name2 .. "reset"] = 0
-                if not BiaoGe.options[name2] then
-                    BiaoGe.options[name2] = BG.options[name2 .. "reset"]
-                end
-                ontext2 = {
-                    L["历史搜索记录"],
-                    L["给集结号的搜索框增加一个历史搜索记录，提高你搜索的效率。"],
-                }
-                f2 = O.CreateCheckButton(name2, L["历史搜索记录"] .. "*", others, 15, height - h, ontext2)
-                BG.options["button" .. name2] = f2
-                Update_OnShow(f2, name2)
-            end
-            h = h + 30
-
-            -- 多个关键词搜索
-            local name3, ontext3, f3
-            do
-                name3 = "MeetingHorn_search"
-                BG.options[name3 .. "reset"] = 0
-                if not BiaoGe.options[name3] then
-                    BiaoGe.options[name3] = BG.options[name3 .. "reset"]
-                end
-                ontext3 = {
-                    L["多个关键词搜索"],
-                    L[ [[搜索框支持多个关键词搜索。]] ],
+                local name = "AtlasLoot_betterChoose"
+                BG.options[name .. "reset"] = 1
+                BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+                local ontext = {
+                    L["更好的选择"],
+                    L["当你点击一个菜单选项时，"],
+                    L["该插件的原本设定：下一级菜单中总是默认显示第一项。"],
+                    -- " ",
+                    L["现在优化为：下一级菜单中会显示更合适的项目。"],
                     " ",
-                    L[ [["空格"表示"且"，需同时满足全部关键词。比如你想搜索哪个诺莫瑞根活动里缺少治疗，可以搜索"诺莫瑞根 治疗"。]] ],
-                    " ",
-                    L[ [["/"表示"或"，满足其中一个关键词即可。比如你是双修牧师，可以搜索"牧师/MS/暗牧/AM"。]] ],
-                    " ",
-                    L[ [[如果把"空格"和"/"结合起来，比如搜索"诺莫瑞根/矮子 牧师/MS/暗牧/AM"，表示我想找诺莫瑞根或者矮子的活动，且该活动缺少任意牧师。]] ],
+                    L["比如："],
+                    L["点击地下城和团队副本时，会自动显示25人奥杜尔；"],
+                    L["点击专业制造时，会自动显示附魔；"],
+                    L["点击专业制造-铭文时，会自动显示你对应的铭文；"],
                 }
-                f3 = O.CreateCheckButton(name3, L["多个关键词搜索"] .. "*", others, 15, height - h, ontext3)
-                BG.options["button" .. name3] = f3
-                Update_OnShow(f3, name3)
+                local f = O.CreateCheckButton(name, L["更好的选择"] .. "*", others, 15, height - h, ontext)
+                BG.options["button" .. name] = f
             end
-            h = h + 30
 
-            -- 按队伍人数排序
-            local name4, ontext4, f4
-            do
-                name4 = "MeetingHorn_members"
-                BG.options[name4 .. "reset"] = 0
-                if not BiaoGe.options[name4] then
-                    BiaoGe.options[name4] = BG.options[name4 .. "reset"]
+            h = h + 45
+        end
+
+        -- 集结号
+        do
+            BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload)
+                if not (isLogin or isReload) then return end
+
+                local text = others:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+                text:SetPoint("TOPLEFT", width, height - h)
+                text:SetText(BG.STC_g1(L["集结号"]))
+                height = height - height_jiange
+
+                O.CreateLine(others, height - h + line_height)
+
+                local function Update_OnShow(f, name)
+                    f:SetScript("OnShow", function(self)
+                        if BiaoGe.options[name] == 1 then
+                            f:SetChecked(true)
+                        else
+                            f:SetChecked(false)
+                        end
+                    end)
                 end
-                ontext4 = {
-                    L["按队伍人数排序"],
-                    L["集结号活动可以按队伍人数排序。"],
-                }
-                f4 = O.CreateCheckButton(name4, L["按队伍人数排序"] .. "*", others, 15, height - h, ontext4)
-                BG.options["button" .. name4] = f4
-                Update_OnShow(f4, name4)
-                f4:HookScript("OnClick", function(self)
-                    local addonName = "MeetingHorn"
-                    if not IsAddOnLoaded(addonName) then return end
 
-                    local MeetingHorn = LibStub("AceAddon-3.0"):GetAddon(addonName)
-                    local bt = MeetingHorn.MainPanel.Browser.Header3
+                local tbl = {}
 
-                    if self:GetChecked() then
-                        bt:SetEnabled(true)
-                    else
-                        bt:SetEnabled(false)
+                -- 显示综合频道/鼠标提示工具/目标右键菜单显示星团长
+                if BG.IsWLK then
+                    tinsert(tbl, {
+                        name = "MeetingHorn_starRaidLeader",
+                        name2 = L["聊天频道显示星团长标记"] .. "*",
+                        reset = 1,
+                        ontext = {
+                            L["聊天频道显示星团长标记"],
+                            L["在聊天频道（综合、组队等）/鼠标提示工具/目标右键菜单中，显示星团长标记。"],
+                            " ",
+                            L["需要集结号v2.0.0或以上版本才能生效。"],
+                        },
+                    })
+                end
+                -- 不自动退出集结号频道
+                tinsert(tbl, {
+                    name = "MeetingHorn_always",
+                    name2 = L["不自动退出集结号频道"] .. "*",
+                    reset = 0,
+                    ontext = {
+                        L["不自动退出集结号频道"],
+                        L["这样你可以一直同步集结号的组队消息，让你随时打开集结号都能查看全部活动。"],
+                    },
+                })
+                -- 历史搜索记录
+                tinsert(tbl, {
+                    name = "MeetingHorn_history",
+                    name2 = L["历史搜索记录"] .. "*",
+                    reset = 0,
+                    ontext = {
+                        L["历史搜索记录"],
+                        L["给集结号的搜索框增加一个历史搜索记录，提高你搜索的效率。"],
+                    },
+                })
+                -- 多个关键词搜索
+                tinsert(tbl, {
+                    -- notdefault = true,
+                    name = "MeetingHorn_search",
+                    name2 = L["多个关键词搜索"] .. "*",
+                    reset = 0,
+                    ontext = {
+                        L["多个关键词搜索"],
+                        L[ [[搜索框支持多个关键词搜索。]] ],
+                        " ",
+                        L[ [["空格"表示"且"，需同时满足全部关键词。比如你想搜索哪个诺莫瑞根活动里缺少治疗，可以搜索"诺莫瑞根 治疗"。]] ],
+                        " ",
+                        L[ [["/"表示"或"，满足其中一个关键词即可。比如你是双修牧师，可以搜索"牧师/MS/暗牧/AM"。]] ],
+                        " ",
+                        L[ [[如果把"空格"和"/"结合起来，比如搜索"诺莫瑞根/矮子 牧师/MS/暗牧/AM"，表示我想找诺莫瑞根或者矮子的活动，且该活动缺少任意牧师。]] ],
+                    },
+                    onClick = function(self)
+                        local addonName = "MeetingHorn"
+                        if not IsAddOnLoaded(addonName) then return end
+                        local MeetingHorn = LibStub("AceAddon-3.0"):GetAddon(addonName)
+                        local Activity = MeetingHorn:GetClass('Activity')
+                        if self:GetChecked() then
+                            Activity.Match = BG.MeetingHorn.ActivityMatch_newFuc
+                        else
+                            Activity.Match = BG.MeetingHorn.ActivityMatch_oldFuc
+                        end
                     end
-                end)
-            end
-            h = h + 30
-
-            -- 密语模板
-            local name5, ontext5, f5
-            do
-                name5 = "MeetingHorn_whisper"
-                BG.options[name5 .. "reset"] = 0
-                if not BiaoGe.options[name5] then
-                    BiaoGe.options[name5] = BG.options[name5 .. "reset"]
-                end
+                })
+                -- 按队伍人数排序
+                tinsert(tbl, {
+                    -- notdefault = true,
+                    name = "MeetingHorn_members",
+                    name2 = L["按队伍人数排序"] .. "*",
+                    reset = 0,
+                    ontext = {
+                        L["按队伍人数排序"],
+                        L["集结号活动可以按队伍人数排序。"],
+                    },
+                    onClick = function(self)
+                        local addonName = "MeetingHorn"
+                        if not IsAddOnLoaded(addonName) then return end
+                        local MeetingHorn = LibStub("AceAddon-3.0"):GetAddon(addonName)
+                        local Browser = MeetingHorn:GetClass('UI.Browser', 'Frame')
+                        local bt = MeetingHorn.MainPanel.Browser.Header3
+                        if self:GetChecked() then
+                            bt:SetEnabled(true)
+                            Browser.Sort = BG.MeetingHorn.BrowserSort_newFuc
+                        else
+                            bt:SetEnabled(false)
+                            Browser.Sort = BG.MeetingHorn.BrowserSort_oldFuc
+                        end
+                    end
+                })
+                -- 密语模板
+                tinsert(tbl, {
+                    name = "MeetingHorn_whisper",
+                    name2 = L["密语模板"] .. "*",
+                    reset = 0,
+                    ontext = {
+                        L["密语模板"],
+                        L["预设成就、装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"],
+                        " ",
+                        L["按住SHIFT+点击密语时不会添加。"],
+                        " ",
+                        L["聊天频道玩家的右键菜单里增加密语模板按钮。"],
+                        " ",
+                        L["聊天输入框的右键菜单里增加密语模板按钮。"],
+                        " ",
+                        L["集结号活动的右键菜单里增加邀请按钮。"],
+                    },
+                    onClick = function(self)
+                        local addonName = "MeetingHorn"
+                        if not IsAddOnLoaded(addonName) then return end
+                        if self:GetChecked() then
+                            BG.MeetingHorn.WhisperButton:Show()
+                            BG.MeetingHorn.WhisperFrame:Show()
+                            BiaoGe.MeetingHornWhisper.WhisperFrame = true
+                        else
+                            BG.MeetingHorn.WhisperButton:Hide()
+                        end
+                    end
+                })
                 if BG.IsVanilla then
-                    ontext5 = {
+                    tbl[#tbl].ontext = {
                         L["密语模板"],
                         L["预设装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"],
                         " ",
@@ -2172,43 +2410,22 @@ local function OptionsUI()
                         " ",
                         L["集结号活动的右键菜单里增加邀请按钮。"],
                     }
-                else
-                    ontext5 = {
-                        L["密语模板"],
-                        L["预设成就、装等、自定义文本，当你点击集结号活动密语时会自动添加该内容。"],
-                        " ",
-                        L["按住SHIFT+点击密语时不会添加。"],
-                        " ",
-                        L["聊天频道玩家的右键菜单里增加密语模板按钮。"],
-                        " ",
-                        L["聊天输入框的右键菜单里增加密语模板按钮。"],
-                        " ",
-                        L["集结号活动的右键菜单里增加邀请按钮。"],
-                    }
                 end
 
-                f5 = O.CreateCheckButton(name5, L["密语模板"] .. "*", others, 15, height - h, ontext5)
-                BG.options["button" .. name5] = f5
-                Update_OnShow(f5, name5)
-                f5:HookScript("OnClick", function(self)
-                    local addonName = "MeetingHorn"
-                    if not IsAddOnLoaded(addonName) then return end
-
-                    if self:GetChecked() then
-                        BG.MeetingHorn.WhisperButton:Show()
-                        BG.MeetingHorn.WhisperFrame:Show()
-                        BiaoGe.MeetingHornWhisper.WhisperFrame = true
-                    else
-                        BG.MeetingHorn.WhisperButton:Hide()
+                for i, v in ipairs(tbl) do
+                    if not v.notdefault then
+                        BG.options[v.name .. "reset"] = v.reset
+                        BiaoGe.options[v.name] = BiaoGe.options[v.name] or BG.options[v.name .. "reset"]
                     end
-                end)
-            end
-            h = h + 30
+                    BG.options["button" .. v.name] = O.CreateCheckButton(v.name, v.name2, others, 15, height - h, v.ontext)
+                    Update_OnShow(BG.options["button" .. v.name], v.name)
+                    if v.onClick then
+                        BG.options["button" .. v.name]:HookScript("OnClick", v.onClick)
+                    end
+                    h = h + 30
+                end
 
-
-            BG.RegisterEvent("PLAYER_ENTERING_WORLD", function(self, even, isLogin, isReload)
-                if not (isLogin or isReload) then return end
-
+                -- 在集结号增加设置按钮
                 local addonName = "MeetingHorn"
                 if not IsAddOnLoaded(addonName) then return end
                 local MeetingHorn = LibStub("AceAddon-3.0"):GetAddon(addonName)
@@ -2230,38 +2447,30 @@ local function OptionsUI()
                 l:SetEndPoint("TOPLEFT", 380, height - h + line_height)
                 l:SetThickness(1.5)
 
-                -- 不自动退出集结号频道
+                -- 集结号设置
                 do
-                    local f = O.CreateCheckButton(name1, L["不自动退出集结号频道"] .. "*", others, 15, height - h, ontext1)
-                    Update_OnShow(f, name1)
+                    local buttons = {}
+                    for i, v in ipairs(tbl) do
+                        if v.notdefault then
+                            v.ontext[1] = v.ontext[1] .. L["（重载界面后生效）"]
+                        end
+                        local f = O.CreateCheckButton(v.name, v.name2, others, 15, height - h, v.ontext)
+                        Update_OnShow(f, v.name)
+                        if v.onClick then
+                            f:HookScript("OnClick", v.onClick)
+                        end
+                        if i == 6 then
+                            f:ClearAllPoints()
+                            f:SetPoint("LEFT", buttons[1], "RIGHT", 190, 0)
+                            f.Text:SetWidth(140)
+                        else
+                            f.Text:SetWidth(180)
+                        end
+                        f.Text:SetWordWrap(false)
+                        tinsert(buttons, f)
+                        h = h + h_jiange
+                    end
                 end
-                h = h + h_jiange
-                -- 历史搜索记录
-                do
-                    local f = O.CreateCheckButton(name2, L["历史搜索记录"] .. "*", others, 15, height - h, ontext2)
-                    Update_OnShow(f, name2)
-                end
-                h = h + h_jiange
-                -- 多个关键词搜索
-                do
-                    local f = O.CreateCheckButton(name3, L["多个关键词搜索"] .. "*", others, 15, height - h, ontext3)
-                    Update_OnShow(f, name3)
-                end
-                h = h + h_jiange
-                -- 按队伍人数排序
-                do
-                    local f = O.CreateCheckButton(name4, L["按队伍人数排序"] .. "*", others, 15, height - h, ontext4)
-                    Update_OnShow(f, name4)
-                    f:HookScript("OnClick", f4:GetScript("OnClick"))
-                end
-                h = h + h_jiange
-                -- 密语模板
-                do
-                    local f = O.CreateCheckButton(name5, L["密语模板"] .. "*", others, 15, height - h, ontext5)
-                    Update_OnShow(f, name5)
-                    f:HookScript("OnClick", f5:GetScript("OnClick"))
-                end
-                h = h + h_jiange
             end)
         end
     end
@@ -2786,6 +2995,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         end
     end
 end)
+
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", function(self, event, addonName)
