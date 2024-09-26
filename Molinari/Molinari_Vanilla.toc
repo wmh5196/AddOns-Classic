@@ -1,9 +1,9 @@
-## Interface: 40400, 40401
+## Interface: 11504
 ## Author: p3lim
 ## Version: 110000.120-Release
 ## Title: Molinari
 ## Notes: One-click Milling, Prospecting, Disenchanting, Lockpicking, and more!
-## SavedVariables: MolinariBlacklistDB, MolinariDB, MolinariDB2, MolinariDB3
+## SavedVariables: MolinariBlacklistDB, MolinariDB, MolinariDB2
 
 ## X-Curse-Project-ID: 20338
 ## X-WoWI-ID: 13188
@@ -14,7 +14,7 @@
 ## X-Category-zhTW: 交易
 ## DefaultState: disabled
 
-libs\Dashi\embed_classic.xml
+libs\Dashi\embed.xml
 
 locale\zhCN.lua
 locale\zhTW.lua
@@ -23,11 +23,9 @@ utils.lua
 addon.lua
 settings.lua
 
-data\openable_classic.lua
-data\keys_classic.lua
-data\nondisenchantable_classic.lua
-data\prospectable_classic.lua
-data\millable_classic.lua
+data\openable_classic_era.lua
+data\keys_classic_era.lua
+data\nondisenchantable_classic_era.lua
 
 api\items.lua
 api\skill.lua
