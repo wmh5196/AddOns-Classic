@@ -107,7 +107,7 @@ local function CreateSubtypeFrame(list, parent)
     end
     local checkbox
     for i, v in ipairs(list) do
-        checkbox = CreateFrame("CheckButton", nil, parent.SubtypeFrame, "InterfaceOptionsCheckButtonTemplate")
+        checkbox = CreateFrame("CheckButton", nil, parent.SubtypeFrame, "OptionsBaseCheckButtonTemplate")
         checkbox.key = parent.key .. v.key
         checkbox.checkedFunc = v.checkedFunc
         checkbox.uncheckedFunc = v.uncheckedFunc
@@ -164,7 +164,7 @@ local function CreateCheckbox(list, parent, anchor, offsetx, offsety)
     local stepx, stepy = 20, 27
     if (not list) then return offsety end
     for i, v in ipairs(list) do
-        checkbox = CreateFrame("CheckButton", nil, parent, "InterfaceOptionsCheckButtonTemplate")
+        checkbox = CreateFrame("CheckButton", nil, parent, "OptionsBaseCheckButtonTemplate")
         checkbox.key = v.key
         checkbox.checkedFunc = v.checkedFunc
         checkbox.uncheckedFunc = v.uncheckedFunc
@@ -232,7 +232,7 @@ SLASH_MerInspect2 = "/mi"
 function SlashCmdList.MerInspect(msg, editbox)
     if msg == "reset" then
         ResetFramePosition()
-        -- print("position has been reset to default.")
+        print("position has been reset to default.")
     else
         -- print("Usage: /mi reset or /merinspect reset")
         Settings.OpenToCategory(frame.name)
