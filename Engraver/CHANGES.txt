@@ -1,10 +1,10 @@
-lightweight tag f33659ca9a2db383744f0a58d1ac0f75d0bae84d v1.16.1
+lightweight tag 569f09991b3768d2f2cee186640b46aca96717e4 v1.16.2
 Author:	Mike D <mcd8604@users.noreply.github.com>
-Date:	Wed Sep 25 18:01:13 2024 -0400
+Date:	Thu Sep 26 17:36:23 2024 -0400
 
-commit f33659ca9a2db383744f0a58d1ac0f75d0bae84d
+commit 569f09991b3768d2f2cee186640b46aca96717e4
 Author: Mike D <mcd8604@users.noreply.github.com>
-Date:   Wed Sep 25 18:01:13 2024 -0400
+Date:   Thu Sep 26 17:36:23 2024 -0400
 
-    fixed VisibilityMode VarType
+    updated filter options context menu
 
