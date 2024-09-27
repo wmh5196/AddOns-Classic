@@ -277,5 +277,5 @@ TotemTimers.options.args.profiles = {
     },
 }
 
-local frame, categoryID = ACD:AddToBlizOptions("TotemTimers", L["Profiles"], "TotemTimers", "profiles")
+local frame, categoryID = ACD:AddToBlizOptions("TotemTimers", L["Profiles"], L["TotemTimers"], "profiles")
 TotemTimers.HookGUIFrame(frame, categoryID)

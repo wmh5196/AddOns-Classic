@@ -208,7 +208,8 @@ function TotemTimers_Slash()
 
     if Settings then
         -- wow10
-        Settings.OpenToCategory(TotemTimers.LastGUIPanel)
+        L = LibStub("AceLocale-3.0"):GetLocale("TotemTimers_GUI", true)
+		Settings.OpenToCategory(L["TotemTimers"])
     else
         -- wow classic
         InterfaceAddOnsList_Update()
