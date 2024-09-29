@@ -1061,7 +1061,7 @@ do
 
         if(not matchesBuild) then
             if(frame and not frameData.SilenceCompatabilityWarnings) then
-                self:Print("Frame was marked as incompatible, but does exist ( Build:", self.gameBuild, "| Version:", self.gameVersion, "| BMVersion:", self.Config.version, "):", frameName);
+                -- self:Print("Frame was marked as incompatible, but does exist ( Build:", self.gameBuild, "| Version:", self.gameVersion, "| BMVersion:", self.Config.version, "):", frameName);
             end
 
             return false;
