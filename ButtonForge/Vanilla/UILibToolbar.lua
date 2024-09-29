@@ -16,6 +16,7 @@ function UILib.ToggleCreateBarMode(ForceOff)
 	if (BFCreateBarOverlay:IsShown() or ForceOff) then
 		BFCreateBarOverlay:Hide();
 		BFToolbarCreateBar:SetChecked(false);
+		BFToolbarCreateBonusBar:SetChecked(false);
 		UILib.CreateBarMode = false;
 		UILib.CreateBonusBarMode = false;
 		SetCursor(nil);
@@ -39,12 +40,14 @@ function UILib.ToggleCreateBonusBarMode(ForceOff)
 	if (BFCreateBarOverlay:IsShown() or ForceOff) then
 		BFCreateBarOverlay:Hide();
 		BFToolbarCreateBar:SetChecked(false);
+		BFToolbarCreateBonusBar:SetChecked(false);
 		UILib.CreateBarMode = false;
 		UILib.CreateBonusBarMode = false;
 		SetCursor(nil);
 	elseif (not InCombatLockdown()) then
 		UILib.CreateBonusBarMode = true;
 		BFCreateBarOverlay:Show();
+		BFToolbarCreateBonusBar:SetChecked(true);
 		SetCursor("REPAIRNPC_CURSOR");
 	end
 	EventFull.RefreshButtons = true;
@@ -80,19 +83,24 @@ function UILib.ToggleAdvancedTools()
 		BFToolbarAdvanced:SetChecked(false);
 		ButtonForgeSave.AdvancedMode = false;
 		BFToolbar:SetSize(225, 97);
+		BFToolbarCreateBonusBar:Hide();
 		BFToolbarRightClickSelfCast:Hide();
 	else
 		BFAdvancedToolsLayer:Show();
 		BFToolbarAdvanced:SetChecked(true);
 		ButtonForgeSave.AdvancedMode = true;
 		BFToolbar:SetSize(225, 129);
+		BFToolbarCreateBonusBar:Show();
 		BFToolbarRightClickSelfCast:Show();
 	end
 	EventFull.RefreshButtons = true;
 	EventFull.RefChecked = true;
 end
 
-
+local function GetMouseFocus() -- added for Cata 4.4.1 09/05/2024, copied from retail BF
+	local t = GetMouseFoci()
+	return t[1]
+end
 
 function UILib.ToggleRightClickSelfCast(Value)
 	if (Value ~= nil) then
@@ -111,7 +119,7 @@ function UILib.ToggleRightClickSelfCast(Value)
 		BFToolbarRightClickSelfCast:SetChecked(false);
 	end
 	
-	if BFToolbarRightClickSelfCast:IsMouseMotionFocus() then -- 暫時修正
+	if (GetMouseFocus() == BFToolbarRightClickSelfCast) then
 		GameTooltip:SetText(BFToolbarRightClickSelfCast.Tooltip, nil, nil, nil, nil, 1);
 	end
 	

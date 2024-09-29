@@ -1,10 +1,11 @@
-## Interface: 11503, 11504
+## Interface: 11504
 ## Title: Button Forge |cff69ccf0(Classic-Era)|r
-## Version: 1.0.21-classic-era Fix
-## Author: Massiner of Nathrezim, Albirew
-## Notes: Add as many or few extra Action Bars and Buttons to your user interface to complement the standard (or other) Action Bars
+## Version: 1.0.23-classic-Era
+## Author: Massiner of Nathrezim, Albirew, Sunnova
 ## SavedVariables: ButtonForgeGlobalSettings, ButtonForgeGlobalProfiles, ButtonForgeGlobalBackup
-## SavedVariablesPerCharacter: ButtonForgeSave
+## SavedVariablesPerCharacter: ButtonForgeSave, BFSave
+## IconTexture: Interface\AddOns\ButtonForge\ButtonForge.blp
+## X-Curse-Project-ID: 25215
 ## OptionalDeps: Masque
 
 ## Title-zhTW: |cff00CCFF[快捷列]|r 更多

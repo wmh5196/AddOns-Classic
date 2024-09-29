@@ -1,7 +1,7 @@
 --[[
     Author: Alternator (Massiner of Nathrezim)
     Copyright 2010
-
+	
 Notes:
 	- Texture retrieval on Spells will not return different state textures for a spell (e.g. Wisp, when a Hunter Aspect is selected)
 	- Texture retrieval on Macros will however return the different state textures - I do not believe this can be leveraged to fix the above
@@ -31,6 +31,7 @@ Notes:
 
 --Create a mapping to the needed elements (allocate the item if necessary)
 
+local AddonName, AddonTable = ...;
 local Util = BFUtil;
 local Const = BFConst;
 local Button = BFButton;
@@ -42,6 +43,35 @@ Button.__index = Button;
 local IsUsableSpell = IsUsableSpell;
 local SecureClickWrapperFrame = CreateFrame("FRAME", nil, nil, "SecureHandlerBaseTemplate");
 
+-- removed for cata 04/27/2024
+-- SecureClickWrapperFrame:SetFrameRef("spellflyout", SpellFlyout);
+-- SecureClickWrapperFrame:Execute([[ SpellFlyout = self:GetFrameRef("spellflyout"); ]]);
+-- SecureClickWrapperFrame:SetFrameRef("buttonforgespellflyout", ButtonForge_SpellFlyout);
+-- SecureClickWrapperFrame:Execute([[ ButtonForge_SpellFlyout = self:GetFrameRef("buttonforgespellflyout"); ]]);
+
+
+-- The code structure is broken a little here, ordinarily a Util function would be in the Util.lua file
+function Util.SecureClickWrapperFrame_UpdateCVarInfo()
+
+	if (InCombatLockdown() or not Util.Loaded) then
+		Util.DelayedSecureClickWrapperFrame_UpdateCVarInfo = true;
+		return;
+	end
+
+    SecureClickWrapperFrame:SetAttribute("CVar_empowerTapControls", GetCVarBool("empowerTapControls"));
+    SecureClickWrapperFrame:SetAttribute("CVar_ActionButtonUseKeyDown", GetCVarBool("ActionButtonUseKeyDown"));
+    SecureClickWrapperFrame:Execute(
+        [[
+            empowerTapControls = owner:GetAttribute("CVar_empowerTapControls");
+            ActionButtonUseKeyDown = owner:GetAttribute("CVar_ActionButtonUseKeyDown");
+        ]]);
+end
+Util.SecureClickWrapperFrame_UpdateCVarInfo();
+
+-- removed for cata 04/27/2024
+-- local function Widget_UpdateFlyout(Widget)
+--	Widget.ParentButton:UpdateFlyout();
+-- end
 
 
 --[[--------------------------------------------------------------
@@ -66,7 +96,6 @@ function Button.New(Parent, ButtonSave, ButtonLocked, TooltipEnabled, MacroText,
 	NewButton.WName 			= _G[Name.."Name"];
 	NewButton.Widget.ParentButton = NewButton;
 	
-	NewButton.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0, 0.5);	
 	NewButton.WCooldown:SetEdgeTexture("Interface\\Cooldown\\edge");
 	NewButton.WCooldown:SetSwipeColor(0, 0, 0);
 	NewButton.WCooldown:SetHideCountdownNumbers(false);
@@ -75,7 +104,7 @@ function Button.New(Parent, ButtonSave, ButtonLocked, TooltipEnabled, MacroText,
 	NewButton.UpdateTooltip = Button.Empty;
 	NewButton:Configure(Parent, ButtonSave, ButtonLocked, TooltipEnabled, MacroText, KeyBindText);
 	NewButton:SetupActionButtonClick();
-	
+
 	return NewButton;
 end
 
@@ -83,40 +112,26 @@ function Button.CreateButtonWidget(Parent)
 	local Name = Const.ButtonNaming..Const.ButtonSeq;
 	local Widget = CreateFrame("CheckButton", Name, Parent, "SecureActionButtonTemplate, ActionButtonTemplate");
 	Const.ButtonSeq = Const.ButtonSeq + 1;
+
+	local Background = Widget:CreateTexture(Widget:GetName() .. "FloatingBG", "BACKGROUND", nil, -1)
+	Background:SetTexture("Interface\\Buttons\\UI-Quickslot")
+	Background:SetAlpha(0.4)
+	Background:SetPoint("TOPLEFT", -15, 15)
+	Background:SetPoint("BOTTOMRIGHT", 15, -15)
+	-- For some reason Blizz set the alpha to 0.5 via this vertexcolor call in code instead of setting alpha in the xml template (we just replicate it here)
+	_G[Name .. "NormalTexture"]:SetVertexColor(1.0, 1.0, 1.0, 0.5)
+
 	Widget:SetAttribute("checkselfcast", true);
 	Widget:SetAttribute("checkfocuscast", true);
+	Widget:SetAttribute("checkmouseovercast", true);
 	Widget:RegisterForDrag("LeftButton", "RightButton");
-	--Widget:RegisterForClicks("AnyUp");
+
 	Widget:SetScript("OnReceiveDrag", Button.OnReceiveDrag);
 	Widget:SetScript("OnDragStart", Button.OnDragStart);
 	
-	if (Util.ForceOffCastOnKeyDown) then
-		Widget:SetScript("PostClick", Button.PostClickBasic);
-		Widget:SetScript("PreClick", Button.PreClickBasic);
-	else
-		Widget:SetScript("PostClick", Button.PostClick);
-		Widget:SetScript("PreClick", Button.PreClick);
-	end
-	
-	--The ActionButtonTemplate does not include the following (which will be created here)
-	--FloatingBG	(e.g. MultiBarButtonTemplate)
-	local FloatingBG = Widget:CreateTexture(Name.."FloatingBG", "BACKGROUND", nil, -1);
-	FloatingBG:SetTexture("Interface\\Buttons\\UI-Quickslot");
-	FloatingBG:SetAlpha(0.4);
-	FloatingBG:SetPoint("TOPLEFT", -15, 15);
-	FloatingBG:SetPoint("BOTTOMRIGHT", 15, -15);
+	Widget:SetScript("PostClick", Button.PostClick);
+	Widget:SetScript("PreClick", Button.PreClick);
 
-	--AutoCastable	(e.g. PetActionButtonTemplate)
-	local AutoCastable = Widget:CreateTexture(Name.."AutoCastable", "OVERLAY");
-	AutoCastable:SetTexture("Interface\\Buttons\\UI-AutoCastableOverlay");
-	AutoCastable:SetSize(70, 70);
-	AutoCastable:SetPoint("CENTER", 0, 0);
-	AutoCastable:Hide();
-	
-	--AutoCast
-	local Shine = CreateFrame("FRAME", Name.."Shine", Widget, "AutoCastShineTemplate");
-	Shine:SetSize(34, 34);
-	Shine:SetPoint("CENTER", 0, 0);
 	
 	--_G[Widget:GetName().."HotKey"]:ClearAllPoints();
 	--_G[Widget:GetName().."HotKey"]:SetPoint("TOPLEFT", Widget, "TOPLEFT", 1, -2);
@@ -124,10 +139,11 @@ function Button.CreateButtonWidget(Parent)
 	if (Util.LBFMasterGroup) then
 		Util.LBFMasterGroup:AddButton(Widget);
 	end
+	-- Widget.UpdateFlyout = Widget_UpdateFlyout; -- removed for cata 04/27/2024
 	return Widget;
 end
 
-function Button:SetupActionButtonClick()
+function Button:SetupActionButtonClick() -- changed for cata 04/27/2024, from wrath code
 	local Widget = self.Widget;
 	
 	-- This particular setting will only gets set at login (if the player changes it they must log out and back in)
@@ -176,17 +192,11 @@ function Button:Configure(Parent, ButtonSave, ButtonLocked, TooltipEnabled, Macr
 	elseif (Mode == "macro") then
 		self:SetCommandExplicitMacro(ButtonSave["MacroIndex"], ButtonSave["MacroName"], ButtonSave["MacroBody"]);
 		
-	-- elseif (Mode == "companion") then
-	--	self:SetCommandExplicitCompanion(ButtonSave["MountID"], "MOUNT");
-
-	-- elseif (Mode == "mount") then
-  --  creatureID, creatureName, creatureSpellID, icon, issummoned, MountID, CompanionType = Util.GetMountCritter(self.ButtonSave["MountSpellID"])
-  --  if MCType ~= "" then
-  --    self.ButtonSave["MountID"] = MountID -- update index as it may change
-  --    ButtonSave["MountID"] = MountID -- update index as it may change
-  --    self:SetCommandExplicitCompanion(MountID, CompanionType, ButtonSave["MountSpellID"]);
-  --  end
-
+	--elseif (Mode == "companion") then
+	--	self:SetCommandExplicitCompanion(ButtonSave["CompanionId"], ButtonSave["CompanionType"], ButtonSave["CompanionIndex"], ButtonSave["CompanionName"], ButtonSave["CompanionSpellName"]);
+	elseif (Mode == "mount") then
+		self:SetCommandExplicitCompanion(ButtonSave["MountID"]);
+		
 	elseif (Mode == "equipmentset") then
 		self:SetCommandExplicitEquipmentSet(ButtonSave["EquipmentSetId"], ButtonSave["EquipmentSetName"]);
 	
@@ -198,6 +208,9 @@ function Button:Configure(Parent, ButtonSave, ButtonLocked, TooltipEnabled, Macr
 		
 	elseif (Mode == "customaction") then
 		self:SetCommandExplicitCustomAction(ButtonSave["CustomActionName"]);
+	
+	elseif (Mode == "battlepet") then
+		self:SetCommandExplicitBattlePet(ButtonSave["BattlePetId"]);
 		
 	else
 		self:ClearCommand();
@@ -262,7 +275,7 @@ end
 function Button:SetMacroText(Value)
 	self.MacroTextEnabled = Value;
 	if (self.Mode == "macro") then
-	  if (Value) then
+		if (Value) then
 			self.WName:SetText(self.MacroName);
 		else
 			self.WName:SetText("");
@@ -284,11 +297,7 @@ function Button:SetKeyBind(Key)
 	ClearOverrideBindings(self.Widget);
 	if (Key ~= "" and Key ~= nil) then
 		self.ButtonSave["KeyBinding"] = Key;
-		if (Util.ForceOffCastOnKeyDown) then
-			SetOverrideBindingClick(self.Widget, false, Key, self.Widget:GetName());
-		else
-			SetOverrideBindingClick(self.Widget, false, Key, self.Widget:GetName(), "KeyBind");
-		end
+		SetOverrideBindingClick(self.Widget, false, Key, self.Widget:GetName(), "KeyBind");
 		self.Widget:SetAttribute("KeyBindValue", Key);
 	else
 		--clear the binding
@@ -412,22 +421,8 @@ end
 --------------------------------------------------------------------------------------------]]
 
 --[[ Script Handlers --]]
-function Button.PreClickBasic(Widget, Button, Down)
-	if (InCombatLockdown()) then
-		return;
-	end
-	
-	local Command, Data, Subvalue, Subsubvalue = GetCursorInfo();
-	if (not Command) then
-		Command, Data, Subvalue, Subsubvalue = UILib.GetDragInfo();
-	end
-	Util.StoreCursor(Command, Data, Subvalue, Subsubvalue);			--Always store this, so that if it is nil PostClick wont try to use it
-	if (Command) then
-		Widget.BackupType = Widget:GetAttribute("type");
-		Widget:SetAttribute("type", "");	--Temp unset the type to prevent any action happening
-	end
-end
 function Button.PreClick(Widget, Button, Down)
+
 	if (InCombatLockdown() or Button == "KeyBind" or Down) then
 		return;
 	end
@@ -440,35 +435,12 @@ function Button.PreClick(Widget, Button, Down)
 	if (Command) then
 		Widget.BackupType = Widget:GetAttribute("type");
 		Widget:SetAttribute("type", "");	--Temp unset the type to prevent any action happening
+		Widget:SetAttribute("typerelease", "");	--Temp unset the type to prevent any action happening
 	end
 end
 
-function Button.PostClickBasic(Widget, Button, Down)
-	local self = Widget.ParentButton;
-	self:UpdateChecked();
-	if (InCombatLockdown()) then
-		return;
-	end
-
-	if (self.Mode == "flyout") then
-		BFEventFrames["Full"].RefreshButtons = true;
-		BFEventFrames["Full"].RefFlyouts = true;
-	end
-	if (not InCombatLockdown()) then
-		local Command, Data, Subvalue, Subsubvalue = Util.GetStoredCursor();
-		if (Command) then
-			Util.StoreCursor(self:GetCursor());		--Store the info from the button for later setting the cursor
-			if (self:SetCommandFromTriplet(Command, Data, Subvalue, Subsubvalue)) then	--Set the button to the cursor
-				Util.SetCursor(Util.GetStoredCursor());					--On success set the cursor to the stored button info
-			else
-				Util.SetCursor(Command, Data, Subvalue, Subsubvalue);				--On fail set the cursor to what ever it was
-				self.Widget:SetAttribute("type", Widget.BackupType);			--and restore the button mode
-			end
-		end
-	end
-	--self:UpdateChecked();
-end
 function Button.PostClick(Widget, Button, Down)
+	
 	local self = Widget.ParentButton;
 	self:UpdateChecked();
 	if (InCombatLockdown() or Button == "KeyBind" or Down) then
@@ -488,6 +460,7 @@ function Button.PostClick(Widget, Button, Down)
 			else
 				Util.SetCursor(Command, Data, Subvalue, Subsubvalue);				--On fail set the cursor to what ever it was
 				self.Widget:SetAttribute("type", Widget.BackupType);			--and restore the button mode
+				self.Widget:SetAttribute("typerelease", Widget.BackupType);			--and restore the button mode
 			end
 		end
 	end
@@ -542,12 +515,26 @@ function Button:SetCommandFromTriplet(Command, Data, Subvalue, Subsubvalue)
 		else
 			return false;
 		end
+	elseif (Command == "companion") then
+		if (Subvalue == "CRITTER") then
+			if Util.HeldBattlePetID then
+				self:SetCommandBattlePet(Util.HeldBattlePetID)
+			else
+				return false
+			end
+		elseif (Subvalue == "MOUNT") then
+			if Util.HeldMountID then
+				self:SetCommandCompanion(Util.HeldMountID)
+			else
+				return false
+			end
+		end
 	elseif (Command == "item") then
 		self:SetCommandItem(Data, Subvalue);   --Data = Id, Subvalue = Link
 	elseif (Command == "macro") then
 		self:SetCommandMacro(Data);            --Data = Index
-  elseif (Command == "mount" or Command == "companion") then
-    self:SetCommandCompanion(Data, Subvalue);	-- Data = MountID, Subvalue = type (MOUNT or ??)
+    elseif (Command == "mount") then
+        self:SetCommandCompanion(Data);	-- Data = MountID, Subvalue = ???
 	elseif (Command == "equipmentset") then
 		self:SetCommandEquipmentSet(Data);			--Data = Name
 	elseif (Command == "bonusaction") then
@@ -556,6 +543,8 @@ function Button:SetCommandFromTriplet(Command, Data, Subvalue, Subsubvalue)
 		self:SetCommandFlyout(Data);		--Data = Id
 	elseif (Command == "customaction") then
 		self:SetCommandCustomAction(Data);			--Data = Action
+	elseif (Command == "battlepet") then
+		self:SetCommandBattlePet(Data);
 	elseif (Command == nil or Command == "") then
 		self:ClearCommand();
 	else
@@ -576,9 +565,8 @@ end
 
 --[[ Set the individual types of actions including obtained any extra data they may need --]]
 function Button:SetCommandSpell(Id)
-	local Name, Rank = Util.GetSpellInfo(Id); -- TBC Fix 06/18/2021
-	-- local NameRank = Util.GetFullSpellName(Name, Rank);
-	local NameRank = Name -- rank does not seem to be working in wrath, set NameRank to SpellName 09/02/2022
+	local Name, Subtext = GetSpellInfo(Id), GetSpellSubtext(Id);
+	local NameRank = Util.GetFullSpellName(Name, Subtext);
 	self:SetCommandExplicitSpell(Id, NameRank, Name, Book);
 end
 function Button:SetCommandItem(Id, Link)
@@ -590,9 +578,9 @@ function Button:SetCommandMacro(Index)
 	local Name, Texture, Body = GetMacroInfo(Index);
 	self:SetCommandExplicitMacro(Index, Name, Body or '');
 end
-function Button:SetCommandCompanion(MountID, Type, MountSpellID)
+function Button:SetCommandCompanion(MountID)
 	--local SpellName = GetSpellInfo(SpellId);
-	self:SetCommandExplicitCompanion(MountID, Type, MountSpellID);
+	self:SetCommandExplicitCompanion(MountID);
 end
 function Button:SetCommandEquipmentSet(SetName)
 	local SetCount = C_EquipmentSet.GetNumEquipmentSets();
@@ -613,18 +601,29 @@ end
 function Button:SetCommandCustomAction(Name)
 	self:SetCommandExplicitCustomAction(Name);
 end
+function Button:SetCommandBattlePet(Id)
+	self:SetCommandExplicitBattlePet(Id);
+end
 
 --[[ Set the individual types of actions (all data needed is supplied to the functions as args) --]]
 function Button:SetCommandExplicitSpell(Id, NameRank, Name, Book)
 	local IsTalent = Util.IsSpellIdTalent(Id);
+
+	-- PVP talent with a Passive base spell has a weird behavior. There might be other spells with the same issue. Temporary fix until we find something more generic
+	if (Id == Const.HOLY_PRIEST_PVP_TALENT_SPIRIT_OF_THE_REDEEMER_ID) then
+		NameRank = Const.HOLY_PRIEST_PVP_TALENT_SPIRIT_OF_THE_REDEEMER_NAME;
+    	Name = Const.HOLY_PRIEST_PVP_TALENT_SPIRIT_OF_THE_REDEEMER_NAME;
+    	IsTalent = true;
+    end
+
 	self:SetEnvSpell(Id, NameRank, Name, Book, IsTalent);
 	if (IsTalent) then
 		-- Talents only can be triggered off the name, The API is really random as to when it works better with the name vs ID
-		self:SetAttributes("spell", NameRank);	
+		self:SetAttributes("spell", NameRank);
 	else
 		-- Normal spells work both ways... But! some spells like Shaman Hex() have same name variants, in those cases I need to cast the specific ID
 		-- And yes, as it stands if Blizz do same name variant Talents, then well bugger...
-		self:SetAttributes("spell", Id);	
+		self:SetAttributes("spell", Id);
 	end
 	self:SaveSpell(Id, NameRank, Name, Book);
 end
@@ -638,8 +637,8 @@ function Button:SetCommandExplicitMacro(Index, Name, Body)
 	self:SetAttributes("macro", Index);
 	self:SaveMacro(Index, Name, Body);
 end
-function Button:SetCommandExplicitCompanion(MountID, Type, MountSpellID)
-	self:SetEnvCompanion(MountID, Type, MountSpellID);
+function Button:SetCommandExplicitCompanion(MountID)
+	self:SetEnvCompanion(MountID);
 	--self:SetAttributes("companion", SpellName);	mopved to set env
 	--self:SaveCompanion(Index, SpellID);	moved to end of set env
 end
@@ -663,6 +662,11 @@ function Button:SetCommandExplicitCustomAction(Name)
 	self:SetEnvCustomAction(Name);
 	self:SetAttributes("customaction", Name);
 	self:SaveCustomAction(Name);
+end
+function Button:SetCommandExplicitBattlePet(Id)
+	self:SetEnvBattlePet(Id);
+	self:SetAttributes("battlepet", Id);
+	self:SaveBattlePet(Id);
 end
 
 --[[ The following functions will configure the button to operate correctly for the specific type of action (these functions must be able to handle the player not knowing spells/macros etc) --]]
@@ -689,10 +693,16 @@ function Button:SetEnvSpell(Id, NameRank, Name, Book, IsTalent)
 		self.UpdateTexture = Button.UpdateTextureWispSpell;		
 	end
 
+	local BaseSpellID = FindBaseSpellByID(Id);
+    if (BaseSpellID ~= Id and BaseSpellID ~= nil) then
+    	local name = GetSpellInfo(BaseSpellID);
+		local subtext = GetSpellSubtext(BaseSpellID) or "";
+    	self.Widget:SetAttribute("spell", name .. "(" .. subtext .. ")");
+    end
+
 	self.Mode 			= "spell";
 	self.SpellId 		= Id;
-	-- self.SpellNameRank 	= NameRank;
-	self.SpellNameRank 	= Name; -- rank does not seem to be working in wrath, set NameRank to SpellName 09/02/2022
+	self.SpellNameRank 	= NameRank;
 	self.SpellName 		= Name;
 	self.SpellBook 		= Book;
 	self.SpellIsTalent	= IsTalent;
@@ -759,15 +769,41 @@ function Button:SetEnvMacro(Index, Name, Body)
 	
 	self:ResetAppearance();
 	self:DisplayActive();
-
 	Util.AddMacro(self);
 end
-function Button:SetEnvCompanion(MountID, CompanionType, SpellID)
+function Button:SetEnvCompanion(MountID)
 	if (not MountID) then
 		return self:ClearCommand();
 	end
+	-- now only handles mounts
+	-- This code path ultimately works - but it is a bit wonky when the Summon Random Favorite comes through
+	--[[if (SpellID == nil) then
+		-- We got the useless Index, try and map it
+		Index = Util.GetMountIndexFromUselessIndex(Index);
+		SpellID = select(2, C_MountJournal.GetDisplayedMountInfo(Index));
+	else
+		-- We got a good Index, but we should check that
+		-- the Mapping is still valid
+		if (SpellID ~= select(2, C_MountJournal.GetDisplayedMountInfo(Index))) then
+			-- The mapping isn't right, so update the Index
+			Index = Util.GetMountIndexFromSpellID(SpellID);
+		end
+	end--]]
+	
+	--[[if (Index == nil) then
+		-- So no mount was found
+		self:ClearCommand();
+		return;]]
+	--local SpellID = select(2, C_MountJournal.GetDisplayedMountInfo(Index));
+	--if (Index == 0) then
+		-- It's the random favorite button
+		--SpellID	= Const.SUMMON_RANDOM_FAVORITE_MOUNT_SPELL;
 
+		--self:SetMountFavorite(BFButton);
+		--return;
+	--end	
 	self.Widget:SetAttribute("type", nil);
+	self.Widget:SetAttribute("typerelease", nil);
 	self.Widget:SetAttribute("spell", nil);
 	self.Widget:SetAttribute("item", nil);
 	self.Widget:SetAttribute("macro", nil);
@@ -776,20 +812,40 @@ function Button:SetEnvCompanion(MountID, CompanionType, SpellID)
 	self.Widget:SetAttribute("id", nil);
 	self.Mode			= "mount";
 	self.MountID		= MountID;
-  
-	creatureID, creatureName, creatureSpellID, icon, issummoned, mountTypeID =  Util.GetCompanionInfo(CompanionType, MountID, SpellID)
+	
+	if (self.MountID == Const.SUMMON_RANDOM_FAVORITE_MOUNT_ID) then
+		self.MountName		= GetSpellInfo(Const.SUMMON_RANDOM_FAVORITE_MOUNT_SPELL);
+		self.MountSpellID	= Const.SUMMON_RANDOM_FAVORITE_MOUNT_SPELL;
+		self.MountSpellName = self.MountName;
+	
 
- 	if (not creatureSpellID) then
-		return self:ClearCommand();
+		
+		if (ButtonForgeGlobalSettings["UseCollectionsFavoriteMountButton"] and not IsAddOnLoaded("Blizzard_Collections")) then
+			LoadAddOn("Blizzard_Collections");
+		end
+		if (ButtonForgeGlobalSettings["UseCollectionsFavoriteMountButton"] and MountJournalSummonRandomFavoriteButton) then
+			self.Widget:SetAttribute("type", "click");
+			self.Widget:SetAttribute("typerelease", "click");
+			self.Widget:SetAttribute("clickbutton", MountJournalSummonRandomFavoriteButton);
+		else
+			-- this will cause a script warning when clicked if the player does not allow dangerous scripts but also chooses false for the global setting
+			self.Widget:SetAttribute("type", "macro");
+			self.Widget:SetAttribute("typerelease", "macro");
+			self.Widget:SetAttribute("macrotext", "/run C_MountJournal.SummonByID("..self.MountID..")");
+		end
+
+	else
+		self.MountName		= C_MountJournal.GetMountInfoByID(MountID);
+		self.MountSpellID	= select(2, C_MountJournal.GetMountInfoByID(MountID));
+		self.MountSpellName	= GetSpellInfo(self.MountSpellID);
+		self.Widget:SetAttribute("type", "macro");
+		self.Widget:SetAttribute("typerelease", "macro");
+		self.Widget:SetAttribute("macrotext", "/cast "..self.MountSpellName);
 	end
-  
- 	self.MountName		= creatureName;
-  self.MountSpellID	= creatureSpellID;
-	self.MountSpellName	= GetSpellInfo(self.MountSpellID);
-	self.CompanionType 		= CompanionType;
-	self.Widget:SetAttribute("type", "macro");
-	self.Widget:SetAttribute("macrotext", "/cast "..self.MountSpellName);
-	self.Texture	= GetSpellTexture(self.MountSpellID);
+
+	
+	self.Texture	= GetSpellTexture(self.MountSpellID);		--select(3, C_MountJournal.GetDisplayedMountInfo(Index));
+
 
 	self.UpdateTexture 	= Button.Empty;
 	self.UpdateChecked 	= Button.UpdateCheckedCompanion;	
@@ -806,7 +862,15 @@ function Button:SetEnvCompanion(MountID, CompanionType, SpellID)
 	self.GetCursor 		= Button.GetCursorCompanion;
 
 	self.FullRefresh 	= Button.FullRefresh;
-
+	
+	--[[self.Mode 				= "companion";
+	self.CompanionId 		= Id;
+	self.CompanionType 		= Type;
+	self.CompanionIndex 	= Index;
+	self.CompanionName 		= Name;
+	self.CompanionSpellName = SpellName;
+	self.Texture 			= select(4, GetCompanionInfo(Type, Index));		--safe provided Type in ("MOUNT", "CRITTER") and Index is numeric
+	]]
 	self.Target			= "target";
 	
 	self:ResetAppearance();
@@ -866,8 +930,8 @@ function Button:SetEnvBonusAction(Id)
 	
 	self.Mode 			= "bonusaction";
 	self.BonusActionId	= Id;
-	self.BonusActionSlot = Id + 132;
-	self.Texture 		= GetActionTexture(self.BonusActionSlot);-- "Interface/Icons/"..(GetEquipmentSetInfoByName(Name) or "");	--safe provided Name ~= nil
+	--self.BonusActionSlot = Id + ((Const.BonusActionPageOffset - 1) * 12);
+	--self.Texture 		= GetActionTexture(self.BonusActionSlot);-- Not Used
 	self.Target			= "target";
 	self.Tooltip		= Util.GetLocaleString("BonusActionTooltip")..Id;
 	self:ResetAppearance();
@@ -901,6 +965,10 @@ function Button:SetEnvFlyout(Id)
 	end
 	self.Target			= "target";
 	self.Tooltip		= "Placeholder";
+
+	-- This merely adds the button to a lookup cache so it will work with the custom flyout
+	-- AddonTable.AddButtonToSpellFlyout(self.Widget); -- removed for cata
+
 	self:ResetAppearance();
 	self:DisplayActive();
 	self:UpdateFlyout();
@@ -936,6 +1004,38 @@ function Button:SetEnvCustomAction(Name)
 	self:DisplayActive(TexCoords);
 	Util.AddBonusAction(self);
 end
+function Button:SetEnvBattlePet(Id)
+  if Id == nil then  -- added for Cata 04/04/2024
+    return
+  end
+	self.UpdateTexture 	= Button.Empty;
+	self.UpdateChecked 	= Button.UpdateCheckedBattlePet;	
+	self.UpdateEquipped = Button.Empty;
+	self.UpdateCooldown	= Button.UpdateCooldownBattlePet;
+	self.UpdateUsable 	= Button.UpdateUsableBattlePet;
+	self.UpdateTextCount = Button.Empty;
+	self.UpdateTooltipFunc 	= Button.UpdateTooltipBattlePet;
+	self.UpdateRangeTimer = Button.Empty;
+	self.CheckRangeTimer = Button.Empty;
+	self.UpdateFlash	= Button.Empty;
+	self.UpdateFlyout	= Button.Empty;
+	
+	self.GetCursor 		= Button.GetCursorBattlePet;
+
+	self.FullRefresh 	= Button.FullRefresh;
+	
+	self.Mode 				= "battlepet";
+	self.BattlePetId 			= Id;
+	if (Id == Const.SUMMON_RANDOM_FAVORITE_BATTLE_PET_ID) then
+		self.Texture = Const.SUMMON_RANDOM_FAVORITE_BATTLE_PET_TEXTURE;
+	else
+		self.Texture = select(9, C_PetJournal.GetPetInfoByPetID(Id));
+	end
+	self.Target			= "target";
+	
+	self:ResetAppearance();
+	self:DisplayActive();
+end
 function Button:SetEnvClear()
 	self.UpdateTexture 		= Button.Empty;
 	self.UpdateChecked 	= Button.UpdateChecked;
@@ -964,8 +1064,7 @@ function Button:SaveSpell(Id, NameRank, Name, Book)
 	self:SaveClear();
 	self.ButtonSave["Mode"] 			= "spell";
 	self.ButtonSave["SpellId"] 			= Id;
-	-- self.ButtonSave["SpellNameRank"] 	= NameRank;
-	self.ButtonSave["SpellNameRank"] 	= Name; -- rank does not seem to be working in wrath, set NameRank to SpellName 09/02/2022 
+	self.ButtonSave["SpellNameRank"] 	= NameRank;
 	self.ButtonSave["SpellName"] 		= Name;
 	self.ButtonSave["SpellBook"] 		= Book;
 end
@@ -1011,6 +1110,11 @@ function Button:SaveCustomAction(Name)
 	self.ButtonSave["Mode"]				= "customaction";
 	self.ButtonSave["CustomActionName"]	= Name;
 end
+function Button:SaveBattlePet(Id)
+	self:SaveClear();
+	self.ButtonSave["Mode"]				= "battlepet";
+	self.ButtonSave["BattlePetId"]		= Id;
+end
 function Button:SaveClear()
 	self.ButtonSave["SpellId"] 			= nil;
 	self.ButtonSave["SpellNameRank"] 	= nil;
@@ -1039,6 +1143,7 @@ function Button:SaveClear()
 	self.ButtonSave["BonusActionId"]	= nil;
 	self.ButtonSave["FlyoutId"]			= nil;
 	self.ButtonSave["CustomActionName"]	= nil;
+	self.ButtonSave["BattlePetId"]		= nil;
 	self.ButtonSave["Mode"] = nil;
 end
 
@@ -1046,6 +1151,7 @@ end
 function Button:SetAttributes(Type, Value)
 	--Firstly clear all relevant fields
 	self.Widget:SetAttribute("type", nil);
+	self.Widget:SetAttribute("typerelease", nil);
 	self.Widget:SetAttribute("spell", nil);
 	self.Widget:SetAttribute("item", nil);
 	self.Widget:SetAttribute("macro", nil);
@@ -1053,49 +1159,103 @@ function Button:SetAttributes(Type, Value)
 	self.Widget:SetAttribute("action", nil);
 	self.Widget:SetAttribute("clickbutton", nil);
 	self.Widget:SetAttribute("id", nil);
+	-- self.Widget:SetAttribute("IsEmpowerSpell", nil); -- removed for Cata 04/04/2024
+
+  if Value == nil then -- added for Cata 04/04/2024
+    return
+  end
 	
 	--Now if a valid type is passed in set it
 	if (Type == "spell") then
+
+		-- prof1, prof2 = GetProfessions(); -- removed for Cata 05/01/2024
+		if ( prof1 ) then
+			prof1_name, _, _, _, _, _, prof1_skillLine = GetProfessionInfo(prof1);
+		end
+		if ( prof2 ) then
+			prof2_name, _, _, _, _, _, prof2_skillLine = GetProfessionInfo(prof2);
+		end
+
+		local SpellName, _, _, _, _, _, SpellId = GetSpellInfo(Value);
+		
+		-- Patch to fix tradeskills
+		if ( prof1 and SpellName == prof1_name ) then
+			self.Widget:SetAttribute("type", "macro");
+			self.Widget:SetAttribute("typerelease", "macro");
+			self.Widget:SetAttribute("macrotext", "/run RunScript('local professionInfo = C_TradeSkillUI.GetBaseProfessionInfo(); if (professionInfo.professionID == prof1_skillLine) then C_TradeSkillUI.CloseTradeSkill() else C_TradeSkillUI.OpenTradeSkill("..prof1_skillLine..") end')");
+		elseif ( prof2 and SpellName == prof2_name ) then
+			self.Widget:SetAttribute("type", "macro");
+			self.Widget:SetAttribute("typerelease", "macro");
+			self.Widget:SetAttribute("macrotext", "/run RunScript('local professionInfo = C_TradeSkillUI.GetBaseProfessionInfo(); if (professionInfo.professionID == prof2_skillLine) then C_TradeSkillUI.CloseTradeSkill() else C_TradeSkillUI.OpenTradeSkill("..prof2_skillLine..") end')");
+
+		-- Patch for Priest PVP Talent "Inner Light and Shadow" (Thanks to techno_tpuefol)
+		elseif (SpellId == Const.PRIEST_PVP_TALENT_INNER_LIGHT_ID or SpellId == Const.PRIEST_PVP_TALENT_INNER_SHADOW_ID) then
+			self.Widget:SetAttribute("type", "macro");
+			self.Widget:SetAttribute("typerelease", "macro");
+			self.Widget:SetAttribute("macrotext", "/cast !Inner Light");
+
 		-- Patch to fix some spell that doesnt like to be cast with ID (Thrash, Stampeding Roar, ...)
-		local SpellName = GetSpellInfo(Value);
-		if ( SpellName ) then
+		elseif ( SpellName ) then
+			-- PVP talent with a Passive base spell has a weird behavior. There might be other spells with the same issue. Temporary fix until we find something more generic
+			if (SpellId == Const.HOLY_PRIEST_PVP_TALENT_SPIRIT_OF_THE_REDEEMER_ID) then
+				SpellName = Const.HOLY_PRIEST_PVP_TALENT_SPIRIT_OF_THE_REDEEMER_NAME;
+			else
+				local subtext = GetSpellSubtext(Value) or "";
+				SpellName = SpellName .. "(" .. subtext .. ")";
+			end
 			self.Widget:SetAttribute("type", Type);
+			self.Widget:SetAttribute("typerelease", Type);
 			self.Widget:SetAttribute(Type, SpellName);
+			-- self.Widget:SetAttribute("IsEmpowerSpell", IsPressHoldReleaseSpell(SpellId));  -- removed for Cata 04/04/2024
+
+		-- fallback to the old method if the name cannot be resolved
 		else
-			-- fallback to the old method if the name cannot be resolved
 			self.Widget:SetAttribute("type", Type);
+			self.Widget:SetAttribute("typerelease", Type);
 			self.Widget:SetAttribute(Type, Value);
 		end
 		
 	elseif (Type == "item" or Type == "macro") then
 		self.Widget:SetAttribute("type", Type);
+		self.Widget:SetAttribute("typerelease", Type);
 		self.Widget:SetAttribute(Type, Value);
 		
 	elseif (Type == "companion") then
 		self.Widget:SetAttribute("type", "spell");
+		self.Widget:SetAttribute("typerelease", "spell");
 		self.Widget:SetAttribute("spell", Value);
 		
 	elseif (Type == "equipmentset") then
 		self.Widget:SetAttribute("type", "macro");
+		self.Widget:SetAttribute("typerelease", "macro");
 		self.Widget:SetAttribute("macrotext", "/equipset "..Value);
 	elseif (Type == "bonusaction") then
 		self.Widget:SetAttribute("type", "action");
+		self.Widget:SetAttribute("typerelease", "action");
 		self.Widget:SetAttribute("id", Value);
 		if (HasOverrideActionBar()) then
-			self.Widget:SetAttribute("action", Value + ((14 - 1) * 12));
+			self.Widget:SetAttribute("action", Value + ((Const.OverrideActionPageOffset - 1) * 12));
 		else
-			self.Widget:SetAttribute("action", Value + ((12 - 1) * 12));
+			self.Widget:SetAttribute("action", Value + ((Const.BonusActionPageOffset - 1) * 12));
 		end
-	elseif (Type == "flyout") then
+	elseif (Type == "flyout") then -- changed for  cata 04/27/2024
 		self.Widget:SetAttribute("type", "flyout");
 		self.Widget:SetAttribute("spell", Value);
 	elseif (Type == "customaction") then
 		CustomAction.SetAttributes(Value, self.Widget);
-  end
+	elseif (Type == "battlepet") then
+		self.Widget:SetAttribute("type", "macro");
+		self.Widget:SetAttribute("typerelease", "macro");
+		self.Widget:SetAttribute("macrotext", string.format("/run local petID = \"%s\" if C_PetJournal.IsCurrentlySummoned(petID) then C_PetJournal.DismissSummonedPet(petID) elseif not InCombatLockdown() then C_PetJournal.SummonPetByGUID(petID) end", Value))
+	end
 end
 
 
 
+local function GetMouseFocus() -- added for Cata 4.4.1 09/05/2024
+	local t = GetMouseFoci()
+	return t[1]
+end
 
 
 --[[--------------------------------------------------------------------------
@@ -1124,7 +1284,7 @@ function Button:ResetAppearance()
 	self:RemoveFromFlash();
 	Button.UpdateFlyout(self);
 	self:UpdateGlow();
-	if (self.TooltipEnabled and self.Widget:IsMouseMotionFocus()) then -- 暫時修正
+	if (self.TooltipEnabled and GetMouseFocus() == self.Widget) then
 		Button.OnEnterTooltip(self.Widget);
 	end
 end
@@ -1177,18 +1337,11 @@ function Button:TranslateMacro()
 		self.MacroAction = Action;
 		self.MacroTargetName = TargetName;
 		self.MacroTargetDead = TargetDead;
-		local SpellName, SpellRank, SpellId = GetMacroSpell(self.MacroIndex);
-		if (SpellName) then
-			-- local CompanionType, CompanionID = Util.LookupCompanion(SpellName);
-			-- if (CompanionType) then
-			-- 	self.CompanionType = CompanionType;
-			-- 	self.CompanionIndex = CompanionID;
-			-- end
-			self.SpellName = SpellName;
-			-- self.SpellNameRank = GetSpellInfo(SpellName); --BFA fix: Cache is indexed by name and the old function returned the ID
-      local Rank = Util.GetSpellRank(SpellId) -- TBC Fix 06/17/2021
-      -- self.SpellNameRank = Util.GetFullSpellName(SpellName, Rank); -- TBC Fix 06/17/2021
-			self.SpellNameRank = SpellName -- rank does not seem to be working in wrath, set NameRank to SpellName 09/02/2022
+		local SpellId = GetMacroSpell(self.MacroIndex);
+		if (SpellId) then
+			local Name, Subtext = GetSpellInfo(SpellId), GetSpellSubtext(SpellId);
+			self.SpellName = Name;
+			self.SpellNameRank = Util.GetFullSpellName(Name, Subtext);
 			self.SpellId = SpellId;
 			self.MacroMode = "spell";
 		else
@@ -1267,7 +1420,7 @@ function Button:UpdateTextureMacro()
 end
 function Button:UpdateTextureBonusAction()
 	local action = self.Widget:GetAttribute("action");
-	if (HasOverrideActionBar()) then
+	if (HasOverrideActionBar() or HasVehicleActionBar()) then
 		local Texture = GetActionTexture(action);
 		if (not Texture) then
 			self.WIcon:SetTexture(Const.ImagesDir.."Bonus"..self.BonusActionId);
@@ -1309,7 +1462,7 @@ function Button:DisplayMissing()
 	local Icon = self.WIcon;
 
 	Icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark");
-	self.Widget:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2");
+	--self.Widget:SetNormalTexture("Interface\\Buttons\\UI-Quickslot2");
 	Icon:SetVertexColor(1.0, 1.0, 1.0, 0.5);
 	Icon:Show();
 
@@ -1332,7 +1485,7 @@ function Button:UpdateChecked()
     self.Widget:SetChecked(false);
 end
 function Button:UpdateCheckedSpell()
-    if (IsCurrentSpell(self.SpellName) or IsAutoRepeatSpell(self.SpellName)) then
+    if (IsCurrentSpell(self.SpellNameRank) or IsAutoRepeatSpell(self.SpellNameRank)) then
         self.Widget:SetChecked(true);
     else
 		self.Widget:SetChecked(false);
@@ -1349,17 +1502,16 @@ function Button:UpdateCheckedMacro()
 	if (self.MacroMode == "spell") then
 		self:UpdateCheckedSpell();	
 	elseif (self.MacroMode == "item") then
-		self:UpdateCheckedItem();	
-	elseif (self.MacroMode == "companion") then
-		self:UpdateCheckedCompanion();	
+		self:UpdateCheckedItem();
 	else
 		self.Widget:SetChecked(false);
 	end
 end
 function Button:UpdateCheckedCompanion()
-	local Active = select(5,  Util.GetCompanionInfo(self.CompanionType, self.MountID, self.MountSpellID));
-	local SpellName = UnitCastingInfo("player");
-	if (Active) then
+	--local Active = select(5, GetCompanionInfo(self.CompanionType, self.CompanionIndex));
+	--local SpellName = UnitCastingInfo("player");
+	if (select(4, C_MountJournal.GetMountInfoByID(self.MountID))
+		or (self.MountID == Const.SUMMON_RANDOM_FAVORITE_MOUNT_ID and IsMounted())) then
 		self.Widget:SetChecked(true);
 	else
 		self.Widget:SetChecked(false);
@@ -1367,7 +1519,7 @@ function Button:UpdateCheckedCompanion()
 end
 function Button:UpdateCheckedBonusAction()
 	local action = self.Widget:GetAttribute("action");
-	if ((HasOverrideActionBar()) and (IsCurrentAction(action) or IsAutoRepeatAction(action))) then
+	if ((HasOverrideActionBar() or HasVehicleActionBar()) and (IsCurrentAction(action) or IsAutoRepeatAction(action))) then
 		self.Widget:SetChecked(true);
 	else
 		self.Widget:SetChecked(false);
@@ -1375,6 +1527,9 @@ function Button:UpdateCheckedBonusAction()
 end
 function Button:UpdateCheckedCustomAction()
 	self.Widget:SetChecked(CustomAction.GetChecked(self.CustomActionName));
+end
+function Button:UpdateCheckedBattlePet()
+	self.Widget:SetChecked(C_PetJournal.IsCurrentlySummoned(self.BattlePetId))
 end
 
 
@@ -1416,8 +1571,15 @@ function Button:UpdateCooldown()
 
 end
 function Button:UpdateCooldownSpell()
-	local Start, Duration, Enable = GetSpellCooldown(self.SpellName);
-	local Charges, MaxCharges, ChargeStart, ChargeDuration = GetSpellCharges(self.SpellName);
+	local Start, Duration, Enable;
+	if(self.SpellId == Const.COVENANT_WARRIOR_FURY_CONDEMN_ID) then -- it seems there is an exception with that spell and GetSpellCooldown called from the spellname return a wrong duration.
+		Start, Duration, Enable = GetSpellCooldown(self.SpellId);
+	else
+		Start, Duration, Enable = GetSpellCooldown(self.SpellNameRank);
+	end
+
+	local Charges, MaxCharges, ChargeStart, ChargeDuration = GetSpellCharges(self.SpellNameRank);
+
 	if (Start ~= nil) then
 		--Charges = Charges or 0;
 		--MaxCharges = MaxCharges or 0;
@@ -1431,41 +1593,38 @@ function Button:UpdateCooldownSpell()
 		self.WCooldown:Hide();
 	end
 end
--- 3.4.1 wrath 12/28/2022 fix GetItemCooldown removed
---function Button:UpdateCooldownItem()
---  local b, s = Util.LookupItemInvSlot(self.ItemId)
---  if (b) and (s) then
---    Util.CooldownFrame_SetTimer(self.WCooldown, C_Container.GetContainerItemCooldown(b, s));
---  end
---end
--- 3.4.1. wrath 01/17/2023 fix, GetItemCooldown added back in as C_Container.GetItemCooldown
 function Button:UpdateCooldownItem()
-	Util.CooldownFrame_SetTimer(self.WCooldown, C_Container.GetItemCooldown(self.ItemId));
+  Util.CooldownFrame_SetTimer(self.WCooldown, C_Container.GetItemCooldown(self.ItemId)); -- changed for Cata 05/06/2024
 end
-
-
 function Button:UpdateCooldownMacro()
 	if (self.MacroMode == "spell") then
 		self:UpdateCooldownSpell();	
 	elseif (self.MacroMode == "item") then
-		self:UpdateCooldownItem();	
-	elseif (self.MacroMode == "companion") then
-		self:UpdateCooldownCompanion();	
+		self:UpdateCooldownItem();
 	else
 		Util.CooldownFrame_SetTimer(self.WCooldown, 0, 0, 0);
 		self.WCooldown:Hide();
 	end
 end
 function Button:UpdateCooldownCompanion()
-	--CooldownFrame_SetTimer(self.WCooldown, GetCompanionCooldown(self.CompanionType, self.CompanionIndex, self.MountSpellID));
+	--CooldownFrame_SetTimer(self.WCooldown, GetCompanionCooldown(self.CompanionType, self.CompanionIndex));
 	--as of 5.0.4 doesn't appear to exist anymore?!
 end
 function Button:UpdateCooldownBonusAction()
-	if (HasOverrideActionBar()) then
+	if (HasOverrideActionBar() or HasVehicleActionBar()) then
 		local action = self.Widget:GetAttribute("action");
 		Util.CooldownFrame_SetTimer(self.WCooldown, GetActionCooldown(action));
 	else
 		self.WCooldown:Hide();
+	end
+end
+function Button:UpdateCooldownBattlePet()
+	local Start, Duration, Enable = C_PetJournal.GetPetCooldownByGUID(self.BattlePetId)
+	if Start ~= nil then
+		Util.CooldownFrame_SetTimer(self.WCooldown, Start, Duration, Enable)
+	else
+		Util.CooldownFrame_SetTimer(self.WCooldown, 0, 0, 0)
+		self.WCooldown:Hide()
 	end
 end
 
@@ -1478,7 +1637,7 @@ function Button:UpdateUsable()
 
 end
 function Button:UpdateUsableSpell()
-	local IsUsable, NotEnoughMana = IsUsableSpell(self.SpellName);
+	local IsUsable, NotEnoughMana = IsUsableSpell(self.SpellNameRank);
 	if (IsUsable) then
 		self.WIcon:SetVertexColor(1.0, 1.0, 1.0);
 		self.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0);
@@ -1492,7 +1651,7 @@ function Button:UpdateUsableSpell()
 end
 function Button:UpdateUsableItem()
 	local IsUsable, NotEnoughMana = IsUsableItem(self.ItemId);
---	IsUsable = IsUsable or PlayerHasToy(self.ItemId);
+	IsUsable = IsUsable or PlayerHasToy(self.ItemId);
 	if (IsUsable) then
 		self.WIcon:SetVertexColor(1.0, 1.0, 1.0);
 		self.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0);
@@ -1508,16 +1667,14 @@ function Button:UpdateUsableMacro()
 	if (self.MacroMode == "spell") then
 		self:UpdateUsableSpell();
 	elseif (self.MacroMode == "item") then
-		self:UpdateUsableItem();	
-	elseif (self.MacroMode == "companion") then
-		self:UpdateUsableCompanion();
+		self:UpdateUsableItem();
 	else
 		self.WIcon:SetVertexColor(1.0, 1.0, 1.0);
 		self.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0);
 	end
 end
 function Button:UpdateUsableCompanion()
-	local IsUsable = IsUsableSpell(self.MountSpellID) and not (select(5,  Util.GetCompanionInfo(self.CompanionType, self.MountID, self.MountSpellID)));
+	local IsUsable = IsUsableSpell(self.MountSpellID) and (select(5, C_MountJournal.GetMountInfoByID(self.MountID)) or self.MountID == Const.SUMMON_RANDOM_FAVORITE_MOUNT_ID);
 
 	if (IsUsable) then
 		self.WIcon:SetVertexColor(1.0, 1.0, 1.0);
@@ -1530,7 +1687,7 @@ end
 function Button:UpdateUsableBonusAction()
 	local action = self.Widget:GetAttribute("action");
 	local IsUsable, NotEnoughMana = IsUsableAction(action);
-	if (IsUsable or (HasOverrideActionBar() == nil)) then
+	if (IsUsable or (HasOverrideActionBar() == nil and HasVehicleActionBar() == nil)) then
 		self.WIcon:SetVertexColor(1.0, 1.0, 1.0);
 		self.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0);
 	elseif (NotEnoughMana) then
@@ -1554,6 +1711,16 @@ function Button:UpdateUsableCustomAction()
 		self.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0);
 	end
 end
+function Button:UpdateUsableBattlePet()
+	--local IsUsable, NotEnoughMana = IsUsableItem(self.ItemName);
+	--if (self.CompanionType == "MOUNT" and IsIndoors()) then
+	--	self.WIcon:SetVertexColor(0.4, 0.4, 0.4);
+	--	self.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0);
+	--else
+		self.WIcon:SetVertexColor(1.0, 1.0, 1.0);
+		self.WNormalTexture:SetVertexColor(1.0, 1.0, 1.0);
+	--end
+end
 
 
 --[[----------------------------------------------------------------------------
@@ -1563,12 +1730,12 @@ function Button:UpdateTextCount()
 
 end
 function Button:UpdateTextCountSpell()
-	local count = GetSpellCount(self.SpellName);
-	if (count ~= 0 or IsConsumableSpell(self.SpellName)) then
+	local count = GetSpellCount(self.SpellNameRank);
+	if (count ~= 0 or IsConsumableSpell(self.SpellNameRank)) then
 		self.WCount:SetText(count);
 		return;
 	end
-	local charges, maxCharges = GetSpellCharges(self.SpellName);
+	local charges, maxCharges = GetSpellCharges(self.SpellNameRank);
 	if (charges ~= nil and maxCharges ~= 1) then
 		self.WCount:SetText(charges);
 		return;
@@ -1600,7 +1767,7 @@ function Button:UpdateTextCountMacro()
 end
 function Button:UpdateTextCountBonusAction()
 	local action = self.Widget:GetAttribute("action");
-	if ((HasOverrideActionBar()) and (IsConsumableAction(action) or IsStackableAction(action))) then
+	if ((HasOverrideActionBar() or HasVehicleActionBar()) and (IsConsumableAction(action) or IsStackableAction(action))) then
 		self.WCount:SetText(GetActionCount(action));
 	else
 		self.WCount:SetText("");
@@ -1621,12 +1788,10 @@ function Button:UpdateTooltipFunc()
 end
 
 function Button:UpdateTooltipSpell()
-	self = self.ParentButton or self;	--This is a sneaky cheat incase the widget was used to get here...
-	--local Index, BookType = Util.LookupSpellIndex(self.SpellNameRank);
-	GameTooltip:SetSpellByID(self.SpellId);
-	--if (Index) then
-	--	GameTooltip:SetSpellBookItem(Index, BookType);
-	--end
+	self = self.ParentButton or self;
+	-- the bools are to make sure subtext is shown on the tooltip
+    -- based on this function signature C_TooltipInfo.GetSpellByID(spellID [, isPet, showSubtext, dontOverride, difficultyID, isLink])
+	GameTooltip:SetSpellByID(self.SpellId, false, true);
 end
 function Button:UpdateTooltipItem()
 	self = self.ParentButton or self;	--This is a sneaky cheat incase the widget was used to get here...
@@ -1646,26 +1811,13 @@ end
 function Button:UpdateTooltipMacro()
 	self = self.ParentButton or self;	--This is a sneaky cheat incase the widget was used to get here...
 
-  if string.find(self.MacroBody, "#showtooltip") ~= nil then
-    local _,s=string.find(self.MacroBody, "#showtooltip ")
-    if s ~= nil then
-      local e,_=string.find(self.MacroBody, "\n")
-      local sttext = (string.sub(self.MacroBody, s+1, e-1))
-      GameTooltip:SetText(sttext, 1, 1, 1, 1);
-    else
-      GameTooltip:SetText(self.MacroName, 1, 1, 1, 1);
-    end
-	elseif (not self.ShowTooltip) then
+	if (not self.ShowTooltip) then
 		--we just show the name in this case
 		GameTooltip:SetText(self.MacroName, 1, 1, 1, 1);
+
 	elseif (self.MacroMode == "spell") then
-		local Index, BookType = Util.LookupSpellIndex(self.SpellName);
-		if (Index) then
-			GameTooltip:SetSpellBookItem(Index, BookType);
-		elseif (self.CompanionType == "MOUNT") then
-			GameTooltip_SetDefaultAnchor(GameTooltip, self.Widget);		--It appears that the sethyperlink (specifically this one) requires that the anchor be constantly refreshed!?
-			GameTooltip:SetHyperlink("spell:"..self.SpellName);
-		end
+		GameTooltip:SetSpellByID(self.SpellId, false, true);
+
 	elseif (self.MacroMode == "item") then
 		local EquippedSlot = Util.LookupItemNameEquippedSlot(self.ItemId);
 		if (EquippedSlot ~= nil) then
@@ -1679,26 +1831,23 @@ function Button:UpdateTooltipMacro()
 				GameTooltip:SetHyperlink(self.ItemLink);
 			end
 		end
-	elseif (self.MacroMode == "companion") then
-		local Id, Name, SpellId =  Util.GetCompanionInfo(self.CompanionType, self.CompanionIndex, self.MountSpellID);
-		GameTooltip:SetHyperlink("spell:"..SpellId);
 	end
 end
 function Button:UpdateTooltipCompanion()
 	self = self.ParentButton or self;	--This is a sneaky cheat incase the widget was used to get here...
 
 	GameTooltip_SetDefaultAnchor(GameTooltip, self.Widget);
-	GameTooltip:SetSpellByID(self.MountSpellID);
+	GameTooltip:SetMountBySpellID(self.MountSpellID);
 end
 function Button:UpdateTooltipEquipmentSet()
 	self = self.ParentButton or self;	--This is a sneaky cheat incase the widget was used to get here...
 
-	GameTooltip:SetEquipmentSet(self.EquipmentSetName);
+	GameTooltip:SetEquipmentSet(self.EquipmentSetId);
 end
 function Button:UpdateTooltipBonusAction()
 	self = self.ParentButton or self;	--This is a sneaky cheat incase the widget was used to get here...
 	local action = self.Widget:GetAttribute("action");
-	if (HasOverrideActionBar()) then
+	if (HasOverrideActionBar() or HasVehicleActionBar()) then
 		GameTooltip:SetAction(action);
 	else
 		GameTooltip:SetText(self.Tooltip, nil, nil, nil, nil, 1);
@@ -1717,7 +1866,22 @@ function Button:UpdateTooltipCustomAction()
 
 	CustomAction.UpdateTooltip(self.CustomActionName);
 end
-
+function Button:UpdateTooltipBattlePet()
+	self = self.ParentButton or self;	--This is a sneaky cheat incase the widget was used to get here...
+	local speciesID, customName, level, xp, maxXp, displayID, isFavorite
+		, name = C_PetJournal.GetPetInfoByPetID(self.BattlePetId);		
+		
+	if ( customName or name ) then
+		GameTooltip:SetText(customName or name, 1, 1, 1);
+		GameTooltip:AddLine(SPELL_CAST_TIME_INSTANT, 1, 1, 1, true);
+		GameTooltip:AddLine(string.format(BATTLE_PET_TOOLTIP_SUMMON, name), nil, nil, nil, true);
+		GameTooltip:Show();
+	elseif (self.BattlePetId == Const.SUMMON_RANDOM_FAVORITE_BATTLE_PET_ID) then
+		GameTooltip:SetText(PET_JOURNAL_SUMMON_RANDOM_FAVORITE_PET, 1, 1, 1);
+		GameTooltip:AddLine(SPELL_CAST_TIME_INSTANT, 1, 1, 1, true);
+		GameTooltip:Show();
+	end
+end
 
 
 
@@ -1737,7 +1901,7 @@ function Button:GetCursorMacro()
 	return self.Mode, self.MacroIndex, nil;
 end
 function Button:GetCursorCompanion()
-	return self.Mode, self.MountSpellID
+	return self.Mode, self.MountID;
 end
 function Button:GetCursorEquipmentSet()
 	return self.Mode, self.EquipmentSetName, nil;
@@ -1751,6 +1915,9 @@ end
 function Button:GetCursorCustomAction()
 	return self.Mode, self.CustomActionName, nil;
 end
+function Button:GetCursorBattlePet()
+	return self.Mode, self.BattlePetId, nil;
+end
 
 
 
@@ -1762,7 +1929,7 @@ function Button:UpdateFlash()
 
 end
 function Button:UpdateFlashSpell()
-	if ((IsAttackSpell(self.SpellName) and IsCurrentSpell(self.SpellName)) or IsAutoRepeatSpell(self.SpellName)) then
+	if ((IsAttackSpell(self.SpellNameRank) and IsCurrentSpell(self.SpellNameRank)) or IsAutoRepeatSpell(self.SpellNameRank)) then
 		if (not self.FlashOn) then
 			self:AddToFlash();
 		end
@@ -1779,7 +1946,7 @@ function Button:UpdateFlashMacro()
 end
 function Button:UpdateFlashBonusAction()
 	local action = self.Widget:GetAttribute("action");
-	if ((HasOverrideActionBar()) and ((IsAttackAction(action) and IsCurrentAction(action)) or IsAutoRepeatAction(action))) then
+	if ((HasOverrideActionBar() or HasVehicleActionBar()) and ((IsAttackAction(action) and IsCurrentAction(action)) or IsAutoRepeatAction(action))) then
 		if (not self.FlashOn) then
 			self:AddToFlash();
 		end
@@ -1816,7 +1983,7 @@ function Button:UpdateRangeTimer()
 	
 end
 function Button:UpdateRangeTimerSpell()
-	if (IsSpellInRange(self.SpellName, self.Target)) then
+	if (IsSpellInRange(self.SpellNameRank, self.Target)) then
 		if (not self.RangeTimerOn) then
 			self:AddToRangeTimer();
 		end
@@ -1825,13 +1992,13 @@ function Button:UpdateRangeTimerSpell()
 	end
 end
 function Button:UpdateRangeTimerItem()
-	--[[  Commented while IsItemInRange is restricted during combat if (IsItemInRange(self.ItemId, self.Target)) then
-		if (not self.RangeTimerOn) then
-			self:AddToRangeTimer();
-		end
-	elseif (self.RangeTimerOn) then
-		self:RemoveFromRangeTimer();
-	end ]]
+	--if (IsItemInRange(self.ItemId, self.Target)) then
+	--	if (not self.RangeTimerOn) then
+	--		self:AddToRangeTimer();
+	--	end
+	--elseif (self.RangeTimerOn) then
+	--	self:RemoveFromRangeTimer();
+	--end
 end
 function Button:UpdateRangeTimerMacro()
 	if (self.MacroMode == "spell") then
@@ -1844,7 +2011,7 @@ function Button:UpdateRangeTimerMacro()
 end
 function Button:UpdateRangeTimerBonusAction()
 	local action = self.Widget:GetAttribute("action");
-	if ((HasOverrideActionBar()) and IsActionInRange(action)) then
+	if ((HasOverrideActionBar() or HasVehicleActionBar()) and IsActionInRange(action)) then
 		if (not self.RangeTimerOn) then
 			self:AddToRangeTimer();
 		end
@@ -1872,18 +2039,18 @@ function Button:RemoveFromRangeTimer()
 end
 
 function Button:CheckRangeTimerSpell()
-	if (IsSpellInRange(self.SpellName, self.Target) == 1) then
+	if (IsSpellInRange(self.SpellNameRank, self.Target) == 1) then
 		self.WHotKey:SetVertexColor(0.6, 0.6, 0.6);
 	else
 		self.WHotKey:SetVertexColor(1.0, 0.1, 0.1);
 	end
 end
 function Button:CheckRangeTimerItem()
-	--[[ Commented while IsItemInRange is restricted during combat if (IsItemInRange(self.ItemId, self.Target) == 1) then
-		self.WHotKey:SetVertexColor(0.6, 0.6, 0.6);
-	else
-		self.WHotKey:SetVertexColor(1.0, 0.1, 0.1);
-	end ]]
+	--if (IsItemInRange(self.ItemId, self.Target) == 1) then
+	--	self.WHotKey:SetVertexColor(0.6, 0.6, 0.6);
+	--else
+	--	self.WHotKey:SetVertexColor(1.0, 0.1, 0.1);
+	--end
 end
 function Button:CheckRangeTimerMacro()
 	if (self.MacroMode == "spell") then
@@ -2011,8 +2178,7 @@ function Button:PromoteSpell()
 	end
 	--[[
 	if (self.Mode == "spell") then
-		-- local Name, Rank = GetSpellInfo(self.SpellName);		--This will actually retrieve for the highest rank of the spell
-    local Name, Rank = Util.GetSpellInfo(self.SpellName) -- TBC Fix 06/18/2021
+		local Name, Rank = GetSpellInfo(self.SpellName);		--This will actually retrieve for the highest rank of the spell
 		if (Name) then
 			if (Util.LookupNewSpellIndex(Name.."("..Rank..")")) then
 				if (strfind(Rank, Util.GetLocaleString("SpellRank"), 1, true) and strfind(self.SpellNameRank, Util.GetLocaleString("SpellRank"), 1, true)) then
@@ -2033,22 +2199,34 @@ function Button:RefreshSpell()
 	end
 end
 
+function Button:RefreshBattlePet()
+	if (self.Mode == "battlepet") then
+		if (self.BattlePetId == Const.SUMMON_RANDOM_FAVORITE_BATTLE_PET_ID) then
+			self.Texture = Const.SUMMON_RANDOM_FAVORITE_BATTLE_PET_TEXTURE;
+		else
+			self.Texture = select(9, C_PetJournal.GetPetInfoByPetID(self.BattlePetId));
+		end
+		self.Texture = self.Texture or "Interface/Icons/INV_Misc_QuestionMark";
+		self:DisplayActive();
+	end
+end
+
 function Button:RefreshCompanion()
-	-- if (InCombatLockdown()) then
-	-- 	return;
-	-- end
-	-- if (self.Mode == "companion") then
-		-- local Type, Index = Util.LookupCompanion(self.CompanionName);
-		-- if (Type == nil) then
-			-- self:ClearCommand();
-			-- self:FullRefresh();
-			-- return;
-		-- end
-		-- if (Index ~= self.CompanionIndex) then
-			-- self:SetCommandCompanion(Index, Type);
-			-- self:FullRefresh();
-		-- end
-	-- end
+	if (InCombatLockdown()) then
+		return;
+	end
+	if (self.Mode == "companion") then
+		local Type, Index = Util.LookupCompanion(self.CompanionName);
+		if (Type == nil) then
+			self:ClearCommand();
+			self:FullRefresh();
+			return;
+		end
+		if (Index ~= self.CompanionIndex) then
+			self:SetCommandCompanion(Index, Type);
+			self:FullRefresh();
+		end
+	end
 end
 
 function Button:RefreshEquipmentSet()
@@ -2083,7 +2261,7 @@ function Button:UpdateFlyout()
 		if (SpellFlyout:GetParent() == Widget) then
 		--	SpellFlyout.isActionBar = false;
 		end
-		if ((SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == Widget) or Widget:IsMouseMotionFocus()) then -- 暫時修正
+		if ((SpellFlyout and SpellFlyout:IsShown() and SpellFlyout:GetParent() == Widget) or GetMouseFocus() == Widget) then
 			Widget.FlyoutBorder:Show();
 			Widget.FlyoutBorderShadow:Show();
 			arrowDistance = 5;
