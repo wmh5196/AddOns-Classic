@@ -1186,10 +1186,10 @@ end
 do
     local gotOptionCategory = {}
     local funcOpenCategory = function(cfg, v, loading)
-        local func = CoreIOF_OTC or InterfaceOptionsFrame_OpenToCategory
-        func(gotOptionCategory[cfg._path])
+        local func = CoreIOF_OTC or Settings.OpenToCategory
+        func(gotOptionCategory[cfg._path].ID)
         if not SettingsPanel.CategoryList:IsVisible() then -- 10.0 fix
-            func(gotOptionCategory[cfg._path])
+            func(gotOptionCategory[cfg._path].ID)
         end
     end
     local exclude = { ["!!!163ui!!!"] = 1, ["ace-3.0"] = 1 }
