@@ -256,13 +256,14 @@ BlizzMoveAPI:RegisterFrames(
     {
         MinVersion = 0,
     },
-	--[[
     ["InterfaceOptionsFrame"] =
     {
-        MinVersion = 0,
+        VersionRanges = {
+            { Min = 0, Max = 11503 },
+            { Min = 40000, Max = 40400 },
+        },
         MaxVersion = 100000,
     },
-	--]]
     ["ItemTextFrame"] =
     {
         MinVersion = 0,
@@ -465,13 +466,14 @@ BlizzMoveAPI:RegisterFrames(
     {
         MinVersion = 0,
     },
-	--[[
     ["VideoOptionsFrame"] =
     {
-        MinVersion = 0,
+        VersionRanges = {
+            { Min = 0, Max = 11503 },
+            { Min = 40000, Max = 40400 },
+        },
         MaxVersion = 100000,
     },
-	--]]
     ["WorldMapFrame"] =
     {
         MinVersion = 40000, -- No longer fullscreen when?
