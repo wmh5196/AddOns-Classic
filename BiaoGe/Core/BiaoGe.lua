@@ -34,24 +34,36 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
     if addonName ~= AddonName then return end
     ----------主界面----------
     do
-        BG.MainFrame = CreateFrame("Frame", "BG.MainFrame", UIParent, "BasicFrameTemplate")
+        BG.MainFrame = CreateFrame("Frame", "BG.MainFrame", UIParent, "BackdropTemplate")
+        BG.MainFrame:SetBackdrop({
+            edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+            edgeSize = 1,
+        })
+        BG.MainFrame:SetBackdropBorderColor(GetClassRGB(nil, "player", BG.borderAlpha))
         BG.MainFrame:SetPoint("CENTER")
         BG.MainFrame:SetFrameLevel(100)
         BG.MainFrame:SetMovable(true)
         BG.MainFrame:SetToplevel(true)
-        local borderTbl = {
-            "TopBorder",
-            "TopLeftCorner",
-            "TopRightCorner",
-            "BottomBorder",
-            "BotLeftCorner",
-            "BotRightCorner",
-            "LeftBorder",
-            "RightBorder",
-        }
-        for i, border in ipairs(borderTbl) do
-            BG.MainFrame[border]:SetVertexColor(GetClassRGB(nil, "player"))
-        end
+
+        local r, g, b = GetClassRGB(nil, "player")
+        local l = BG.MainFrame:CreateLine()
+        l:SetColorTexture(r, g, b, BG.borderAlpha)
+        l:SetStartPoint("TOPLEFT", 1, -21)
+        l:SetEndPoint("TOPRIGHT", -1, -21)
+        l:SetThickness(1)
+
+        BG.MainFrame.titleBg = BG.MainFrame:CreateTexture(nil, "BACKGROUND", nil, 1)
+        BG.MainFrame.titleBg:SetPoint("TOPLEFT")
+        BG.MainFrame.titleBg:SetPoint("BOTTOMRIGHT", BG.MainFrame, "TOPRIGHT", 0, -22)
+        BG.MainFrame.titleBg:SetTexture("Interface\\Buttons\\WHITE8x8")
+        BG.MainFrame.titleBg:SetGradient("VERTICAL", CreateColor(r, g, b, .2), CreateColor(r, g, b, .0))
+
+        BG.MainFrame.Bg = BG.MainFrame:CreateTexture(nil, "BACKGROUND", nil, 0)
+        BG.MainFrame.Bg:SetAllPoints()
+
+        BG.MainFrame.CloseButton = CreateFrame("Button", nil, BG.MainFrame, "UIPanelCloseButton")
+        BG.MainFrame.CloseButton:SetPoint("TOPRIGHT", 5, 5)
+
         BG.MainFrame:SetScript("OnMouseUp", function(self)
             self:StopMovingOrSizing()
         end)
@@ -797,7 +809,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
             BG.ButtonSheZhi = bt
 
             bt:SetScript("OnClick", function(self)
-                InterfaceOptionsFrame_OpenToCategory(L["BiaoGe"] or "|cff00BFFFBiaoGe|r")
+                ns.InterfaceOptionsFrame_OpenToCategory(L["BiaoGe"] or "|cff00BFFFBiaoGe|r")
                 BG.MainFrame:Hide()
                 BG.PlaySound(1)
             end)
@@ -1276,11 +1288,10 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         BG["Button" .. BG.FB1]:SetEnabled(false)
 
         local l = first:CreateLine()
-        l:SetColorTexture(RGB("D3D3D3", 0.8))
+        l:SetColorTexture(GetClassRGB(nil, "player", BG.borderAlpha))
         l:SetStartPoint("BOTTOMLEFT", first, -30, -3)
         l:SetEndPoint("BOTTOMRIGHT", last, 30, -3)
         l:SetThickness(1.5)
-        BG.LineFB = l
     end
     ----------模块切换按钮----------
     do
@@ -1295,24 +1306,23 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         BG.ReportMainFrameTabNum = 7
         BG.BossMainFrameTabNum = 8
 
-        local borderTbl = {
-            "Left",
-            "Right",
-            "Middle",
-            "LeftDisabled",
-            "RightDisabled",
-            "MiddleDisabled",
-        }
-
+        local clicked
         function BG.ClickTabButton(num)
+            clicked = true
+            BG.After(0, function() clicked = false end)
             for i, v in pairs(BG.tabButtons) do
+                local bt = v.button
                 if i == num then
-                    PanelTemplates_SelectTab(v.button)
-                    _G[v.button:GetName() .. "Text"]:SetTextColor(RGB(BG.w1))
+                    local r, g, b = GetClassRGB(nil, "player")
+                    bt.bg:SetGradient("VERTICAL", CreateColor(r, g, b, .6), CreateColor(r, g, b, .1))
+                    bt:GetFontString():SetTextColor(1, 1, 1)
+                    bt:Disable()
                     v.frame:Show()
                 else
-                    PanelTemplates_DeselectTab(v.button)
-                    _G[v.button:GetName() .. "Text"]:SetTextColor(RGB(BG.g1))
+                    local r, g, b = 0, 0, 0
+                    bt.bg:SetGradient("VERTICAL", CreateColor(r, g, b, .8), CreateColor(r, g, b, .2))
+                    bt:GetFontString():SetTextColor(1, .82, 0)
+                    bt:Enable()
                     v.frame:Hide()
                 end
             end
@@ -1325,38 +1335,54 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         end
 
         local function Create_TabButton(num, text, frame, width) -- 1,L["当前表格 "],BG["Frame" .. BG.FB1],150
-            local bt = CreateFrame("Button", "BiaoGeTab" .. num, BG.MainFrame, "CharacterFrameTabButtonTemplate")
-            for _, border in ipairs(borderTbl) do
-                _G["BiaoGeTab" .. num .. border]:SetVertexColor(GetClassRGB(nil, "player"))
-            end
-
-            bt:SetText(text)
-            _G[bt:GetName() .. "Text"]:SetTextColor(RGB(BG.g1))
-            PanelTemplates_TabResize(bt, nil, width or 110)
+            local bt = CreateFrame("Button", nil, BG.MainFrame, "BackdropTemplate")
+            bt:SetBackdrop({
+                edgeFile = "Interface/ChatFrame/ChatFrameBackground",
+                edgeSize = 1,
+            })
+            bt:SetBackdropBorderColor(GetClassRGB(nil, "player", BG.borderAlpha))
+            bt:SetSize(90, 28)
             if num == 1 then
                 if BG.IsWLK then
-                    bt:SetPoint("TOPLEFT", BG.MainFrame, "BOTTOM", -380, 0)
+                    bt:SetPoint("TOPLEFT", BG.MainFrame, "BOTTOM", -360, 1)
                 else
-                    bt:SetPoint("TOPLEFT", BG.MainFrame, "BOTTOM", -270, 0)
+                    bt:SetPoint("TOPLEFT", BG.MainFrame, "BOTTOM", -270, 1)
                 end
             else
-                bt:SetPoint("LEFT", BG.tabButtons[num - 1].button, "RIGHT", -16, 0)
+                bt:SetPoint("LEFT", BG.tabButtons[num - 1].button, "RIGHT", 3, 0)
             end
+            bt.bg = bt:CreateTexture(nil, "BACKGROUND")
+            bt.bg:SetAllPoints()
+            bt.bg:SetTexture("Interface\\Buttons\\WHITE8x8")
+            local t = bt:CreateFontString()
+            t:SetAllPoints()
+            t:SetFont(BIAOGE_TEXT_FONT, 15, "OUTLINE")
+            t:SetText(text)
+            t:SetWordWrap(false)
+            bt:SetFontString(t)
             BG.tabButtons[num] = {
                 button = bt,
                 frame = frame
             }
-            bt:SetScript("OnEvent", nil)
-            bt:SetScript("OnShow", nil)
             bt:SetScript("OnClick", function(self)
                 BG.ClickTabButton(num)
                 BG.PlaySound(1)
+            end)
+            bt:SetScript("OnEnter", function(self)
+                local r, g, b = GetClassRGB(nil, "player")
+                self.bg:SetGradient("VERTICAL", CreateColor(r, g, b, .6), CreateColor(r, g, b, .1))
+            end)
+            bt:SetScript("OnLeave", function(self)
+                GameTooltip:Hide()
+                if clicked then return end
+                local r, g, b = 0, 0, 0
+                self.bg:SetGradient("VERTICAL", CreateColor(r, g, b, .8), CreateColor(r, g, b, .2))
             end)
             return bt
         end
 
         local bt = Create_TabButton(BG.FBMainFrameTabNum, L["当前表格"], BG.FBMainFrame)
-        bt:SetScript("OnEnter", function(self)
+        bt:HookScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
             GameTooltip:ClearLines()
             GameTooltip:AddLine(L["< 当前表格 >"], 1, 1, 1, true)
@@ -1365,7 +1391,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         end)
 
         local bt = Create_TabButton(BG.ItemLibMainFrameTabNum, L["装备库"], BG.ItemLibMainFrame)
-        bt:SetScript("OnEnter", function(self)
+        bt:HookScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
             GameTooltip:ClearLines()
             GameTooltip:AddLine(L["< 装备库 >"], 1, 1, 1, true)
@@ -1374,7 +1400,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         end)
 
         local bt = Create_TabButton(BG.HopeMainFrameTabNum, L["心愿清单"], BG.HopeMainFrame)
-        bt:SetScript("OnEnter", function(self)
+        bt:HookScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
             GameTooltip:ClearLines()
             GameTooltip:AddLine(L["< 心愿清单 >"], 1, 1, 1, true)
@@ -1383,7 +1409,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         end)
 
         local bt = Create_TabButton(BG.DuiZhangMainFrameTabNum, L["对账"], BG.DuiZhangMainFrame)
-        bt:SetScript("OnEnter", function(self)
+        bt:HookScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
             GameTooltip:ClearLines()
             GameTooltip:AddLine(L["< 对账 >"], 1, 1, 1, true)
@@ -1394,7 +1420,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         end)
 
         local bt = Create_TabButton(BG.YYMainFrameTabNum, L["YY评价"], BG.YYMainFrame)
-        bt:SetScript("OnEnter", function(self)
+        bt:HookScript("OnEnter", function(self)
             GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
             GameTooltip:ClearLines()
             GameTooltip:AddLine(L["< YY评价 >"], 1, 1, 1, true)
@@ -1457,7 +1483,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
 
         if BG.IsWLK then
             local bt = Create_TabButton(BG.AchievementMainFrameTabNum, L["团员成就"], BG.AchievementMainFrame)
-            bt:SetScript("OnEnter", function(self)
+            bt:HookScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
                 GameTooltip:ClearLines()
                 GameTooltip:AddLine(L["< 团员成就 >"], 1, 1, 1, true)
@@ -1466,7 +1492,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
             end)
 
             local bt = Create_TabButton(BG.ReportMainFrameTabNum, L["举报记录"], BG.ReportMainFrame)
-            bt:SetScript("OnEnter", function(self)
+            bt:HookScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
                 GameTooltip:ClearLines()
                 GameTooltip:AddLine(L["< 举报记录 >"], 1, 1, 1, true)
@@ -1475,7 +1501,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
             end)
 
             local bt = Create_TabButton(BG.BossMainFrameTabNum, L["团本攻略"], BG.BossMainFrame)
-            bt:SetScript("OnEnter", function(self)
+            bt:HookScript("OnEnter", function(self)
                 GameTooltip:SetOwner(self, "ANCHOR_TOPLEFT", 0, 0)
                 GameTooltip:ClearLines()
                 GameTooltip:AddLine(L["< 团本攻略 >"], 1, 1, 1, true)
@@ -3388,6 +3414,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         tex:SetPoint("CENTER")
         tex:SetTexture("Interface/ChatFrame/UI-ChatIcon-BlinkHilight")
     end
+    ----------鼠标材质----------
     BG.RegisterEvent("MODIFIER_STATE_CHANGED", function(self, even, mod, type)
         if mod == "LCTRL" or mod == "RCTRL" then
             if type == 1 then
@@ -3399,7 +3426,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
             else
                 SetCursor(nil)
             end
-        elseif  mod == "LALT" or mod == "RALT" then
+        elseif mod == "LALT" or mod == "RALT" then
             if type == 1 then
                 if BG.canShowStartAuctionCursor then
                     SetCursor("interface/cursor/repair")
@@ -3634,7 +3661,7 @@ do
 
     -- 设置
     SlashCmdList["BIAOGEOPTIONS"] = function()
-        InterfaceOptionsFrame_OpenToCategory(L["BiaoGe"] or "|cff00BFFFBiaoGe|r")
+        ns.InterfaceOptionsFrame_OpenToCategory(L["BiaoGe"] or "|cff00BFFFBiaoGe|r")
         BG.MainFrame:Hide()
     end
     SLASH_BIAOGEOPTIONS1 = "/bgo"

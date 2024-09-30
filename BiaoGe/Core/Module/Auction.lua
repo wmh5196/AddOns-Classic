@@ -51,7 +51,13 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
 
     local function UpdateAddonFrame(frame)
         if IsInRaid(1) then
-            frame.text:SetFormattedText(frame.title2, (Size(frame.table) .. "/" .. GetNumGroupMembers()))
+            local count = 0
+            for name in pairs(frame.table) do
+                if BG.raidRosterName[name] then
+                    count = count + 1
+                end
+            end
+            frame.text:SetFormattedText(frame.title2, (count .. "/" .. GetNumGroupMembers()))
             frame:SetWidth(frame.text:GetWidth() + 10)
             frame:Show()
         else
@@ -958,8 +964,6 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
                 local f = CreateFrame("Frame", nil, self, "BackdropTemplate")
                 f:SetBackdrop({
                     bgFile = "Interface/ChatFrame/ChatFrameBackground",
-                    edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
-                    edgeSize = 16,
                     insets = { left = 3, right = 3, top = 3, bottom = 3 }
                 })
                 f:SetBackdropColor(0, 0, 0, 1)
