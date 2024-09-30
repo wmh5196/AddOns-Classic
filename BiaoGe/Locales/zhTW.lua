@@ -22,12 +22,26 @@ do --繁体说明书
     text = text .. "|cffFFFFFF-更多功能介紹可在設置裡查看|r\n\n"
     text = text .. "-BUG反饋：郵箱buick_hbj@163.com，Q群322785325\n\n"
 
+    update = update .. "|cff00FF00" .. "9月30日更新v1.12.2" .. "|r\n"
+    update = update .. [[-重做UI美化]] .. "|r\n"
+    update = update .. [[-<賽季/60服>BWL表格佈局調整。且該表格的當前數據和歷史數據已被清空]] .. "|r\n"
+    update = update .. [[-<賽季/60服>適配1.15.4，修復了各種問題]] .. "|r\n\n"
+
     update = update .. "|cff00FF00" .. "9月24日更新v1.12.1" .. "|r\n"
     update = update .. [[-拍賣WA更新為v2.0：重做入場動畫；增加一個關注/心願裝備的高亮動畫；按組合鍵時可以發送或觀察裝備]] .. "|r\n"
     update = update .. [[-增加語音包：司卡奇]] .. "|r\n"
     update = update .. [[-<賽季服>添加P5表格]] .. "|r\n"
     update = update .. [[-修復了未拍列表按Shift多選後，再按Ctrl取消多選失效的問題]] .. "|r\n"
     update = update .. [[-修復了對賬金額在某些情況下會識別錯誤的問題]] .. "|r\n\n"
+
+
+    text = text .. update
+    text = text .. "|cff00FF00按住ALT顯示更多更新記錄|r"
+
+    ns.instructionsText = text
+end
+do --繁体更新内容
+    local update = "|cff00BFFF< 主要更新記錄 >|r\n\n" .. update
 
     update = update .. "|cff00FF00" .. "9月21日更新v1.12.0" .. "|r\n"
     update = update .. [[-<WLK>團員成就：優化讀取邏輯，減少讀取失敗的情況]] .. "|r\n"
@@ -41,14 +55,6 @@ do --繁体说明书
     update = update .. [[-快速評價：增加多個簡短評價]] .. "|r\n"
     update = update .. [[-修復了百分比支出項識別不了小數點的問題]] .. "|r\n\n"
 
-    text = text .. update
-    text = text .. "|cff00FF00按住ALT顯示更多更新記錄|r"
-
-    ns.instructionsText = text
-end
-do --繁体更新内容
-    local update = "|cff00BFFF< 主要更新記錄 >|r\n\n" .. update
-
     update = update .. "|cff00FF00" .. "9月9日更新v1.11.8" .. "|r\n"
     update = update .. c1 .. [[-自動拍賣記錄：增加未拍列表（團長可以多選該列表裡的裝備，來批量發起拍賣）]] .. "|r\n"
     update = update .. [[-集結號按隊伍人數排序：現在總是按人數排序，星團長不再固定顯示在最前面]] .. "|r\n"
@@ -57,23 +63,6 @@ do --繁体更新内容
     update = update .. [[-設置：增加一個裝備自動記錄後不顯示通知的選項]] .. "|r\n"
     update = update .. [[-通報WCL：優化通報文本]] .. "|r\n"
     update = update .. [[-重做通報心願]] .. "|r\n\n"
-
-    update = update .. "|cff00FF00" .. "9月4日更新v1.11.7" .. "|r\n"
-    update = update .. [[-修復了點擊複製對方賬單時沒有正確複製買家的問題]] .. "|r\n\n"
-
-    update = update .. "|cff00FF00" .. "9月4日更新v1.11.6" .. "|r\n"
-    update = update .. [[-增加功能：通報全團WCL（需要安裝WclPlayerScore-WotLK插件）]] .. "|r\n"
-    update = update .. [[-拍賣WA更新為v1.9：增加一個綠色鉤子，用來表示你是否已經擁有該物品]] .. "|r\n"
-    update = update .. [[-自動拍賣記錄：增加搜索框。增加手動添加記錄的功能。且現在裝備過濾功能也會對其生效]] .. "|r\n"
-    update = update .. [[-裝備過期列表：現在裝備過濾功能也會對其生效]] .. "|r\n"
-    update = update .. [[-對賬：現在鼠標懸停在打包交易時會高亮對應的裝備]] .. "|r\n"
-    update = update .. [[-設置：增加自動拍賣UI縮放選項]] .. "|r\n\n"
-
-    update = update .. "|cff00FF00" .. "8月26日更新v1.11.5" .. "|r\n"
-    update = update .. c1 .. [[-拍賣WA更新為v1.8：增加出價記錄；UI縮小了一點；提高了最小加價幅度]] .. "|r\n"
-    update = update .. [[-正在自動倒數時，如果有人出價，則會自動暫停倒數（你也可在設置里關閉該功能）]] .. "|r\n"
-    update = update .. [[-裝備過期列表：現在可以通過Shift+點擊來發送裝備了]] .. "|r\n"
-    update = update .. [[-現在拍賣成功、流拍、取消拍賣、拍賣倒數時，不再觸發關注裝備的文字和語音提醒]] .. "|r\n\n"
 
     ns.updateText = update
 end
@@ -1990,6 +1979,9 @@ do
         L["艾\n索\n雷\n葛\n斯"] = "艾\n索\n雷\n葛\n斯"
         L["卡\n扎\n克"] = "卡\n扎\n克"
 
+        L["拉\n佐\n格\n尔"] = "拉\n佐\n格\n爾"
+        L["瓦\n拉\n斯\n塔\n兹"] = "瓦\n拉\n斯\n塔\n茲"
+        L["双\n龙"] = "雙\n龍"
         L["桑\n德\n兰\n王\n子"] = "桑\n德\n蘭\n王\n子"
 
         L["加加恩·火锤"] = "加加恩·火錘"

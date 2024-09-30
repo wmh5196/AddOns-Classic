@@ -1506,6 +1506,7 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
         _G.BGA.AuctionMainFrame = f
 
         if _G.BiaoGe and _G.BiaoGe.point and _G.BiaoGe.point.Auction then
+            _G.BiaoGe.point.Auction[2]=nil
             f:SetPoint(unpack(_G.BiaoGe.point.Auction))
         else
             f:SetPoint("TOPRIGHT", -100, -200)

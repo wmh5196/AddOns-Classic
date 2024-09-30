@@ -1197,6 +1197,7 @@ frame:SetScript("OnEvent", function(self, event, addonName)
         f:SetHyperlinksEnabled(true)
         f.homepoin = { "BOTTOM", nil, "CENTER", 50, 100 }
         if BiaoGe.point[f:GetName()] then
+            BiaoGe.point[f:GetName()][2] = nil
             f:SetPoint(unpack(BiaoGe.point[f:GetName()]))
         else
             f:SetPoint(unpack(f.homepoin)) --设置显示位置
