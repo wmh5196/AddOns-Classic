@@ -2,7 +2,13 @@ if not DBM:IsSeasonal("SeasonOfDiscovery") then return end--If not SoM/SoD, thes
 local mod	= DBM:NewMod("EbonrocandFlamegor", "DBM-Raids-Vanilla", 5)
 local L		= mod:GetLocalizedStrings()
 
-mod:SetRevision("20240923125103")
+if DBM:IsSeasonal("SeasonOfDiscovery") then
+	mod.statTypes = "normal,heroic,mythic"
+else
+	mod.statTypes = "normal"
+end
+
+mod:SetRevision("20240928080825")
 mod:SetCreatureID(14601, 11981)
 mod:SetEncounterID(614, 615, 2566)
 mod:SetModelID(6377)
