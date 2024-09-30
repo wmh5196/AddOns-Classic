@@ -15,7 +15,7 @@ elseif GetLocale() == "zhTW" then
     -- UFPLocal_GhostText = "鬼魂";
     UFPLocal_LeftOpen  = "左鍵: 開啟 (增強功能) 設定";
     UFPLocal_RightMove = "右鍵拖曳: 移動小地圖按鈕";
-    UFPLocal_OptionFailed = "|cFFFF0000UnitFramesPlus 設定選項載入失敗|R";
+    UFPLocal_OptionFailed = "|cFFFF0000因遊戲改版功能失效，探索賽季/經典時期目前暫不提供暴雪頭像 (增強功能) 的設定選項。|R";
     UFPLocal_Loaded    = "|cFFFFFF99UnitFramesPlus 載入成功，請輸入|R |cFF00FF00/ufp|R |cFFFFFF99或|R |cFF00FF00/unitframesplus|R |cFFFFFF99進行設定 (|R|cFF00FF00/ufp reset|R  |cFFFFFF99重置設定)|R";
 	UFPLocal_HideRaid  = "重新載入來切換顯示遊戲內建的團隊框架";
     UFPLocal_ShowParty = "重新載入來切換顯示遊戲內建的小隊框架";

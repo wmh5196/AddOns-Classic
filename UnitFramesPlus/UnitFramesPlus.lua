@@ -5,14 +5,14 @@ local tonumber = tonumber;
 local type = type;
 local pairs = pairs;
 local UnitName = UnitName;
-local IsAddOnLoaded = IsAddOnLoaded;
+local IsAddOnLoaded = C_AddOns.IsAddOnLoaded;
 local GetLocale = GetLocale;
-local GetAddOnMetadata = GetAddOnMetadata;
-local GetAddOnEnableState = GetAddOnEnableState;
-local EnableAddOn = EnableAddOn;
-local LoadAddOn = LoadAddOn;
+local GetAddOnMetadata = C_AddOns.GetAddOnMetadata;
+local GetAddOnEnableState = C_AddOns.GetAddOnEnableState;
+local EnableAddOn = C_AddOns.EnableAddOn;
+local LoadAddOn = C_AddOns.LoadAddOn;
 local ReloadUI = ReloadUI;
-local InterfaceOptionsFrame_OpenToCategory = InterfaceOptionsFrame_OpenToCategory;
+-- local InterfaceOptionsFrame_OpenToCategory = InterfaceOptionsFrame_OpenToCategory;
 local hooksecurefunc = hooksecurefunc;
 
 --默认设置
@@ -447,22 +447,6 @@ ufpcb:SetScript("OnEvent", function(self, event)
     UnitFramesPlus_Call();
 end)
 
---系统面板修复
-function UnitFramesPlus_OpenInterfacePanel(panel)
-        local panelName = panel.name;
-        if not panelName then return end
-        local t = {};
-        for i, p in pairs(INTERFACEOPTIONS_ADDONCATEGORIES) do
-            if p.name == panelName then
-                p.collapsed = true;
-                t.element = p;
-                InterfaceOptionsListButton_ToggleSubCategories(t);
-            end
-        end
-    InterfaceOptionsFrame_OpenToCategory(panel);
-    InterfaceOptionsFrame_OpenToCategory(panel);
-end
-
 --设置面板载入
 local function UnitFramesPlus_LoadOptionPanel()
     if not IsAddOnLoaded("UnitFramesPlus_Options") then
@@ -487,10 +471,9 @@ function UnitFramesPlus_SlashHandler(arg)
     end
     local result = UnitFramesPlus_LoadOptionPanel();
     if result == false then return end
-    -- InterfaceOptionsFrame_OpenToCategory(UnitFramesPlus_OptionsFrame);
-    -- InterfaceOptionsFrame_OpenToCategory(UnitFramesPlus_OptionsFrame);
-	UnitFramesPlus_OpenInterfacePanel(UnitFramesPlus_OptionsFrame);
+	Settings.OpenToCategory(UnitFramesPlus_OptionsFrame.name)
 end
+
 SlashCmdList["UnitFramesPlus"] = UnitFramesPlus_SlashHandler;
 SLASH_UnitFramesPlus1 = "/unitframesplus";
 SLASH_UnitFramesPlus2 = "/ufp";

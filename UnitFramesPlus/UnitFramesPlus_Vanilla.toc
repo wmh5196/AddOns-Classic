@@ -1,9 +1,9 @@
-## Interface: 11503
+## Interface: 11504
 ## Title: UnitFramesPlus
 ## Notes: Enhanced Unit Frames
 ## Title-zhCN: 系统头像增强
 ## Notes-zhCN: 扩展系统头像功能
-## Version: 4.4.4
+## Version: 4.4.4 Fix
 ## Author: Isler
 ## SavedVariables: UnitFramesPlusDB
 ## SavedVariablesPerCharacter: UnitFramesPlusVar
