@@ -4,10 +4,11 @@ local RegEvent = ADDONSELF.regevent
 local Database = ADDONSELF.db
 
 local f = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate" or nil)
-f.name = L["Raid Ledger"]
--- InterfaceOptions_AddCategory(f)
-local category = Settings.RegisterCanvasLayoutCategory(f, f.name)
-category.ID = f.name
+
+
+local category = Settings.RegisterCanvasLayoutCategory(f, L["Raid Ledger"])
+category.ID = L["Raid Ledger"]
+ADDONSELF.settingcategory = category
 Settings.RegisterAddOnCategory(category)
 
 do

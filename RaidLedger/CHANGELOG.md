@@ -1,6 +1,6 @@
 # Raid Ledger
 
-## [v1.10.1](https://github.com/tg123/RaidLedger/tree/v1.10.1) (2024-02-25)
-[Full Changelog](https://github.com/tg123/RaidLedger/commits/v1.10.1) 
+## [v1.16.0](https://github.com/tg123/RaidLedger/tree/v1.16.0) (2024-09-30)
+[Full Changelog](https://github.com/tg123/RaidLedger/commits/v1.16.0) 
 
-- Create bigwig.yml  
+- support new tww interface  
