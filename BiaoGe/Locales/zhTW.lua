@@ -22,9 +22,12 @@ do --繁体说明书
     text = text .. "|cffFFFFFF-更多功能介紹可在設置裡查看|r\n\n"
     text = text .. "-BUG反饋：郵箱buick_hbj@163.com，Q群322785325\n\n"
 
+    update = update .. "|cff00FF00" .. "10月1日更新v1.12.3" .. "|r\n"
+    update = update .. [[-<賽季服>ZUG和BWL表格尾王格子增加]] .. "|r\n\n"
+    
     update = update .. "|cff00FF00" .. "9月30日更新v1.12.2" .. "|r\n"
     update = update .. [[-重做UI美化]] .. "|r\n"
-    update = update .. [[-<賽季/60服>BWL表格佈局調整。且該表格的當前數據和歷史數據已被清空]] .. "|r\n"
+    update = update .. [[-<賽季服>BWL表格佈局調整。且該表格的當前數據和歷史數據已被清空]] .. "|r\n"
     update = update .. [[-<賽季/60服>適配1.15.4，修復了各種問題]] .. "|r\n\n"
 
     update = update .. "|cff00FF00" .. "9月24日更新v1.12.1" .. "|r\n"
