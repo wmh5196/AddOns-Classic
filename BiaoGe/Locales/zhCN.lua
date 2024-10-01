@@ -29,9 +29,12 @@ do --简体说明书
     -- update = update .. [[]] .. "|r\n"
     -- update = update .. [[]] .. "|r\n\n"
 
+    update = update .. "|cff00FF00" .. "10月1日更新v1.12.3" .. "|r\n"
+    update = update .. [[-<赛季服>ZUG和BWL表格尾王格子增加]] .. "|r\n\n"
+
     update = update .. "|cff00FF00" .. "9月30日更新v1.12.2" .. "|r\n"
     update = update .. [[-重做UI美化]] .. "|r\n"
-    update = update .. [[-<赛季/60服>BWL表格布局调整。且该表格的当前数据和历史数据已被清空]] .. "|r\n"
+    update = update .. [[-<赛季服>BWL表格布局调整。且该表格的当前数据和历史数据已被清空]] .. "|r\n"
     update = update .. [[-<赛季/60服>适配1.15.4，修复了各种问题]] .. "|r\n\n"
 
     update = update .. "|cff00FF00" .. "9月24日更新v1.12.1" .. "|r\n"
