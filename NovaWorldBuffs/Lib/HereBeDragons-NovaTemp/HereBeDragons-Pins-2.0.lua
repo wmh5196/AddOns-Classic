@@ -1,12 +1,15 @@
 -- HereBeDragons-Pins is a library to show pins/icons on the world map and minimap
 
-local MAJOR, MINOR = "HereBeDragons-Pins-2.0", 14
+--Temp rename this for NWB so it loads seperate from other addons with an old version breaking things.
+--There's strange issues with this and AceAddon when older versions are loaded first.
+--Hoping to get it fixed with the HBD author and change this back.
+local MAJOR, MINOR = "HereBeDragons-Pins-2.0-NovaTemp", 14
 assert(LibStub, MAJOR .. " requires LibStub")
 
 local pins, _oldversion = LibStub:NewLibrary(MAJOR, MINOR)
 if not pins then return end
 
-local HBD = LibStub("HereBeDragons-2.0")
+local HBD = LibStub("HereBeDragons-2.0-NovaTemp")
 
 local MinimapRadiusAPI = C_Minimap and C_Minimap.GetViewRadius
 

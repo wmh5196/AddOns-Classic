@@ -1,6 +1,9 @@
 -- HereBeDragons is a data API for the World of Warcraft mapping system
 
-local MAJOR, MINOR = "HereBeDragons-2.0", 27
+--Temp rename this for NWB so it loads seperate from other addons with an old version breaking things.
+--There's strange issues with this and AceAddon when older versions are loaded first.
+--Hoping to get it fixed with the HBD author and change this back.
+local MAJOR, MINOR = "HereBeDragons-2.0-NovaTemp", 27
 assert(LibStub, MAJOR .. " requires LibStub")
 
 local HereBeDragons, oldversion = LibStub:NewLibrary(MAJOR, MINOR)
