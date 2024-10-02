@@ -1,0 +1,43 @@
+## Interface: 11504
+## Author: Snowflame0
+## Version: v4.1.0
+## Dependencies: AtlasLootClassic
+## LoadOnDemand: 1
+
+## Title: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Notes: AtlasLoot Collections loot tables
+
+## Title-deDE: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Sammlungen]|r
+## Title-esES: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Colecciones]|r
+## Title-esMX: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Colecciones]|r
+## Title-frFR: AtlasLoot Classic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Title-itIT: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Title-koKR: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Title-ptBR: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Coleções]|r
+## Title-ruRU: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Title-zhCN: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Title-zhTW: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Collections]|r
+## Notes-deDE: AtlasLoot Beuteverzeichnis der Sammlungen
+## Notes-esES: AtlasLoot tablas de botín de Colecciones
+## Notes-esMX: AtlasLoot tablas de botín de Colecciones
+## Notes-frFR: Tables de butin des collections
+## Notes-itIT: AtlasLoot loot tables from Collections
+## Notes-koKR: L["Notes-Collections"] = "AtlasLoot 수집품 전리품 목록"
+## Notes-ptBR: Tabelas de saque AtlasLoot das Coleções
+## Notes-ruRU: Таблицы добычи AtlasLoot -  Коллекции
+## Notes-zhCN: AtlasLoot - 收藏品列表
+## Notes-zhTW: AtlasLoot loot tables from Collections
+
+## X-Category: Map
+## X-License: GPL v2
+
+## X-AtlasLootClassic-LootModule: 1
+
+## Title-zhTW: |cffB973FF[裝備]|r 副本戰利品查詢-收藏
+## Notes-zhTW: AtlasLootClassic - Collections |n|n收藏物品資料庫。
+## DefaultState: disabled
+
+Locales\Locales.xml
+
+private.lua
+data-sod.lua

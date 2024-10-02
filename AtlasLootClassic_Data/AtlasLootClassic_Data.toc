@@ -1,0 +1,45 @@
+## Interface: 30403, 40400
+## Author: Snowflame0
+## Version: v4.1.0
+## Dependencies: AtlasLootClassic
+## LoadOnDemand: 1
+
+## Title: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Data]|r
+## Notes: AtlasLoot Data module
+
+## Title-deDE: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Daten]|r
+## Title-esES: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Datos]|r
+## Title-esMX: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Datos]|r
+## Title-frFR: AtlasLoot Classic |cFFFF5733Cata|r |cFFFF0000[Données]|r
+## Title-itIT: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Data]|r
+## Title-koKR: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Data]|r
+## Title-ptBR: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Dada]|r
+## Title-ruRU: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Data]|r
+## Title-zhCN: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Data]|r
+## Title-zhTW: AtlasLootClassic |cFFFF5733Cata|r |cFFFF0000[Data]|r
+## Notes-deDE: AtlasLoot Datenmodul
+## Notes-esES: AtlasLoot módulo de datos
+## Notes-esMX: AtlasLoot módulo de datos
+## Notes-frFR: Module de données
+## Notes-itIT: AtlasLoot data module
+## Notes-koKR: AtlasLoot 데이터 모듈
+## Notes-ptBR: Módulo de dados de AtlasLoot
+## Notes-ruRU: Модуль данных AtlasLoot
+## Notes-zhCN: AtlasLoot 数据模块
+## Notes-zhTW: AtlasLoot data module
+
+## X-Category: Map
+## X-License: GPL v2
+
+## Title-zhTW: |cffB973FF[裝備]|r 副本戰利品查詢-資料
+## Notes-zhTW: AtlasLootClassic - Data |n|n資料模組。
+## DefaultState: disabled
+
+core.lua
+
+locales.lua
+items.lua
+source.lua
+source-tbc.lua
+source-wrath.lua
+source-cata.lua

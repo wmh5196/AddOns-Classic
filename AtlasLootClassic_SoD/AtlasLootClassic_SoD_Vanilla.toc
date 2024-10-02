@@ -1,0 +1,25 @@
+## Interface: 11504
+## Author: Kwonko
+## Version: v3.2.0
+## Dependencies: AtlasLootClassic
+## LoadOnDemand: 1
+
+## Title: AtlasLootClassic |cFF0099FF[SoD]|r
+## Title-zhCN: AtlasLoot经典版 |cFF0099FF[收藏品]|r
+## Title-zhTW: |cffB973FF[裝備]|r 副本戰利品查詢-探索賽季
+## Notes: AtlasLoot loot tables from Collections
+## Notes-zhCN: 收藏物品资料库。
+## Notes-zhTW: AtlasLootClassic - SoD |n探索賽季物品掉資料庫。
+
+## X-Category: Map
+## X-License: GPL v2
+
+## X-AtlasLootClassic-LootModule: 1
+
+## Title-zhTW: |cffB973FF[裝備]|r 副本戰利品查詢-PvP
+## Notes-zhTW: AtlasLootClassic - SoD |n|n探索賽季物品資料庫。
+## DefaultState: disabled
+
+Locales\Locales.xml
+
+data.lua

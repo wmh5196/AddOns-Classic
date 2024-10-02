@@ -1,0 +1,43 @@
+## Interface: 11504
+## Author: Snowflame0
+## Version: v4.1.0 Fix
+## Dependencies: AtlasLootClassic
+## LoadOnDemand: 1
+
+## Title: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Crafting]|r
+## Notes: AtlasLoot Crafting loot tables
+
+## Title-deDE: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Berufe]|r
+## Title-esES: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Fabricados]|r
+## Title-esMX: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Fabricados]|r
+## Title-frFR: AtlasLoot Classic |cFFFF5733Cata|r |cFF0099FF[Artisanat]|r
+## Title-itIT: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Crafting]|r
+## Title-koKR: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Crafting]|r
+## Title-ptBR: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Fazer]|r
+## Title-ruRU: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Crafting]|r
+## Title-zhCN: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Crafting]|r
+## Title-zhTW: AtlasLootClassic |cFFFF5733Cata|r |cFF0099FF[Crafting]|r
+## Notes-deDE: AtlasLoot Beuteverzeichnis der Berufe
+## Notes-esES: AtlasLoot tablas de botín de Fabricados
+## Notes-esMX: AtlasLoot tablas de botín de Fabricados
+## Notes-frFR: Tables de butin des objets d'artisanat
+## Notes-itIT: AtlasLoot loot tables of Crafting Items
+## Notes-koKR: L["Notes-Crafting"] = "AtlasLoot 전문 기술의 전리품 목록"
+## Notes-ptBR: Tabelas de saque de manufaturados de AtlasLoot
+## Notes-ruRU: Таблицы добычи AtlasLoot -  Создаваемые предметы
+## Notes-zhCN: AtlasLoot - 专业制造物品列表
+## Notes-zhTW: AtlasLoot loot tables of Crafting Items
+
+## X-Category: Map
+## X-License: GPL v2
+
+## X-AtlasLootClassic-LootModule: 1
+
+## Title-zhTW: |cffB973FF[裝備]|r 副本戰利品查詢-專業製作
+## Notes-zhTW: AtlasLootClassic - Crafting |n|n專業技能物品資料庫。
+## DefaultState: disabled
+
+Locales\Locales.xml
+
+private.lua
+data-sod.lua
