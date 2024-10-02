@@ -1,5 +1,5 @@
 ﻿----------------------------------------------------------------------
--- 	Leatrix Plus 1.15.52 (25th September 2024)
+-- 	Leatrix Plus 1.15.53 (2nd October 2024)
 ----------------------------------------------------------------------
 
 --	01:Functions 02:Locks   03:Restart 40:Player   45:Rest
@@ -19,7 +19,7 @@
 	local void
 
 	-- Version
-	LeaPlusLC["AddonVer"] = "1.15.52"
+	LeaPlusLC["AddonVer"] = "1.15.53"
 
 	-- Get locale table
 	local void, Leatrix_Plus = ...
@@ -2660,7 +2660,7 @@
 			SetChainStyle()
 
 			-- Set style when a drop menu is selected (procs when the list is hidden)
-			LeaPlusCB["PlayerChainMenu"]:RegisterCallback("OnUpdate", SetChainStyle)
+			LeaPlusCB["PlayerChainMenu"]:RegisterCallback("OnMenuClose", SetChainStyle)
 
 			-- Help button hidden
 			ChainPanel.h:Hide()
@@ -10867,7 +10867,7 @@
 			end
 
 			-- Set controls when anchor dropdown menu is changed and on startup
-			LeaPlusCB["TooltipAnchorMenu"]:RegisterCallback("OnUpdate", SetAnchorControls)
+			LeaPlusCB["TooltipAnchorMenu"]:RegisterCallback("OnMenuClose", SetAnchorControls)
 			SetAnchorControls()
 
 			---------------------------------------------------------------------------------------------------------
@@ -14951,6 +14951,10 @@
 						LeaPlusLC:Print("Dropdown: " .. "|cffffffff" .. key .. "|r |cff1eff0c(" .. value .. ")|r")
 					end
 				end
+				return
+			elseif str == "tags" then
+				-- Print open menu tags (such as dropdown menus)
+				Menu.PrintOpenMenuTags()
 				return
 			elseif str == "admin" then
 				-- Preset profile (used for testing)
