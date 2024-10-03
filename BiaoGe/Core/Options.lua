@@ -1194,15 +1194,41 @@ local function OptionsUI()
             BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
             local ontext = {
                 L["清空表格时保留支出补贴名称"],
-                L["只保留补贴名称（例如XX补贴），支出玩家和支出金额正常清空。"],
+                L["只保留补贴名称（例如XX补贴）。支出金额正常清空。"],
                 " ",
                 L["这样就不用每次都重复填写补贴名称。"],
                 " ",
                 L["只有补贴名称，但没有补贴金额的，在通报账单时不会被通报。"],
             }
-            local f = O.CreateCheckButton(name, L["清空表格时保留支出补贴名称*"], biaoge, 15, height - h, ontext)
+            local f = O.CreateCheckButton(name, L["清空表格时保留支出补贴名称"] .. "*", biaoge, 15, height - h, ontext)
             BG.options["button" .. name] = f
+            f:HookScript("OnClick", function()
+                local name = "retainExpensesMoney"
+                if f:GetChecked() then
+                    BG.options["button" .. name]:Show()
+                else
+                    BG.options["button" .. name]:Hide()
+                end
+            end)
         end
+        h = h + 30
+        -- 清空表格时保留支出金额
+        do
+            local name = "retainExpensesMoney"
+            BG.options[name .. "reset"] = 0
+            BiaoGe.options[name] = BiaoGe.options[name] or BG.options[name .. "reset"]
+            local ontext = {
+                L["清空表格时保留支出金额"],
+                " ",
+                L["如果你们团每次支出的金额都是固定的，可以勾选此项。"],
+            }
+            local f = O.CreateCheckButton(name, AddTexture("QUEST")..L["清空表格时保留支出金额"] .. "*", biaoge, 40, height - h, ontext)
+            BG.options["button" .. name] = f
+            if BiaoGe.options["retainExpenses"] ~= 1 then
+                f:Hide()
+            end
+        end
+        -- 清空表格时根据副本难度设置分钱人数
         if not BG.IsVanilla then
             h = h + 30
             -- 清空表格时根据副本难度设置分钱人数
