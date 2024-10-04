@@ -29,6 +29,9 @@ do --简体说明书
     -- update = update .. [[]] .. "|r\n"
     -- update = update .. [[]] .. "|r\n\n"
 
+    update = update .. "|cff00FF00" .. "10月4日更新v1.12.5" .. "|r\n"
+    update = update .. [[-<赛季服>BWL奈法利安的格子增加至17个]] .. "|r\n\n"
+
     update = update .. "|cff00FF00" .. "10月3日更新v1.12.4" .. "|r\n"
     update = update .. [[-拍卖WA更新为v2.1：如果你的出价太低时，出价框显示为红色]] .. "|r\n"
     update = update .. [[-设置：增加选项[清空表格时保留支出金额]（默认不勾选）]] .. "|r\n"

@@ -1346,10 +1346,10 @@ BG.RegisterEvent("ADDON_LOADED", function(self, event, addonName)
                 if BG.IsWLK then
                     bt:SetPoint("TOPLEFT", BG.MainFrame, "BOTTOM", -360, 1)
                 else
-                    bt:SetPoint("TOPLEFT", BG.MainFrame, "BOTTOM", -270, 1)
+                    bt:SetPoint("TOPLEFT", BG.MainFrame, "BOTTOM", -280, 1)
                 end
             else
-                bt:SetPoint("LEFT", BG.tabButtons[num - 1].button, "RIGHT", 3, 0)
+                bt:SetPoint("LEFT", BG.tabButtons[num - 1].button, "RIGHT",BG.IsWLK and 3 or 20, 0)
             end
             bt.bg = bt:CreateTexture(nil, "BACKGROUND")
             bt.bg:SetAllPoints()

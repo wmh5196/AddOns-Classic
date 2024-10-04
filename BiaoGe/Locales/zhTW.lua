@@ -22,6 +22,9 @@ do --繁体说明书
     text = text .. "|cffFFFFFF-更多功能介紹可在設置裡查看|r\n\n"
     text = text .. "-BUG反饋：郵箱buick_hbj@163.com，Q群322785325\n\n"
 
+    update = update .. "|cff00FF00" .. "10月4日更新v1.12.5" .. "|r\n"
+    update = update .. [[-<賽季服>BWL奈法利安的格子增加至17個]] .. "|r\n\n"
+
     update = update .. "|cff00FF00" .. "10月3日更新v1.12.4" .. "|r\n"
     update = update .. [[-拍賣WA更新為v2.1：如果你的出價太低時，出價框顯示為紅色]] .. "|r\n"
     update = update .. [[-設置：增加選項[清空表格時保留支出金額]（默認不勾選）]] .. "|r\n"
