@@ -326,7 +326,7 @@ end
 
 ------------------函数：按职业排序------------------
 function BG.PaiXuRaidRosterInfo(filter)
-    local c = {
+    local tbl =filter or {
         "DEATHKNIGHT", --     "死亡骑士",
         "PALADIN",     --     "圣骑士",
         "WARRIOR",     --     "战士",
@@ -338,30 +338,18 @@ function BG.PaiXuRaidRosterInfo(filter)
         "WARLOCK",     --     "术士",
         "PRIEST",      --     "牧师",
     }
-    local c_guolv = {}
-    if filter and type(filter) == "table" then
-        for i, v in ipairs(filter) do
-            for index, value in ipairs(c) do
-                if v == value then
-                    table.insert(c_guolv, value)
-                end
-            end
-        end
-    else
-        c_guolv = c
-    end
 
-    local re = {}
-    if BG.raidRosterInfo and type(BG.raidRosterInfo) == "table" then
-        for i, v in ipairs(c_guolv) do
-            for index, value in ipairs(BG.raidRosterInfo) do
-                if value.class == v then
-                    table.insert(re, value)
+    local newTbl = {}
+    if type(BG.raidRosterInfo) == "table" then
+        for _, vv in ipairs(tbl) do
+            for _, v in ipairs(BG.raidRosterInfo) do
+                if v.class == vv then
+                    table.insert(newTbl, v)
                 end
             end
         end
     end
-    return re
+    return newTbl
 end
 
 ------------------函数：装备缓存本地化------------------
@@ -931,29 +919,29 @@ end
 function BG.SetListmaijia(maijia, clearFocus, filter, isAuctionLogFrame)
     if BG.FrameMaijiaList then BG.FrameMaijiaList:Hide() end
     -- 背景框
-    local frame = BG.MainFrame
-    BG.FrameMaijiaList = CreateFrame("Frame", nil, frame, "BackdropTemplate")
-    BG.FrameMaijiaList:SetWidth(395)
-    BG.FrameMaijiaList:SetHeight(230)
-    BG.FrameMaijiaList:SetFrameLevel(120)
-    BG.FrameMaijiaList:SetBackdrop({
+    local f = CreateFrame("Frame", nil, BG.MainFrame, "BackdropTemplate")
+    f:SetWidth(395)
+    f:SetHeight(230)
+    f:SetFrameLevel(120)
+    f:SetBackdrop({
         bgFile = "Interface/ChatFrame/ChatFrameBackground",
         edgeFile = "Interface/Tooltips/UI-Tooltip-Border",
         edgeSize = 16,
         insets = { left = 3, right = 3, top = 3, bottom = 3 }
     })
-    BG.FrameMaijiaList:SetBackdropColor(0, 0, 0, 0.8)
-    BG.FrameMaijiaList:SetPoint("TOPLEFT", maijia, "BOTTOMLEFT", -9, 2)
-    BG.FrameMaijiaList:EnableMouse(true)
-    BG.FrameMaijiaList:SetClampedToScreen(true)
+    f:SetBackdropColor(0, 0, 0, 0.8)
+    f:SetPoint("TOPLEFT", maijia, "BOTTOMLEFT", -9, 2)
+    f:EnableMouse(true)
+    f:SetClampedToScreen(true)
+    BG.FrameMaijiaList = f
 
     -- 下拉列表
     local framedown
-    local frameright = BG.FrameMaijiaList
+    local frameright = f
     local raid = BG.PaiXuRaidRosterInfo(filter)
     for t = 1, 4 do
         for i = 1, 10 do
-            local bt = CreateFrame("EditBox", nil, BG.FrameMaijiaList, "InputBoxTemplate")
+            local bt = CreateFrame("EditBox", nil, f, "InputBoxTemplate")
             bt:SetSize(90, 20)
             bt:SetFrameLevel(125)
             bt:SetAutoFocus(false)
@@ -1016,7 +1004,7 @@ function BG.SetListmaijia(maijia, clearFocus, filter, isAuctionLogFrame)
                             end
                         end
                     end
-                    BG.FrameMaijiaList:Hide()
+                    f:Hide()
                     if clearFocus then
                         if BG.lastfocus then
                             BG.lastfocus:ClearFocus()
