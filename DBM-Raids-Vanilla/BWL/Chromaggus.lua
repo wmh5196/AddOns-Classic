@@ -18,7 +18,7 @@ else
 	mod.statTypes = "normal"
 end
 
-mod:SetRevision("20241003205948")
+mod:SetRevision("20241005192154")
 mod:SetCreatureID(14020)
 mod:SetEncounterID(616)
 mod:SetModelID(14367)
@@ -145,7 +145,7 @@ local function checkTargetVulnerabilities(self)
 		return
 	end
 
-	local spellId = select(10, DBM:UnitBuff("target", 22277, 22280, 22278, 22279, 22281)) or 0
+	local spellId = select(10, DBM:UnitBuff("target", 22277, 22280, 22278, 22279, 22281))
 	local vulnSchool = vulnSpells[spellId]
 	updateVulnerability(self, vulnSchool)
 end
