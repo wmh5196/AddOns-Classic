@@ -161,7 +161,6 @@ L["Macro %s was ignored, check if there is enough space to create"] = "忽略巨
 L["Main Action Bar Page"] = "主要快捷列分頁"
 L["Minimap Icon"] = "小地圖按鈕"
 L["Myslot"] = "快速切換快捷列 "
-L["My-slot"] = "快捷列-切換"
 L["Name of exported text"] = "匯出文字的名稱"
 L["Open Myslot"] = "打開主視窗"
 L["Please type %s to confirm"] = "請輸入 %s 以進行確認"
@@ -179,6 +178,10 @@ L["Too many profiles, please delete before create new one."] = "設定檔過多�
 L["Try force importing"] = "嘗試強制匯入"
 L["Unsaved"] = "未保存"
 L["Use random mount instead of an unattained mount"] = "使用隨機座騎代替沒有獲得的座騎"
+
+-- 自行加入
+L["My-slot"] = "快捷列-切換"
+L["Close"] = "關閉"
 
 end
 
