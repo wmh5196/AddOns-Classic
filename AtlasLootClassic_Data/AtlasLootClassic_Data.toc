@@ -39,7 +39,7 @@ core.lua
 
 locales.lua
 items.lua
-source.lua
+source-classic.lua
 source-tbc.lua
 source-wrath.lua
 source-cata.lua

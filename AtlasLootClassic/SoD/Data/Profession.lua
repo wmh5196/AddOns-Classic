@@ -1491,6 +1491,7 @@ PROFESSION_DATA.CLASSIC = {
 	[461727] = {227844,8,300,315,345,{14046,15407},{1,1}}, -- Leather-Reinforced Runecloth Bag
 	[463866] = {228979,10,290,305,320,{16204},{1}}, -- Sigil of Flowing Waters
 	[463869] = {228981,10,275,285,305,{16204,4625,8925},{2,1,1}}, -- Conductive Shield Coating
+	[463871] = {228982,10,300,320,360,{14344,16203,7078,7080,7076,12811},{4,12,4,4,1,1}}, -- Law of Nature
 }
 if AtlasLoot:GameVersion_GE(AtlasLoot.BC_VERSION_NUM) then
     PROFESSION_DATA.BCC = {

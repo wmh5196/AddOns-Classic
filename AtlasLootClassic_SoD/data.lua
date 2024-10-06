@@ -531,12 +531,7 @@ data["WorldBosses"] = {
 }
 
 data["MoltenCore"] = {
-	MapID = 2717,
-	InstanceID = 409,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "MoltenCore",
-	AtlasMapFile = "CL_MoltenCore",
-	AtlasMapFile_AL = "MoltenCore",
+	name = AL["Molten Core"],
 	ContentType = RAID40_CONTENT,
 	LoadDifficulty = RAID40_DIFF,
 	items = {
@@ -872,12 +867,7 @@ data["MoltenCore"] = {
 }
 
 data["Onyxia"] = {
-	MapID = 2159,
-	InstanceID = 249,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "Onyxia",
-	AtlasMapFile = "CL_OnyxiasLair",
-	AtlasMapFile_AL = "OnyxiasLair",
+	name = AL["Onyxia's Lair"],
 	ContentType = RAID40_CONTENT,
 	LoadDifficulty = RAID40_DIFF,
 	items = {
@@ -921,12 +911,7 @@ data["Onyxia"] = {
 }
 
 data["Zul'Gurub"] = {
-	MapID = 1977,
-	InstanceID = 309,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "Zul'Gurub", -- ??
-	AtlasMapFile = "CL_ZulGurub",
-	AtlasMapFile_AL = "ZulGurub",
+	name = AL["Zul'Gurub"],
 	ContentType = RAID20_CONTENT,
 	LoadDifficulty = RAID20_DIFF,
 	ContentPhase = 4,
@@ -1302,12 +1287,7 @@ data["Zul'Gurub"] = {
 }
 
 data["BlackwingLair"] = {
-	MapID = 2677,
-	InstanceID = 469,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "BlackwingLair",
-	AtlasMapFile = "CL_BlackwingLair",
-	AtlasMapFile_AL = "BlackwingLair",
+	name = AL["Blackwing Lair"],
 	ContentType = RAID40_CONTENT,
 	LoadDifficulty = RAID40_DIFF,
 	ContentPhase = 3,
@@ -1568,12 +1548,7 @@ data["BlackwingLair"] = {
 }
 
 data["TheRuinsofAhnQiraj"] = { -- AQ20
-	MapID = 3429,
-	InstanceID = 509,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "TheRuinsofAhnQiraj",
-	AtlasMapFile = "CL_TheRuinsofAhnQiraj",
-	AtlasMapFile_AL = "TheRuinsofAhnQiraj",
+	name = AL["Ruins of Ahn'Qiraj"],
 	ContentType = RAID20_CONTENT,
 	LoadDifficulty = RAID20_DIFF,
 	ContentPhase = 5,
@@ -1792,12 +1767,7 @@ data["TheRuinsofAhnQiraj"] = { -- AQ20
 }
 
 data["TheTempleofAhnQiraj"] = { -- AQ40
-	MapID = 3428,
-	InstanceID = 531,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "TheTempleofAhnQiraj",
-	AtlasMapFile = "CL_TheTempleofAhnQiraj",
-	AtlasMapFile_AL = "TheTempleofAhnQiraj",
+	name = AL["Ahn'Qiraj"],
 	ContentType = RAID40_CONTENT,
 	LoadDifficulty = RAID40_DIFF,
 	ContentPhase = 5,
@@ -2047,12 +2017,7 @@ data["TheTempleofAhnQiraj"] = { -- AQ40
 }
 
 data["Naxxramas"] = {
-	MapID = 3456,
-	InstanceID = AtlasLoot:GameVersion_LT(AtlasLoot.WRATH_VERSION_NUM,533,nil),
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "Naxxramas",
-	AtlasMapFile = "CL_Naxxramas",
-	AtlasMapFile_AL = "Naxxramas",
+	name = AL["Naxxramas"],
 	ContentType = RAID40_CONTENT,
 	LoadDifficulty = RAID40_DIFF,
 	ContentPhase = 6,
@@ -2416,12 +2381,7 @@ data["Naxxramas"] = {
 }
 
 data["BlackfathomDeeps"] = {
-	MapID = 719,
-	InstanceID = 198,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "BlackfathomDeeps",
-	AtlasMapFile = {"CL_BlackfathomDeepsA", "CL_BlackfathomDeepsEnt"},
-	AtlasMapFile_AL = {"BlackfathomDeeps", "BlackfathomDeepsEnt"},
+	name = AL["Blackfathom Deeps"],
 	ContentType = DUNGEON_CONTENT,
 	LoadDifficulty = NORMAL_DIFF,
 	LevelRange = GetForVersion({15, 24, 32}, {19, 22, 24}),
@@ -2531,12 +2491,7 @@ data["BlackfathomDeeps"] = {
 }
 
 data["Gnomeregan"] = {
-	MapID = 721,
-	InstanceID = 200,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "Gnomeregan",
-	AtlasMapFile = {"CL_Gnomeregan", "CL_GnomereganEnt"},
-	AtlasMapFile_AL = {"Gnomeregan", "GnomereganEnt"},
+	name = AL["Gnomeregan"],
 	ContentType = DUNGEON_CONTENT,
 	LoadDifficulty = NORMAL_DIFF,
 	LevelRange = GetForVersion({19, 29, 38},{15, 25, 28}),
@@ -2663,12 +2618,7 @@ data["Gnomeregan"] = {
 }
 
 data["TheTempleOfAtal'Hakkar"] = {
-	MapID = 1477,
-	InstanceID = 201,
-	AtlasModule = ATLAS_MODULE_NAME,
-	AtlasMapID = "TheTempleOfAtal'Hakkar",
-	AtlasMapFile = { "CL_TheSunkenTemple", "CL_TheSunkenTempleEnt" },
-	AtlasMapFile_AL = { "TheSunkenTemple", "TheSunkenTempleEnt" },
+	name = AL["Temple of Atal'Hakkar"],
 	ContentType = DUNGEON_CONTENT,
 	LoadDifficulty = NORMAL_DIFF,
 	LevelRange = GetForVersion({45, 50, 60},{35, 47, 50}),

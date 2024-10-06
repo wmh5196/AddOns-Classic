@@ -39,5 +39,5 @@
 
 Locales\Locales.xml
 
-data-sod.lua
+data.lua
 droprate.lua

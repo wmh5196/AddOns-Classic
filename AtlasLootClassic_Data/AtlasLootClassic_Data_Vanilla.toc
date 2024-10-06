@@ -39,4 +39,4 @@ core.lua
 
 locales.lua
 items.lua
-source-sod.lua
+source.lua

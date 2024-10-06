@@ -1011,6 +1011,7 @@ RECIPE_DATA.CLASSIC = {
 	[228301] = {3,300,461706}, -- Pattern: Swift Flight Vambraces
 	[228978] = {10,290,463866}, -- Enchanted Sigil: Flowing Waters
 	[228980] = {10,290,463869}, -- Formula: Conductive Shield Coating
+	[228982] = {10,300,463871}, -- Formula: Law of Nature
 }
 
 if AtlasLoot:GameVersion_GE(AtlasLoot.BC_VERSION_NUM) then

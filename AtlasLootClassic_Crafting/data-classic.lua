@@ -47,21 +47,6 @@ data["Alchemy"] = {
 	CorrespondingFields = private.ALCHEMY_LINK,
 	items = {
 		{
-			name = AL["SoD Phase 1-4"],
-			[NORMAL_DIFF] = {
-				{ 1, "INV_Box_01", nil, AL["Phase 1"], nil },
-				{ 2, 426607 }, --Elixir of Coalesced Regret
-				{ 4, "INV_Box_01", nil, AL["Phase 2"], nil },
-				{ 5, 435969 }, --Insulating Gniodine
-				{ 6, 435971 }, --Mildly Irradiated Rejuvenation Potion
-				{ 7, 439960 }, --Recipe: Lesser Arcane Elixir
-				{ 9, "INV_Box_01", nil, AL["Phase 3"], nil },
-				{ 10, 448085 }, --Flask of Restless Dreams
-				{ 11, 446226 }, --Flask of Everlasting Nightmares
-				{ 12, 446851 }, --Flask of Nightmarish Mojo
-			},
-		},
-		{
 			name = AL["Flasks"],
 			[NORMAL_DIFF] = {
 				{ 1, 17635 }, --Flask of the Titans
@@ -229,74 +214,6 @@ data["Blacksmithing"] = {
 	TableType = PROF_ITTYPE,
 	CorrespondingFields = private.BLACKSMITHING_LINK,
 	items = {
-			{
-			name = AL["SoD Phase 4"],
-			[NORMAL_DIFF] = {
-			{ 1, "INV_Box_01", nil, AL["Phase 4"], nil },
-			{ 2, "INV_Box_01", nil, AL["Armor"], nil },
-			{ 3, 461737 }, -- Tempest Gauntlets
-			{ 4, 461739 }, -- Warcrest of the Great Chief
-			{ 5, 461735 }, -- Invincible Mail
-			{ 6, 461671 }, -- Stronger-hold Gauntlets
-			{ 7, 461667 }, -- Tempered Dark Iron Plate 227871
-			--{ 7, }, -- Argent Elite Shoulders
-			--{ 8,  }, -- Shimmering Dawnbringer Shoulders
-			--{ 9,  }, -- Radiant Gloves of the Dawn
-			--{ 10,  }, -- Radiant Girdle of the Dawn
-			--{ 11,  }, -- Dense Timbermaw Boots
-			--{ 12,  }, -- Dense Timbermaw Belt
-			--{ 16, }, -- Tempered Dark Iron Leggings 227836
-			--{ 17, }, -- Tempered Dark Iron Boots
-			--{ 18, }, -- Tempered Dark Iron Gauntlets
-			--{ 19, }, -- Molten Chain Shoulders 227834
-			--{ 20, }, -- Molten Chain Girdle 227827
-			--{ 21, }, -- Tempered Dark Iron Helm 227824
-			--{ 22, }, -- Tempered Dark Iron Bracers 227820
-			{ 16, "INV_Box_01", nil, AL["Weapons"], nil },
-			{ 17, 461716 }, -- Deadly Heartseeker
-			{ 18, 461733 }, -- Finely-Enchanted Battlehammer
-			{ 19, 461718 }, -- Tranquility
-			{ 20, 461712 }, -- Refined Hammer of the Titans
-			{ 21, 461714 }, -- Desecration
-			{ 22, 461730 }, -- Hardened Frostguard
-			{ 23, 461743 }, -- Sageblade of the Archmagus
-			{ 24, 461675 }, -- Refined Arcanite Reaper
-			{ 25, 460460 }, -- Sulfuron Hammer
-			{ 26, 461647 }, -- Skyrider's Masterwork Stormhammer
-			{ 27, 461669 }, -- Refined Arcanite Champion 
-			--{ 107, }, --Hammer of the Wild Gods 227858
-			--{ 108, }, -- Ebon Fist 227842
-			--{ 109, }, -- Implacable Blackguard 227840
-			--{ 110, }, -- Tempered Black Amnesty 227832
-			--{ 111, }, -- Dark Iron Flame Reaver 227826
-			--{ 112, }, -- Molten Dark Iron Destroyer 227825
-			}
-		},
-			{
-			name = AL["SoD Phase 1-3"],
-			[NORMAL_DIFF] = {
-				{ 1, "INV_Box_01", nil, AL["Phase 1"], nil },
-				{ 2, 429348 }, --Shifting Silver Breastplate
-				{ 3, 430397 }, --Blackfathom Sharpening Stone
-				{ 4, 427063 }, --Mantle of the Second War
-				{ 6, "INV_Box_01", nil, AL["Phase 2"], nil },
-				{ 7, 435910 }, --Low-Background Truesilver Plates
-				{ 8, 435906 }, --Reflective Truesilver Braincage
-				{ 9, 435908 }, --Tempered Interference-Negating Helmet
-				{ 11, "INV_Box_01", nil, AL["Phase 3"], nil },
-				{ 12, 446179 }, --Shoulderplates of Dread
-				{ 13, 446188 }, --Fearmonger's Shoulderguards
-				{ 14, 446191 }, --Baleful Pauldrons
-				{ 16, "INV_Box_01", nil, AL["Updated in SoD"], nil },
-				{ 17, 439122 }, --Golden Scale Boots
-				{ 18, 439126 }, --Golden Scale Coif
-				{ 19, 439124 }, --Golden Scale Cuirass
-				{ 20, 439120 }, --Golden Scale Gauntlets
-				{ 21, 439132 }, --Golden Scale Leggings
-				{ 22, 439130 }, --Golden Scale Shoulders
-				{ 23, 439128 }, --Moonsteel Broadsword
-			},
-		},
 		{
 			name = AL["Weapons"].." - "..ALIL["Daggers"],
 			[NORMAL_DIFF] = {
@@ -654,25 +571,6 @@ data["Enchanting"] = {
 	CorrespondingFields = private.ENCHANTING_LINK,
 	items = {
 		{
-			name = AL["SoD Phase 1-4"],
-			[NORMAL_DIFF] = {
-				{ 1, "INV_Box_01", nil, AL["Phase 1"], nil },
-				{ 2, 430409 }, --Brilliant Mana Oil / 310
-				{ 4, "INV_Box_01", nil, AL["Phase 2"], nil },
-				{ 5, 435903 }, --Enchant Chest - Retricutioner
-				{ 6, 435481 }, -- Enchant Weapon - Dismantle
-				{ 7, 439156 }, -- Sigil of Innovation
-				{ 9, "INV_Box_01", nil, AL["Phase 3"], nil },
-				{ 10, 446243 }, -- Sigil of Living Dreams
-				{ 11, 448624 }, -- Scroll of Spatial Mending
-				{ 13, "INV_Box_01", nil, AL["Phase 4"], nil },
-				{ 14, 463866 }, -- Sigil of Flowing Waters
-				{ 15, 463869 }, --Conductive Shield Coating
-				{ 16, "INV_Box_01", nil, AL["Updated in SoD"], nil },
-				{ 17, 439134 }, -- Greater Mystic Wand
-			}
-		},
-		{
 			name = AL["Oil"],
 			[NORMAL_DIFF] = {
 				{ 1, 25130 }, --Brilliant Mana Oil / 310
@@ -888,26 +786,6 @@ data["Engineering"] = {
 	TableType = PROF_ITTYPE,
 	CorrespondingFields = private.ENGINEERING_LINK,
 	items = {
-			{
-			name = AL["SoD Phase 1-4"],
-			[NORMAL_DIFF] = {
-				{ 1, "INV_Box_01", nil, AL["Phase 1"], nil },
-				{ 2, 424641 }, --Shredder Autosalvage Unit
-				{ 4, "INV_Box_01", nil, AL["Phase 2"], nil },
-				{ 5, 435956 }, --Polished Truesilver Gears
-				{ 6, 431362 }, -- Soul Vessel
-				{ 7, 435966 }, -- Ez-Thro Radiation Bomb 
-				{ 8, 435964 }, -- High-Yield Radiation Bomb
-				{ 9, 435960 }, -- Hyperconductive Goldwrap
-				{ 10, 435958 }, -- Whirling Truesilver Gearwall
-				{ 12, "INV_Box_01", nil, AL["Phase 3"], nil },
-				{ 13, 446236 }, -- Void-Powered Invoker's Vambraces
-				{ 14, 446238 }, -- Void-Powered Protector's Vambraces
-				{ 15, 446237 }, -- Void-Powered Slayer's Vambraces
-				{ 16, "INV_Box_01", nil, AL["Phase 4"], nil },
-				{ 17, 461710 }, -- Fiery Core Sharpshooter Rifle
-			}
-		},
 		{
 			name = AL["Armor"],
 			[NORMAL_DIFF] = {
@@ -1134,54 +1012,6 @@ data["Tailoring"] = {
 	TableType = PROF_ITTYPE,
 	CorrespondingFields = private.TAILORING_LINK,
 	items = {
-			{
-			name = AL["SoD Phase 4"],
-			[NORMAL_DIFF] = {
-			{ 1, "INV_Box_01", nil, AL["Phase 4"], nil },
-			{ 2, 461747 }, -- Incandescent Mooncloth Vest
-			{ 3, 461708 }, -- Incandescent Mooncloth Robe
-			--{ 4, 461708 }, -- Incandescent Mooncloth Boots
-			{ 4, 461750 }, -- Incandescent Mooncloth Circlet
-			{ 5, 461752 }, -- Incandescent Mooncloth Leggings
-			{ 6, 462282 }, -- Embroidered Belt of the Archmage
-			--{ 8, }, -- Fine Flarecore Leggings
-			--{ 9, }, -- Fine Flarecore Robe
-			--{ 10, }, -- Fine Flarecore Mantle
-			--{ 11, }, -- Fine Flarecore Gloves
-			--{ 12, }, -- Argent Elite Boots
-			--{ 13, }, -- Rugged Mantle of the Timbermaw
-			}
-		},
-		{
-			name = AL["SoD Phase 1-3"],
-			[NORMAL_DIFF] = {
-			{ 1, "INV_Box_01", nil, AL["Phase 1"], nil },
-			{ 2, 429351 }, --Extraplanar Spidersilk Boots
-			{ 3, 428424 }, --Phoenix Bindings
-			{ 4, 435841 }, --Invoker's Cord
-			{ 5, 435848 }, --Invoker's Mantle
-			{ 7, "INV_Box_01", nil, AL["Phase 2"], nil },
-			{ 8, 435827 }, -- Hyperconductive Arcano-Filament
-			{ 9, 435610 }, -- Gneuro-Linked Arcano-Filament Monocle
-			{ 11, "INV_Box_01", nil, AL["Phase 3"], nil },
-			{ 12, 446194 }, --Invoker's Cord
-			{ 13, 446195 }, --Invoker's Cord
-			{ 14, 446193 }, --Invoker's Cord
-			{ 16, "INV_Box_01", nil, AL["Updated in SoD"], nil },
-			{ 17, 439105 }, -- Big Voodoo Mask
-			{ 18, 439108 }, -- Big Voodoo Robe
-			{ 19, 439088 }, -- Black Mageweave Leggings
-			{ 20, 439086 }, -- Black Mageweave Vest
-			{ 21, 439097 }, -- Boots of the Enchanter
-			{ 22, 439098 }, -- Crimson Silk Belt
-			{ 23, 439085 }, -- Crimson Silk Robe
-			{ 24, 439093 }, -- Crimson Silk Shoulders
-			{ 25, 439091 }, -- Earthen Silk Belt
-			{ 26, 439100 }, -- Earthen Vest
-			{ 27, 439102 }, -- Enchanter's Cowl
-			{ 28, 439094 }, -- Long Silken Cloak
-			}
-		},
 		{
 			name = AL["Armor"].." - "..ALIL["Cloak"],
 			[NORMAL_DIFF] = {
@@ -1477,74 +1307,6 @@ data["Leatherworking"] = {
 	TableType = PROF_ITTYPE,
 	CorrespondingFields = private.LEATHERWORKING_LINK,
 	items = {
-			{
-			name = AL["SoD Phase 4"],
-			[NORMAL_DIFF] = {
-			{ 1, "INV_Box_01", nil, AL["Phase 4"], nil },
-			{ 2, "INV_Box_01", nil, AL["Armor"], nil },
-			{ 3, 461754 }, -- Girdle of Arcane Insight
-			{ 4, 461706 }, -- Swift Flight Vambraces
-			{ 5, 461653 }, -- Brilliant Chromatic Cloak 227869
-			{ 6, 461645 }, -- Honed Blue Dragonscale Shoulders 227873
-			{ 7, 462227 }, -- Honed Blue Dragonscale Leggings
-			{ 8, 461673 }, -- Honed Blue Dragonscale Breastplate
-			{ 9, 461649 }, -- Living Green Dragonscale Leggings
-			{ 10, 461677 }, -- Living Green Dragonscale Gauntlets
-			{ 11, 461720 }, -- Living Green Dragonscale Breastplate
-			{ 12, 461754 }, -- Girdle of Arcane Insight
-			{ 13, 461706 }, -- Swift Flight Vambraces
-			--{ 14, }, -- Knowledge of the Timbermaw
-			{ 14, 461657 }, -- Hardened Black Dragonscale Leggings
-			{ 16, 461690 }, -- Mastercrafted Shifting Cloak
-			{ 17, 461722 }, -- Devilcore Gauntlets
-			{ 18, 461724 }, -- Devilcore Leggings
-			--{ 20, }, -- Shining Chromatic Gauntlets
-			--{ 21, }, -- Glowing Mantle of the Dawn
-			--{ 22, }, -- Fine Dawn Treaders
-			--{ 23, }, -- Studded Timbermaw Brawlers
-			--{ 24, }, -- Ferocity of the Timbermaw
-			--{ 25, }, -- Dire Warbear Woolies
-			--{ 26, }, -- Dire Warbear Harness
-			{ 20, "INV_Box_01", nil, AL["Fire Resist"], nil },
-			{ 21, 461663 }, -- Masterwork Volcanic Shoulders
-			{ 22, 461665 }, -- Masterwork Volcanic Leggings
-			{ 23, 461661 }, -- Masterwork Volcanic Breastplate
-			{ 24, 461659 }, -- Hardened Black Dragonscale Shoulders
-			{ 25, 461655 }, -- Hardened Black Dragonscale Breastplate
-			--{ 107, }, -- Thick Corehound Belt
-			--{ 108, }, -- Hardened Black Dragonscale Boots
-			--{ 109, }, -- Lavawalker Belt
-			--{ 110, }, -- Thick Corehound Boots
-			--{ 111, }, -- Flamekissed Molten Helm
-			}
-		},
-			{
-			name = AL["SoD Phase 1-3"],
-			[NORMAL_DIFF] = {
-			{ 1, "INV_Box_01", nil, AL["Phase 1"], nil },
-			{ 2, 429869 }, --Void-Touched Leather Gauntlets
-			{ 3, 429354 }, --Void-Touched Leather Gloves
-			{ 5, "INV_Box_01", nil, AL["Phase 2"], nil },
-			{ 6, 435819 }, -- Faintly Glowing Leather
-			{ 7, 435904 }, -- Glowing Gneuro-Linked Cowl
-			{ 8, 435949 }, -- Glowing Hyperconductive Scale Coif
-			{ 9, 435951 }, -- Gneuro-Conductive Channeler's Hood
-			{ 10, 435953 }, -- Rad-Resistant Scale Hood
-			{ 16, "INV_Box_01", nil, AL["Updated in SoD"], nil },
-			{ 17, 439112 }, -- Guardian Belt
-			{ 18, 439110 }, -- Guardian Leather Bracers
-			{ 19, 439114 }, -- Guardian Pants
-			{ 20, 439116 }, -- Turtle Scale Breastplate
-			{ 21, 439118 }, -- Turtle Scale Gloves
-			{ 23, "INV_Box_01", nil, AL["Phase 3"], nil },
-			{ 24, 446183 }, --Paranoia Mantle
-			{ 25, 446185 }, --Shrieking Spaulders
-			{ 26, 446190 }, --Wailing Chain Mantle
-			{ 27, 446189 }, --Shoulderpads of Obsession
-			{ 28, 446192 }, --Membrane of Dark Neurosis
-			{ 29, 446186 }, --Cacophonous Chain Shoulderguards
-			}
-		},
 		{
 			name = AL["Armor"].." - "..ALIL["Cloak"],
 			[NORMAL_DIFF] = {
@@ -1878,6 +1640,69 @@ data["Mining"] = {
 	}
 }
 
+data["Skinning"] = {
+	name = ALIL["Skinning"],
+	ContentType = PROF_GATH_CONTENT,
+	LoadDifficulty = NORMAL_DIFF,
+	TableType = NORMAL_ITTYPE,
+	CorrespondingFields = private.SKINNING_LINK,
+	items = {
+		{
+			name = AL["Artisan"],
+			[NORMAL_DIFF] = {
+				{ 1, 4304 }, -- Thick Leather
+				{ 2, 8170 }, -- Rugged Leather
+				{ 3, 15417 }, -- Devilsaur Leather
+				{ 4, 15419 }, -- Warbear Leather
+				{ 5, 19767 }, -- Primal Bat Leather
+				{ 6, 19768 }, -- Primal Tiger Leather
+				{ 7, 17012 }, -- Core Leather
+				{ 16, 8169 }, -- Thick Hide
+				{ 17, 8171 }, -- Rugged Hide
+				{ 18, 15408 }, -- Heavy Scorpid Scale
+				{ 19, 8165 }, -- Worn Dragonscale
+				{ 20, 15412 }, -- Green Dragonscale
+				{ 21, 15414 }, -- Red Dragonscale
+				{ 22, 15415 }, -- Blue Dragonscale
+				{ 23, 15416 }, -- Black Dragonscale
+				{ 25, 15410 }, -- Scale of Onyxia
+				{ 26, 20381 }, -- Dreamscale
+				{ 27, 12731 }, -- Pristine Hide of the Beast
+			}
+		},
+		{
+			name = AL["Expert"],
+			[NORMAL_DIFF] = {
+				{ 1, 4234 }, -- Heavy Leather
+				{ 16, 4235 }, -- Heavy Hide
+				{ 17, 5785 }, -- Thick Murloc Scale
+				{ 18, 8154 }, -- Scorpid Scale
+				{ 19, 8167 }, -- Turtle Scale
+				{ 20, 7392 }, -- Green Whelp Scale
+			}
+		},
+		{
+			name = AL["Journeyman"],
+			[NORMAL_DIFF] = {
+				{ 1, 2319 }, -- Medium Leather
+				{ 16, 4232 }, -- Medium Hide
+				{ 17, 5784 }, -- Slimy Murloc Scale
+				{ 18, 7286 }, -- Black Whelp Scale
+			}
+		},
+		{
+			name = AL["Apprentice"],
+			[NORMAL_DIFF] = {
+				{ 1, 2318 }, -- Light Leather
+				{ 2, 2934 }, -- Ruined Leather Scraps
+				{ 16,783 }, -- Light Hide
+				{ 17, 6470 }, -- Deviate Scale
+				{ 18, 6471 }, -- Perfect Deviate Scale
+			}
+		},
+	}
+}
+
 data["Herbalism"] = {
 	name = ALIL["Herbalism"],
 	ContentType = PROF_GATH_CONTENT,
@@ -1888,31 +1713,31 @@ data["Herbalism"] = {
 		{
 			name = AL["Artisan"],
 			[NORMAL_DIFF] = {
-				{ 1,  13467 }, -- Icecap
-				{ 2,  13466 }, -- Plaguebloom
-				{ 3,  13465 }, -- Mountain Silversage
-				{ 4,  13463 }, -- Dreamfoil
-				{ 5,  13464 }, -- Golden Sansam
+				{ 1, 13467 }, -- Icecap
+				{ 2, 13466 }, -- Plaguebloom
+				{ 3, 13465 }, -- Mountain Silversage
+				{ 4, 13463 }, -- Dreamfoil
+				{ 5, 13464 }, -- Golden Sansam
 				{ 6, 8846 }, -- Gromsblood
 				{ 7, 8845 }, -- Ghost Mushroom
 				{ 8, 8839 }, -- Blindweed
 				{ 9, 8838 }, -- Sungrass
-				{ 16,  13468 }, -- Black Lotus
-				{ 18,  19727 }, -- Blood Scythe
-				{ 19,  19726 }, -- Bloodvine
+				{ 16, 13468 }, -- Black Lotus
+				{ 18, 19727 }, -- Blood Scythe
+				{ 19, 19726 }, -- Bloodvine
 			}
 		},
 		{
 			name = AL["Expert"],
 			[NORMAL_DIFF] = {
 				{ 1, 8836 }, -- Arthas' Tears
-				{ 2, 8831, 8153 }, -- Purple Lotus
+				{ 2, 8831 }, -- Purple Lotus
 				{ 3, 4625 }, -- Firebloom
 				{ 4, 3819 }, -- Wintersbite
 				{ 5, 3358 }, -- Khadgar's Whisker
 				{ 6, 3821 }, -- Goldthorn
 				{ 7, 3818 }, -- Fadeleaf
-				--{ 17, 8153 }, -- Wildvine
+				{ 16, 8153 }, -- Wildvine
 			}
 		},
 		{
@@ -1929,12 +1754,12 @@ data["Herbalism"] = {
 		{
 			name = AL["Apprentice"],
 			[NORMAL_DIFF] = {
-				{ 1,  2450, 2452 }, -- Briarthorn
-				{ 2,  785, 2452 }, -- Mageroyal
-				{ 3,  2449 }, -- Earthroot
-				{ 4,  765 }, -- Silverleaf
-				{ 5,  2447 }, -- Peacebloom
-				--{ 16,  2452 }, -- Swiftthistle
+				{ 1, 2450 }, -- Briarthorn
+				{ 2, 785 }, -- Mageroyal
+				{ 3, 2449 }, -- Earthroot
+				{ 4, 765 }, -- Silverleaf
+				{ 5, 2447 }, -- Peacebloom
+				{ 16, 2452 }, -- Swiftthistle
 			}
 		},
 	}

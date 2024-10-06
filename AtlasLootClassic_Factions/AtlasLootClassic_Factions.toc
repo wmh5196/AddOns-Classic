@@ -39,7 +39,7 @@
 
 Locales\Locales.xml
 
-data.lua
+data-classic.lua
 data-tbc.lua
 data-wrath.lua
 data-cata.lua

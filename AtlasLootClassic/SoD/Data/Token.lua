@@ -660,6 +660,10 @@ TOKEN_DATA.CLASSIC = {
 	[231713] = {ICONS.PRIEST, 231165, 231155, 0, ICONS.MAGE, 231101, 231109, 0, ICONS.WARLOCK, 231072, 231090, type = 6}, -- Draconian Boots
 	[231642] = { {8845,"20"},{13463,"20"},{8846,"20"},{13465,"20"},{13466,"20"},{13467,"20"}, type = 2 }, -- Warden's Herb Bag
 	[231644] = { {14344,"4"},{16203,"1"},{16204,"20"}, type = 2 }, -- Warden's Enchanting Bag
+	[232454] = { 221487, 221488, 221489,221510, 221513, 221514, 221516, 232458, 221490,  type = 2 }, -- Emblem of the Wild Gods
+	[232455] = { 212548,212549,212551,212552,212559,212561,212562,212560,208853, type = 2 }, -- Emblem of Dishonor
+	[232456] = { 213100,213104,213112,213118,213124,213130,213137,213144,216606, type = 2 }, -- Emblem of the Violet Eye
+	[232457] = { 232459,232460,232461,232462, type = 2 }, -- Emblem of the Worldcore
 }
 
 if AtlasLoot:GameVersion_GE(AtlasLoot.BC_VERSION_NUM) then
