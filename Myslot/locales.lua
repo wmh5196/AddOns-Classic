@@ -26,20 +26,19 @@ L["[WARN] Ignore unsupported Key Binding [ %s ] , contact %s please"] = true
 L["[WARN] Ignore unsupported Slot Type [ %s ] , contact %s please"] = true
 L["<- share your profile here"] = true
 L["All slots were restored"] = true
+L["Allow"] = true
 L["Are you SURE to delete '%s'?"] = true
 L["Are you SURE to import ?"] = true
+L["Backup failed"] = true
 L["Bad importing text [CRC32]"] = true
 L["Bad importing text [TEXT]"] = true
+L["Before Last Import"] = true
 L["CLEAR"] = true
-L["Clear before Import"] = true
-L["Close"] = true
 L["DANGEROUS"] = true
 L["Export"] = true
 L["Feedback"] = true
 L["Force Import"] = true
 L["IGNORE"] = true
-L["Ignore during Export"] = true
-L["Ignore during Import"] = true
 L["Ignore missing item [id=%s]"] = true
 L["Ignore unattained companion [id=%s], %s"] = true
 L["Ignore unattained pet [id=%s]"] = true
@@ -63,11 +62,16 @@ L["Rename"] = true
 L["Skip bad CRC32"] = true
 L["Skyriding Bar"] = true
 L["Stance Action Bar"] = true
+L["Starting backup..."] = true
 L["Time"] = true
 L["TOC_NOTES"] = "Myslot is for transferring settings between accounts. Feedback farmer1992@gmail.com"
+L["Too many profiles, please delete before create new one."] = true
 L["Try force importing"] = true
 L["Unsaved"] = true
 L["Use random mount instead of an unattained mount"] = true
+
+-- 自行加入
+L["My-slot"] = "Myslot"
 
 elseif locale == 'zhCN' then
 L[" before Import"] = "在导入之前"
@@ -78,20 +82,19 @@ L["[WARN] Ignore unsupported Key Binding [ %s ] , contact %s please"] = "[WARN] 
 L["[WARN] Ignore unsupported Slot Type [ %s ] , contact %s please"] = "[WARN] 忽略不支持的按键类型 [ %s ]，请通知作者 %s"
 L["<- share your profile here"] = "<- 分享你的配置"
 L["All slots were restored"] = "所有按钮及按键邦定位置恢复完毕"
+L["Allow"] = "允许"
 L["Are you SURE to delete '%s'?"] = "确定要删除 '%s'"
 L["Are you SURE to import ?"] = "你确定要导入吗?"
+L["Backup failed"] = "备份失败"
 L["Bad importing text [CRC32]"] = "导入文本校验不合法 [CRC32] 通常是没有复制完全"
 L["Bad importing text [TEXT]"] = "导入文本校验不合法 [TEXT]"
+L["Before Last Import"] = "上次导入前"
 L["CLEAR"] = "清空"
-L["Clear before Import"] = "导入前清空"
-L["Close"] = "关闭"
 L["DANGEROUS"] = "危险行为"
 L["Export"] = "导出"
 L["Feedback"] = "问题/建议"
 L["Force Import"] = "强制导入"
 L["IGNORE"] = "忽略"
-L["Ignore during Export"] = "导出时忽略"
-L["Ignore during Import"] = "导入时忽略"
 L["Ignore missing item [id=%s]"] = "忽略未获得物品 [id=%s]"
 L["Ignore unattained companion [id=%s], %s"] = "忽略未获得宠物 [id=%s], %s"
 L["Ignore unattained pet [id=%s]"] = "忽略未获得宠物 [id=%s]"
@@ -113,11 +116,12 @@ L["Remove all Macros"] = "删除所有宏"
 L["Remove everything in ActionBar"] = "清空全部按键摆放"
 L["Rename"] = "重命名"
 L["Skip bad CRC32"] = "忽略CRC32错误"
---[[Translation missing --]]
---[[ L["Skyriding Bar"] = "Skyriding Bar"--]] 
+L["Skyriding Bar"] = "驭空术条"
 L["Stance Action Bar"] = "姿态动作条"
+L["Starting backup..."] = "开始备份"
 L["Time"] = "时间"
 L["TOC_NOTES"] = "Myslot可以帮助你在账号之间共享配置。反馈：farmer1992@gmail.com"
+L["Too many profiles, please delete before create new one."] = "太多存档，请保存前删除一些"
 L["Try force importing"] = "尝试强制导入"
 L["Unsaved"] = "未保存"
 L["Use random mount instead of an unattained mount"] = "使用随机坐骑代替没有获得的坐骑"
@@ -131,20 +135,19 @@ L["[WARN] Ignore unsupported Key Binding [ %s ] , contact %s please"] = "[WARN] 
 L["[WARN] Ignore unsupported Slot Type [ %s ] , contact %s please"] = "[WARN] 忽略不支援的欄位類型：K = [ %s ] ，請通知作者 %s"
 L["<- share your profile here"] = "<- 分享這裡的設定檔"
 L["All slots were restored"] = "所有按鍵設定都已恢復完畢"
+L["Allow"] = "允許"
 L["Are you SURE to delete '%s'?"] = "是否確定要刪除 '%s'?"
 L["Are you SURE to import ?"] = "是否確定要匯入?"
+L["Backup failed"] = "備份失敗"
 L["Bad importing text [CRC32]"] = "錯誤的匯入字串[CRC32]"
 L["Bad importing text [TEXT]"] = "錯誤的匯入字串[TEXT]"
+L["Before Last Import"] = "上次匯入前"
 L["CLEAR"] = "清空"
-L["Clear before Import"] = "匯入前清空"
-L["Close"] = "關閉"
 L["DANGEROUS"] = "危險"
 L["Export"] = "匯出"
 L["Feedback"] = "反饋"
 L["Force Import"] = "強制匯入"
 L["IGNORE"] = "忽略"
-L["Ignore during Export"] = "匯出時忽略"
-L["Ignore during Import"] = "匯入時忽略"
 L["Ignore missing item [id=%s]"] = "忽略缺少的物品 [id=%s]"
 L["Ignore unattained companion [id=%s], %s"] = "忽略沒有的夥伴 [id=%s], %s"
 L["Ignore unattained pet [id=%s]"] = "忽略沒有的寵物 [id=%s]"
@@ -169,8 +172,10 @@ L["Rename"] = "重新命名"
 L["Skip bad CRC32"] = "略過CRC32錯誤"
 L["Skyriding Bar"] = "天空騎術列"
 L["Stance Action Bar"] = "姿勢型態列"
+L["Starting backup..."] = "開始備份..."
 L["Time"] = "時間"
 L["TOC_NOTES"] = "Myslot可以跨帳號綁定技能與按鍵設置。反饋通道：farmer1992@gmail.com"
+L["Too many profiles, please delete before create new one."] = "設定檔過多，建立新的之前請先刪除設定檔。"
 L["Try force importing"] = "嘗試強制匯入"
 L["Unsaved"] = "未保存"
 L["Use random mount instead of an unattained mount"] = "使用隨機座騎代替沒有獲得的座騎"
