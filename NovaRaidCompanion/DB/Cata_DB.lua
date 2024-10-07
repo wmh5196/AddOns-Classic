@@ -791,10 +791,10 @@ NRC.encounters = {
 	--ZG (Could be diff encounterIDs on retail? Needs testing on classic).
 	[1178] = {"601", "High Priest Venoxis", "", 37788, 522236, 9, 1, 309},
 	[1179] = {"602", "Bloodlord Mandokir", "", 37816, 522209, 9, 1, 309},
-	[788] = {"603", "Gri'lek", "", 8390, 522230, 9, 1, 309},
-	[788] = {"604", "Hazza'rah", "", 37832, 522233, 9, 1, 309},
-	[788] = {"605", "Renataki", "", 37830, 522263, 9, 1, 309},
-	[788] = {"606", "Wushoolay", "", 37831, 522279, 9, 1, 309},
+	--[788] = {"603", "Gri'lek", "", 8390, 522230, 9, 1, 309}, --These bosses don't have encounterIDs? or are they just not listed on the wiki
+	--[788] = {"604", "Hazza'rah", "", 37832, 522233, 9, 1, 309},
+	--[788] = {"605", "Renataki", "", 37830, 522263, 9, 1, 309},
+	--[788] = {"606", "Wushoolay", "", 37831, 522279, 9, 1, 309},
 	[1180] = {"607", "High Priestess Kilnara", "", 37805, 522238, 9, 1, 309},
 	[1181] = {"616", "Zanzil", "", 37813, 522280, 9, 1, 309},
 	[1182] = {"617", "Jin'do the Godbreaker", "", 37789, 522243, 9, 1, 309},

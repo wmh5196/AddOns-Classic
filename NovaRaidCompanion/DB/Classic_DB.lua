@@ -253,15 +253,27 @@ NRC.encounters = {
 	[716] = {"3774", "Ouro", "", 15509, 1385760, 87, 1, 531},
 	[717] = {"3775", "C'Thun", "", 15556, 1385726, 9, 1, 531},
 	--ZG (Could be diff encounterIDs on retail? Needs testing on classic).
+	--Retail/Cata.
 	[1178] = {"601", "High Priest Venoxis", "", 37788, 522236, 9, 1, 309},
 	[1179] = {"602", "Bloodlord Mandokir", "", 37816, 522209, 9, 1, 309},
-	[788] = {"603", "Gri'lek", "", 8390, 522230, 9, 1, 309},
-	[788] = {"604", "Hazza'rah", "", 37832, 522233, 9, 1, 309},
-	[788] = {"605", "Renataki", "", 37830, 522263, 9, 1, 309},
-	[788] = {"606", "Wushoolay", "", 37831, 522279, 9, 1, 309},
+	--[788] = {"603", "Gri'lek", "", 8390, 522230, 9, 1, 309}, --These bosses don't have encounterIDs? or are they just not listed on the wiki
+	--[788] = {"604", "Hazza'rah", "", 37832, 522233, 9, 1, 309},
+	--[788] = {"605", "Renataki", "", 37830, 522263, 9, 1, 309},
+	--[788] = {"606", "Wushoolay", "", 37831, 522279, 9, 1, 309},
 	[1180] = {"607", "High Priestess Kilnara", "", 37805, 522238, 9, 1, 309},
 	[1181] = {"616", "Zanzil", "", 37813, 522280, 9, 1, 309},
 	[1182] = {"617", "Jin'do the Godbreaker", "", 37789, 522243, 9, 1, 309},
+	--Classic
+	[792] = {"617", "Jin'do the Hexxer", "", 11311, 522243, 9, 1, 309},
+	[793] = {"617", "Hakkar", "", 15295, 607548, 9, 1, 309},
+	[788] = {"0", "Edge of Madness", "", 8390, 522230, 9, 1, 309}, --Display Gri'lek
+	[791] = {"0", "High Priestess Arlokk", "", 15218, 522238, 9, 1, 309},
+	[789] = {"0", "High Priest Thekal", "", 15216, 522217, 9, 1, 309},
+	[786] = {"0", "High Priestess Mar'li", "", 15220, 607819, 9, 1, 309}, --607819
+	[787] = {"0", "Bloodlord Mandokir", "", 11288, 522209, 9, 1, 309},
+	[784] = {"601", "High Priest Venoxis", "", 15217, 522236, 9, 1, 309},
+	[785] = {"0", "High Priestess Jeklik", "", 15219, 0, 9, 1, 309},
+	[790] = {"0", "Gahz'ranka", "", 15288, 607614, 9, 1, 309},
 	--Naxx (Should be diff encounterIDs on retail (wrath)? Needs testing on classic).
 	[1107] = {"3853", "Anub'Rekhan", "", 15931, 1378964, 9, 1, 533},
 	[1110] = {"3854", "Grand Widow Faerlina", "", 15940, 1378980, 9, 1, 533},
@@ -2796,13 +2808,46 @@ NRC.pal = {
 };
 
 NRC.worldBuffs = {
-	--[16609] = "rend",
-	--[22888] = "ony",
-	--[24425] = "zan",
+	[16609] = {
+		name = "Warchief's Blessing",
+		icon = 135759,
+		desc = "+300 Health, 15% Melee Haste, +10 MP5",
+		order = 1,
+		maxRank = true,
+	},
+	[460939] = {
+		name = "Might of Stormwind",
+		icon = 135759, --Keep the rend texture? More recognisable on the frame I think.
+		desc = "+300 Health, 15% Melee Haste, +10 MP5",
+		order = 1,
+		maxRank = true,
+	},
+	[22888] = {
+		name = "Rallying Cry of the Dragonslayer",
+		icon = 134153,
+		desc = "+10% Crit Spells, +5% Crit Melee/Ranged, +140 AP",
+		order = 2,
+		maxRank = true,
+	},
+	[24425] = {
+		name = "Spirit of Zandalar",
+		icon = 132107,
+		desc = "+10% Movement Speed, +15% Stats",
+		order = 3,
+		maxRank = true,
+	},
 	--New spell ID's after hotfix 23/4/21.
+	--Correction: I think these are actually the unbooned spellIDs, the above ones are when you gain them in city initially.
 	[355366] = {
 		name = "Warchief's Blessing",
 		icon = 135759,
+		desc = "+300 Health, 15% Melee Haste, +10 MP5",
+		order = 1,
+		maxRank = true,
+	},
+	[460940] = {
+		name = "Might of Stormwind",
+		icon = 135759, --Keep the rend texture? More recognisable on the frame I think.
 		desc = "+300 Health, 15% Melee Haste, +10 MP5",
 		order = 1,
 		maxRank = true,
@@ -3028,6 +3073,7 @@ if (NRC.isSOD) then
 	--World boss raids.
 	NRC.encounters[3027] = {"1094", "Azuregos", "", 26752, 1385753, 9, 1, 109};
 	NRC.encounters[3026] = {"3334", "Lord Kazzak", "", 64119, 1134508, 9, 1, 109};
+	NRC.encounters[3079] = {"3334", "Prince Thunderaan", "", 14992, 0, 9, 1, 109};
     
     --Change Sod dungs to a raid.
     NRC.zones[48].type = "raid"; --BRD.
@@ -3037,7 +3083,7 @@ if (NRC.isSOD) then
 	--Raid textures.
 	NRC.instanceTextures[2791] = {"Storm Cliffs", "", 26752, 1385753, 1396589, 329121, 0};
 	NRC.instanceTextures[2789] = {"The Tainted Scar", "", 64119, 1134508, 1396592, 136361, 0, 9};
-	--NRC.instanceTextures[2789] = {"The Tainted Scar", "", 1396466, 1396511, 1396592, 136361, 0, 9};
+	NRC.instanceTextures[2804] = {"The Crystal Vale", "", 342914, 342914, 1396592, 136361, 0, 9};
 	
 	--Add hunter kings buff to paladin table.
 	NRC.pal[409583] = {

@@ -5,6 +5,9 @@ local addonName, NRC = ...;
 local L = LibStub("AceLocale-3.0"):GetLocale("NovaRaidCompanion");
 
 local exportFrame, customStringFrame, tradeExportFrame, consumesExportFrame;
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
+local GetSpellInfo = NRC.GetSpellInfo;
 
 local function loadExportFrame()
 	if (not exportFrame) then
@@ -1300,13 +1303,13 @@ function NRC:loadTradesExportFrame(logID, raidID, refresh)
 		tradeExportFrame.dropdownMenu2:Show();
 		
 		tradeExportFrame.slider1:SetPoint("BOTTOM", tradeExportFrame.topFrame, "Bottom", -90, 38);
-		NRCTradeExportFrameTopFrameSlider1Text:SetText("|cFFFF6900" ..  L["Start Trade Num"]);
+		NRCTradeExportFrameTopFrameSlider1.Text:SetText("|cFFFF6900" ..  L["Start Trade Num"]);
 		tradeExportFrame.slider1.tooltip = "Set which trade number to start from.";
 		tradeExportFrame.slider1:SetMinMaxValues(1, maxTradesShown);
 		tradeExportFrame.slider1:SetValue(NRC.config.tradeExportStart);
 		tradeExportFrame.slider1.editBox:SetText(NRC.config.tradeExportStart);
-	    NRCTradeExportFrameTopFrameSlider1Low:SetText("1");
-	    NRCTradeExportFrameTopFrameSlider1High:SetText(maxTradesShown);
+	    NRCTradeExportFrameTopFrameSlider1.Low:SetText("1");
+	    NRCTradeExportFrameTopFrameSlider1.High:SetText(maxTradesShown);
 		tradeExportFrame.slider1:HookScript("OnValueChanged", function(self, value)
 			NRC.config.tradeExportStart = value;
 			tradeExportFrame.slider1.editBox:SetText(value);
@@ -1330,13 +1333,13 @@ function NRC:loadTradesExportFrame(logID, raidID, refresh)
 		tradeExportFrame.slider1.editBox:SetScript("OnEnterPressed", EditBox_OnEnterPressed);
 		
 		tradeExportFrame.slider2:SetPoint("BOTTOM", tradeExportFrame.topFrame, "Bottom", 190, 38);
-		NRCTradeExportFrameTopFrameSlider2Text:SetText("|cFFFF6900" ..  L["End Trade Num"]);
+		NRCTradeExportFrameTopFrameSlider2.Text:SetText("|cFFFF6900" ..  L["End Trade Num"]);
 		tradeExportFrame.slider2.tooltip = "Set which trade number to start from.";
 		tradeExportFrame.slider2:SetMinMaxValues(1, maxTradesShown);
 		tradeExportFrame.slider2:SetValue(NRC.config.tradeExportEnd);
 		tradeExportFrame.slider2.editBox:SetText(NRC.config.tradeExportEnd);
-	    NRCTradeExportFrameTopFrameSlider2Low:SetText("1");
-	    NRCTradeExportFrameTopFrameSlider2High:SetText(maxTradesShown);
+	    NRCTradeExportFrameTopFrameSlider2.Low:SetText("1");
+	    NRCTradeExportFrameTopFrameSlider2.High:SetText(maxTradesShown);
 		tradeExportFrame.slider2:HookScript("OnValueChanged", function(self, value)
 			NRC.config.tradeExportEnd = value;
 			tradeExportFrame.slider2.editBox:SetText(value);

@@ -8,6 +8,7 @@ local talentFrame;
 local strsplit = strsplit;
 local strsub = strsub;
 local tonumber = tonumber;
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
 
 function NRC:loadTalentFrame()
 	if (talentFrame) then

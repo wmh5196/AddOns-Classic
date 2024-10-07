@@ -52,6 +52,8 @@ NRC.candyBar = LibStub("LibCandyBar-3.0-NRC");
 NRC.customGlow = LibStub("LibCustomGlow-1.0");
 NRC.LibRealmInfo = LibStub("LibRealmInfo");
 NRC.DDM = LibStub("LibUIDropDownMenu-4.0");
+NRC.version = GetAddOnMetadata("NovaRaidCompanion", "Version") or 9999;
+NRC.version = tonumber(NRC.version);
 NRC.commPrefix = "NRC";
 NRC.helperCommPrefix = "NRCAH";
 NRC.hasAddon = {};
@@ -69,8 +71,6 @@ local L = LibStub("AceLocale-3.0"):GetLocale("NovaRaidCompanion");
 local LDB = LibStub:GetLibrary("LibDataBroker-1.1");
 NRC.LDBIcon = LibStub("LibDBIcon-1.0");
 NRC.dura = LibStub("LibDurability");
-NRC.version = GetAddOnMetadata("NovaRaidCompanion", "Version") or 9999;
-NRC.version = tonumber(NRC.version);
 NRC.latestRemoteVersion = NRC.version;
 NRC.prefixColor = "|cFFFF6900";
 NRC.groupCache = {};
@@ -116,6 +116,21 @@ local function init()
 	NRC:resetOldLockouts();
 	NRC:updateRaidStatusLowDurationTime();
 end
+
+local GetSpellInfo = GetSpellInfo;
+function NRC.GetSpellInfo(spellIdentifier, bookType)
+	if (GetSpellInfo) then
+		--No need for bookType we don't use it anywhere and passing nil breaks the function, bit strange.
+		--return GetSpellInfo(spellIdentifier, bookType);
+		return GetSpellInfo(spellIdentifier);
+	else
+		local data = C_Spell.GetSpellInfo(spellIdentifier);
+		if (data) then --Second arg rank is always nil in original func.
+			return data.name, nil, data.iconID, data.castTime, data.minRange, data.maxRange, data.spellID, data.originalIconID;
+		end
+	end
+end
+
 local f = CreateFrame("Frame");
 f:RegisterEvent("ADDON_LOADED");
 f:RegisterEvent("PLAYER_ENTERING_WORLD");
@@ -225,16 +240,9 @@ end
 function NRC:openConfig()
 	if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
 		InterfaceOptionsFrame:Hide();
+	elseif (SettingsPanel and SettingsPanel:IsShown()) then
+			SettingsPanel:Hide();
 	else
-		--Opening the frame needs to be run twice to avoid a bug.
-		--[[InterfaceOptionsFrame_OpenToCategory("NovaRaidCompanion");
-		--Hack to fix the issue of interface options not opening to menus below the current scroll range.
-		--This addon name starts with N and will always be closer to the middle so just scroll to the middle when opening.
-		local min, max = InterfaceOptionsFrameAddOnsListScrollBar:GetMinMaxValues();
-		if (min < max) then
-			InterfaceOptionsFrameAddOnsListScrollBar:SetValue(math.floor(max/2));
-		end
-		InterfaceOptionsFrame_OpenToCategory("NovaRaidCompanion");]]
 		Settings.OpenToCategory("NovaRaidCompanion");
 		NRC.acr:NotifyChange("NovaRaidCompanion");
 	end
@@ -269,11 +277,7 @@ function NRC:createBroker()
 			elseif (button == "LeftButton") then
 				NRC:openRaidStatusFrame();
 			elseif (button == "RightButton" and IsShiftKeyDown()) then
-				if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
-					InterfaceOptionsFrame:Hide();
-				else
-					NRC:openConfig();
-				end
+				NRC:openConfig();
 			elseif (button == "RightButton") then
 				NRC:openRaidLogFrame();
 			end
@@ -315,7 +319,7 @@ function NRC:updateMinimapButton(tooltip, frame)
 		return;
 	end
 	tooltip:ClearLines();
-	tooltip:AddLine("NovaRaidCompanion");
+	tooltip:AddLine("Nova Raid Companion");
 	if (not IsShiftKeyDown()) then
 		tooltip:AddLine("|cFFFFAE42(" .. L["holdShitForExtraInfo"] .. ")");
 	end
@@ -398,19 +402,37 @@ function NRC:updateMinimapButton(tooltip, frame)
 			tooltip.NRCSeparator2:Hide();
 		end
 		local threeDateString, weeklyDateString = "", "";
-		if (IsShiftKeyDown()) then
-			if (NRC.db.global.timeStampFormat == 12) then
-				threeDateString = " (" .. date("%A", threeDayReset) .. " " .. gsub(date("%I:%M", threeDayReset), "^0", "")
-						.. string.lower(date("%p", threeDayReset)) .. ")";
-				weeklyDateString = " (" .. date("%A", weeklyReset) .. " " .. gsub(date("%I:%M", weeklyReset), "^0", "")
-						.. string.lower(date("%p", weeklyReset)) .. ")";
-			else
-				threeDateString = " (" .. date("%A %H:%M", threeDayReset) .. ")";
-				weeklyDateString = " (" .. date("%A %H:%M", weeklyReset) .. ")";
+		if (NRC.isSOD) then
+			local biWeeklyResetTime = NRC:getBiWeeklyReset();
+			local biWeeklyDateString = "";
+			if (IsShiftKeyDown()) then
+				if (NRC.db.global.timeStampFormat == 12) then
+					biWeeklyDateString = " (" .. date("%A", biWeeklyResetTime) .. " " .. gsub(date("%I:%M", biWeeklyResetTime), "^0", "")
+							.. string.lower(date("%p", biWeeklyResetTime)) .. ")";
+					weeklyDateString = " (" .. date("%A", weeklyReset) .. " " .. gsub(date("%I:%M", weeklyReset), "^0", "")
+							.. string.lower(date("%p", weeklyReset)) .. ")";
+				else
+					biWeeklyDateString = " (" .. date("%A %H:%M", biWeeklyResetTime) .. ")";
+					weeklyDateString = " (" .. date("%A %H:%M", weeklyReset) .. ")";
+				end
 			end
+			tooltip:AddLine("|cFF00C800Bi-Weekly reset:|r |cFF9CD6DE" .. NRC:getTimeString(biWeeklyResetTime - GetServerTime(), true, "medium")
+					.. biWeeklyDateString .. "|r");
+		else
+			if (IsShiftKeyDown()) then
+				if (NRC.db.global.timeStampFormat == 12) then
+					threeDateString = " (" .. date("%A", threeDayReset) .. " " .. gsub(date("%I:%M", threeDayReset), "^0", "")
+							.. string.lower(date("%p", threeDayReset)) .. ")";
+					weeklyDateString = " (" .. date("%A", weeklyReset) .. " " .. gsub(date("%I:%M", weeklyReset), "^0", "")
+							.. string.lower(date("%p", weeklyReset)) .. ")";
+				else
+					threeDateString = " (" .. date("%A %H:%M", threeDayReset) .. ")";
+					weeklyDateString = " (" .. date("%A %H:%M", weeklyReset) .. ")";
+				end
+			end
+			tooltip:AddLine("|cFF00C8003 day reset:|r |cFF9CD6DE" .. NRC:getTimeString(threeDayReset - GetServerTime(), true, "medium")
+					.. threeDateString .. "|r");
 		end
-		tooltip:AddLine("|cFF00C8003 day reset:|r |cFF9CD6DE" .. NRC:getTimeString(threeDayReset - GetServerTime(), true, "medium")
-				.. threeDateString .. "|r");
 		tooltip:AddLine("|cFF00C800Weekly reset:|r |cFF9CD6DE" .. NRC:getTimeString(weeklyReset - GetServerTime(), true, "medium")
 				.. weeklyDateString .. "|r");
 		tooltip:AddLine(" ");

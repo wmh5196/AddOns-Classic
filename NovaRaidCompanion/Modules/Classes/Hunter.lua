@@ -10,6 +10,10 @@ local misdirection, lastMD;
 local hits, lastMD = {}, {};
 local distractingShot = NRC.distractingShot;
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
+local GetItemCount = GetItemCount or C_Item.GetItemCount;
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
+local GetSpellInfo = NRC.GetSpellInfo;
 
 ---This misdirection stuff looks messy but it's what's needed to work correctly for other peoples md.
 ---We need a combination of events to make it work right.

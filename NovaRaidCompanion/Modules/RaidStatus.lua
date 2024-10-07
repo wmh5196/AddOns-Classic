@@ -22,6 +22,7 @@ local getClassColor = NRC.getClassColor;
 local isClassic = NRC.isClassic;
 local pairs, ipairs = pairs, ipairs;
 local gsub = gsub;
+local GetNormalizedRealmName = GetNormalizedRealmName;
 local currentMaxWorldbuffs = 0;
 
 local f = CreateFrame("Frame", "NRCRaidStatus");
@@ -471,7 +472,9 @@ function NRC:updateRaidStatusFramesLayout()
 end
 			
 local int, fort, spirit, shadow, motw, pal, weaponEnchants, worldBuffs = {}, {}, {}, {}, {}, {}, {}, {};
-local aurasToTableCopy = {};
+local aurasToTableCopy = {
+	[349981] = true,
+};
 for k, v in pairs(NRC.int) do
 	int[k] = v;
 	aurasToTableCopy[k] = v;
@@ -653,7 +656,7 @@ function NRC:openRaidStatusFrame(showOnly, fromLog, buttonID)
 				--Set a last update time so it doesn't update twice on open and instead waits a second.
 				raidStatusFrame.lastUpdate = GetTime();
 				NRC:updateRaidStatusFrames(true);
-				if (GetServerTime() - lastRaidRequest > 20 and not fromLog) then
+				if (GetServerTime() - lastRaidRequest > 10 and not fromLog) then
 					lastRaidRequest = GetServerTime();
 					NRC:requestRaidData();
 				end
@@ -706,7 +709,7 @@ end
 	frame.updateTooltip(tooltipText);
 end]]
 
-local function updateGridTooltipTalents(frame, name, classHex, talentCount, specName, specIcon, treeData)
+local function updateGridTooltipTalents(frame, name, classHex, talentCount, specName, specIcon, treeData, showOnyCloak, hasOnyCloak, hasDataShare)
 	local nameString = "|c" .. classHex .. name .. "|r";
 	local tooltipText = "|cFFDEDE42" .. nameString .. "|r";
 	if (specName and specIcon) then
@@ -717,6 +720,17 @@ local function updateGridTooltipTalents(frame, name, classHex, talentCount, spec
 		tooltipText = tooltipText .. "\n|cFF9CD6DE" .. treeData[1] .. " / " .. treeData[2] .. " / " .. treeData[3] .. "|r";
 	end
 	tooltipText = tooltipText .. "\n|cFFFFAE42-Click To View Talents-|r";
+	if (showOnyCloak) then
+		if (hasOnyCloak) then
+			tooltipText = tooltipText .. "\n\n|cFF00FF00Has onyxia cloak equipped.|r";
+		else
+			if (not hasDataShare) then
+				tooltipText = tooltipText .. "\n\n|cFFFFFFFFUser doesn't have NRC addon\nor helper weakaura installed.\nwago.io/sof4ehBA6|r";
+			else
+				tooltipText = tooltipText .. "\n\n|cFFFF0000No onyxia cloak equipped.|r";
+			end
+		end
+	end
 	frame.updateTooltip(tooltipText);
 end
 
@@ -815,6 +829,7 @@ local chronoIcons = {
 	[L["Slip'kik's Savvy"]] = 135930,
 	[L["Rallying Cry of the Dragonslayer"]] = 134153,
 	[L["Warchief's Blessing"]] = 135759,
+	[L["Might of Stormwind"]] = 135759,
 	[L["Spirit of Zandalar"]] = 132107,
 	[L["Songflower Serenade"]] = 135934,
 	[L["Boon of Blackfathom"]] = 236403,
@@ -1147,6 +1162,8 @@ function NRC:updateRaidStatusFrames(updateLayout)
 	local usingCache = NRC.raidStatusCache and true;
 	local showSwipe = NRC.config.raidStatusBuffSwipe;
 	local enchantIgnoreList = NRC.enchantIgnoreList;
+	local showOnyCloak = isClassic and NRC.currentInstanceID == 469 and not usingCache;
+	--local showOnyCloak = true;
 	if (data) then
 		local columnCount, maxColumnCount = 0, raidStatusFrame.maxColumnCount;
 		local rowCount, maxRowCount = 1, raidStatusFrame.maxRowCount;
@@ -1180,6 +1197,12 @@ function NRC:updateRaidStatusFrames(updateLayout)
 				local rowName = string.char(96 + rowCount);
 				local _, _, _, classHex = GetClassColor(v.class);
 				local nameString;
+				--[[local fullName;
+				if (v.realm) then
+					fullName = name .. "-" .. v.realm;
+				else
+					fullName = name .. "-" .. NRC.realm;
+				end]]
 				if (not v.online and not NRC.raidStatusCache) then
 					if (subGroups or readyCheckRunning or readyCheckEndedTimer or fadeOutTimer) then
 						nameString = "|c" .. classHex .. strsub(name, 1, 6) .. "|r |cFF989898(Offline)|r";
@@ -1500,8 +1523,7 @@ function NRC:updateRaidStatusFrames(updateLayout)
 							hasPal = true;
 						end
 						if (worldBuffsSlot) then
-							if (buffID == 349981) then
-								--Chronoboon.
+							--[[if (NRC.raidStatusCache and NRC.raidStatusCache.chronoCache) then
 								tinsert(wBuffs, buffData);
 								--Merge some local data with our player auras data.
 								wBuffs[#wBuffs].buffID = buffID;
@@ -1511,18 +1533,31 @@ function NRC:updateRaidStatusFrames(updateLayout)
 								wBuffs[#wBuffs].order = 0;
 								hasChronoboon = true;
 								hasWorldBuffs = true;
-							end
-							if (worldBuffs[buffID]) then
-								tinsert(wBuffs, buffData);
-								--Merge some local data with our player auras data.
-								wBuffs[#wBuffs].buffID = buffID;
-								wBuffs[#wBuffs].icon = worldBuffs[buffID].icon;
-								wBuffs[#wBuffs].rank = worldBuffs[buffID].rank;
-								wBuffs[#wBuffs].desc = worldBuffs[buffID].desc;
-								wBuffs[#wBuffs].maxRank = worldBuffs[buffID].maxRank;
-								wBuffs[#wBuffs].order = worldBuffs[buffID].order;
-								hasWorldBuffs = true;
-							end
+							else]]
+								if (buffID == 349981) then
+									--Chronoboon.
+									tinsert(wBuffs, buffData);
+									--Merge some local data with our player auras data.
+									wBuffs[#wBuffs].buffID = buffID;
+									wBuffs[#wBuffs].icon = 133881;
+									wBuffs[#wBuffs].desc = "Suspended World Buffs";
+									wBuffs[#wBuffs].maxRank = true;
+									wBuffs[#wBuffs].order = 0;
+									hasChronoboon = true;
+									hasWorldBuffs = true;
+								end
+								if (worldBuffs[buffID]) then
+									tinsert(wBuffs, buffData);
+									--Merge some local data with our player auras data.
+									wBuffs[#wBuffs].buffID = buffID;
+									wBuffs[#wBuffs].icon = worldBuffs[buffID].icon;
+									wBuffs[#wBuffs].rank = worldBuffs[buffID].rank;
+									wBuffs[#wBuffs].desc = worldBuffs[buffID].desc;
+									wBuffs[#wBuffs].maxRank = worldBuffs[buffID].maxRank;
+									wBuffs[#wBuffs].order = worldBuffs[buffID].order;
+									hasWorldBuffs = true;
+								end
+							--end
 						end
 					end
 				end
@@ -1781,7 +1816,7 @@ function NRC:updateRaidStatusFrames(updateLayout)
 						frame.texture:SetTexture(specIcon);
 						frame.texture:SetSize(16, 16);
 						hasTalents = true;
-						updateGridTooltipTalents(frame, name, classHex, talentCount, specName, specIcon, treeData);
+						updateGridTooltipTalents(frame, name, classHex, talentCount, specName, specIcon, treeData, showOnyCloak, v.hasOnyCloak, v.hasDataShare);
 						--We shouldn't have to remove this click onclick handler if the talents colum option is disabled.
 						--This is the last column so this column won't be reused for any other type.
 						frame:SetScript("OnClick", function(self)
@@ -1793,6 +1828,37 @@ function NRC:updateRaidStatusFrames(updateLayout)
 						frame:SetScript("OnClick", function(self)
 							
 						end)
+					end
+					if (isClassic) then
+						if (showOnyCloak and not NRC.raidStatusCache) then
+							if (v.hasDataShare) then
+								if (v.hasOnyCloak) then
+									frame.texture2:SetTexture(133757);
+									frame.texture2:SetSize(16, 16);
+									frame.texture:SetPoint("RIGHT", frame, "CENTER", -2.5, 0);
+									frame.texture2:SetPoint("LEFT", frame, "CENTER", 2.5, 0);
+									frame.fs:SetPoint("CENTER", -9, 0);
+								else
+									--Not sure if display a missing icon or just move talents icon back to middle yet.
+									--frame.fs2:SetText("|cFFFF0000X|r");
+									--frame.fs2:SetPoint("CENTER", 9, 0);
+									frame.texture:ClearAllPoints();
+									frame.texture:SetPoint("CENTER", 0, 0);
+									frame.texture2:SetTexture();
+									frame.fs:SetPoint("CENTER", 0, 0);
+								end
+							elseif (v.hasDataShare) then
+								frame.texture:ClearAllPoints();
+								frame.texture:SetPoint("CENTER", 0, 0);
+								frame.texture2:SetTexture();
+								frame.fs:SetPoint("CENTER", 0, 0);
+							end
+						else
+							frame.texture:ClearAllPoints();
+							frame.texture:SetPoint("CENTER", 0, 0);
+							frame.texture2:SetTexture();
+							frame.fs:SetPoint("CENTER", 0, 0);
+						end
 					end
 				end
 				if (next(elixirs)) then
@@ -2118,13 +2184,7 @@ function NRC:updateRaidStatusFrames(updateLayout)
 						frame.texture2:SetTexture();
 						frame.texture3:SetTexture();
 						frame.texture4:SetTexture();
-						local fullName;
-						if (v.realm) then
-							fullName = name .. "-" .. v.realm;
-						else
-							fullName = name .. "-" .. NRC.realm;
-						end
-						if (NRC.hasAddon[fullName] or NRC.hasAddonHelper[fullName]) then
+						if (v.hasDataShare) then
 							frame.fs:SetText("|cFFFF0000X|r");
 						else
 							frame.fs:SetText("--");
@@ -2143,13 +2203,7 @@ function NRC:updateRaidStatusFrames(updateLayout)
 						frame.texture2:SetTexture();
 						frame.texture3:SetTexture();
 						frame.texture4:SetTexture();
-						local fullName;
-						if (v.realm) then
-							fullName = name .. "-" .. v.realm;
-						else
-							fullName = name .. "-" .. NRC.realm;
-						end
-						if (NRC.hasAddon[fullName] or NRC.hasAddonHelper[fullName]) then
+						if (v.hasDataShare) then
 							frame.fs:SetText("|cFFFF0000X|r");
 						else
 							frame.fs:SetText("--");
@@ -3016,6 +3070,9 @@ function NRC:createRaidStatusData(updateLayout)
 		end
 	else
 		local groupData;
+		local equipCache = NRC.equipCache;
+		local hasAddon = NRC.hasAddon;
+		local hasAddonHelper = NRC.hasAddonHelper;
 		if (GetNumGroupMembers() > 1) then
 			groupData = NRC.groupCache;
 		else
@@ -3035,36 +3092,54 @@ function NRC:createRaidStatusData(updateLayout)
 			count = count + 1;
 			data.rows[count + 1] = k;
 			data.chars[count] = addChar(v, v.guid, k);
+			local char = data.chars[count];
 			local auraCache = NRC.auraCache[v.guid];
+			local fullName;
+			if (v.realm) then
+				fullName = k .. "-" .. v.realm;
+			else
+				fullName = k .. "-" .. GetNormalizedRealmName();
+			end
 			if (auraCache) then
 				for buffID, buffData in NRC:pairsByKeys(auraCache) do
 					if (NRC.flasks[buffID]) then
-						data.chars[count].flask = buffData;
+						char.flask = buffData;
 					end
 					if (NRC.foods[buffID]) then
-						data.chars[count].food = buffData;
+						char.food = buffData;
 					end
 					if (int[buffID]) then
-						data.chars[count].int = buffData;
+						char.int = buffData;
 					end
 					if (fort[buffID]) then
-						data.chars[count].fort = buffData;
+						char.fort = buffData;
 					end
 					if (spirit[buffID]) then
-						data.chars[count].spirit = buffData;
+						char.spirit = buffData;
 					end
 					if (shadow[buffID]) then
-						data.chars[count].shadow = buffData;
+						char.shadow = buffData;
 					end
 					if (motw[buffID]) then
-						data.chars[count].motw = buffData;
+						char.motw = buffData;
 					end
 					if (pal[buffID]) then
-						data.chars[count].pal = buffData;
+						char.pal = buffData;
 					end
 					--if (worldBuffs[buffID]) then
-					--	data.chars[count].worldBuffs = buffData;
+					--	char.worldBuffs = buffData;
 					--end
+				end
+				if (isClassic) then
+					local equip = equipCache[k];
+					if (equip) then
+						if (equip[15] and equip[15] == 15138) then
+							char.hasOnyCloak = true;
+						end
+					end
+				end
+				if (hasAddon[fullName] or hasAddonHelper[fullName]) then
+					char.hasDataShare = true;
 				end
 			end
 		end
@@ -3088,6 +3163,8 @@ function NRC:tableCopyAuras(orig)
 	for guid, auras in pairs(data) do
 		for spellID, spellData in pairs(auras) do
 			--Remove any we aren't tracking to save saved variables space.
+			auras[spellID].auraInstanceID = nil;
+			auras[spellID].buff = nil;
 			if (not aurasToTableCopy[spellID]) then
 				auras[spellID] = nil;
 			end

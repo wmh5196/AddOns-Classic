@@ -13,9 +13,14 @@ local checkWeapons;
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
 local Unitname = UnitName;
 local UnitGUID = UnitGUID;
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
+local GetItemInfoInstant = GetItemInfoInstant or C_Item.GetItemInfoInstant;
+local GetItemCount = GetItemCount or C_Item.GetItemCount;
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
 local staticPopupFrame = NRC:createStaticPopupAttachment("NRCStaticPopupFrame", 320, 38, 0, 0);
 --staticPopupFrame:SetFrameStrata("DIALOG");
 --staticPopupFrame:SetFrameLevel(999);
+local GetSpellInfo = NRC.GetSpellInfo;
 
 function NRC:encounterStart(...)
 	local encounterID, encounterName, difficultyID, groupSize = ...;
@@ -846,7 +851,7 @@ function NRC:startMiddleIcon(icon, shownTime, text, bottomText) --/run NRC:start
 end
 
 local isShown;
-if (not NRC.isClassic) then
+if (NRC.isWrath or NRC.isCata) then
 	hooksecurefunc("StaticPopup_Show", function(...)
 		for i = 1, STATICPOPUP_NUMDIALOGS do
 			local frame = _G["StaticPopup" .. i];
