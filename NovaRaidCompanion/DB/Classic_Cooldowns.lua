@@ -499,6 +499,37 @@ NRC.castDetectCooldowns = {
 			[425336] = "Shamanistic Rage", --Rune.
 		},
 	},
+	--Warlock.
+	["Infernal Armor"] = {
+		class = "WARLOCK",
+		icon = "Interface\\Icons\\achievement_boss_kiljaedan",
+		cooldown = 60,
+		minLevel = 1,
+		isRune = true,
+		spellIDs = {
+			[440882] = "Infernal Armor", --Rune.
+		},
+	},
+	["Vengeance"] = {
+		class = "WARLOCK",
+		icon = "Interface\\Icons\\ability_warlock_improveddemonictactics",
+		cooldown = 180,
+		minLevel = 1,
+		isRune = true,
+		spellIDs = {
+			[426469] = "Vengeance", --Rune.
+		},
+	},
+	["Demonic Howl"] = {
+		class = "WARLOCK",
+		icon = "Interface\\Icons\\ability_bullrush",
+		cooldown = 600,
+		minLevel = 1,
+		isRune = true,
+		spellIDs = {
+			[412789] = "Demonic Howl", --Rune.
+		},
+	},
 	--Warrior.
 	["Rallying Cry"] = {
 		class = "WARRIOR",

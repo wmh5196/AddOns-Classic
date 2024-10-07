@@ -24,7 +24,7 @@ if (NRCAH.isClassic and C_Engraving and C_Engraving.IsEngravingEnabled()) then
 end
 
 NRCAH_Installed = true;
-NRCAH.version = 1.06;
+NRCAH.version = 1.07;
 --All these libs are already included with weakauras.
 NRCAH.comms = LibStub:GetLibrary("AceComm-3.0");
 NRCAH.comms:Embed(NRCAH);
@@ -215,8 +215,8 @@ function NRCAH:throddleEventByFunc(event, time, func, ...)
         --Must be false and not nil.
         NRCAH.currentThroddles[func] = ... or false;
         C_Timer.After(time, function()
-                self[func](self, NRCAH.currentThroddles[func]);
-                NRCAH.currentThroddles[func] = nil;
+            self[func](self, NRCAH.currentThroddles[func]);
+            NRCAH.currentThroddles[func] = nil;
         end)
     end
 end
@@ -293,6 +293,9 @@ function NRCAH:checkMyRes(setDataOnly)
         f:RegisterEvent("PLAYER_REGEN_ENABLED");
         return;
     end
+    if (not UnitResistance) then
+    	return;
+    end
     local temp = {};
     for i = 2, 6 do
         --0 = Armor, 1 = Holy, 2 = Fire, 3 = Nature, 4 = Frost, 5 = Shadow, 6 = Arcane,
@@ -344,6 +347,9 @@ local enchantIgnoreList = {
 };
 
 function NRCAH:checkMyEnchants(setDataOnly)
+	if (not GetWeaponEnchantInfo) then
+		return;
+	end
     local me = UnitName("player");
     local temp = {};
     local mh, mhTime, _, mhID, oh, ohTime, _, ohID = GetWeaponEnchantInfo();
@@ -506,7 +512,7 @@ end
 
 --First 3 major, second 3 minor.
 function NRCAH:createGlyphString(f)
-	if (NRCAH.expansionNum < 3) then
+	if (NRCAH.expansionNum < 3 or not GetGlyphSocketInfo) then
 		return;
 	end
     local _, _, classID = UnitClass("player");
@@ -586,7 +592,7 @@ function NRCAH:sendRaidData()
     if (not IsInGroup()) then
         return;
     end
-    if (GetServerTime() - NRCAH.lastRaidDataSent < 30) then --Change this time to longer later (once data accuracy is observed properly).
+    if (GetServerTime() - NRCAH.lastRaidDataSent < 10) then --Change this time to longer later (once data accuracy is observed properly).
         --If multiple leaders open the status frame we don't need to keep sending data.
         --They should already have it unless they just joined group.
         --Individual stats are sent when they change so data should always be up to date.
@@ -614,6 +620,10 @@ function NRCAH:sendRaidData()
 	        a.g = g;
 	    end
     end
+    local h = NRCAH:getEquipToShare(true);
+	if (h) then
+		a.h = h;
+	end
     a = NRCAH.serializer:Serialize(a);
     sendGroupComm("rd " .. NRCAH.version .. " " .. a);
 end
@@ -625,6 +635,82 @@ if (not NRCAH.db.firstLoad) then
             NRCAH:sendRaidData();
     end)
 end
+
+
+
+--Equip.
+--If itemID is 0 then share any item we have in that slot, otherwise only share if the item is the one we want to know about.
+local slotsChangedCache = {};
+local shareEquip = {};
+if (NRCAH.isClassic) then
+	shareEquip = {
+		[15] = {15138}, --Ony cloak.
+	};
+end
+
+--Called by NRC:createRaidData() in Data.lua and here below when a slot changes gear.
+function NRCAH:getEquipToShare(fullSend)
+	if (not NRCAH.isClassic) then
+		return;
+	end
+	--Only share if something is set to share, otherwise we still send an empty table to show slot is not the item we want to know about.
+	--Unless spellID set to 0 above then we share any item in that slot.
+	local toShare = {};
+	if (next(slotsChangedCache) and not fullSend) then
+		--If we specify slots then only share those slots.
+		toShare = {};
+		for slot, _ in pairs(slotsChangedCache) do
+			if (shareEquip[slot]) then
+				toShare = {
+					[slot] = shareEquip[slot],
+				};
+			end
+		end
+		slotsChangedCache = {};
+	else
+		toShare = shareEquip;
+	end
+	if (next(toShare)) then
+		local data = {};
+		for slot, itemIDs in pairs(toShare) do
+			local equippedID = GetInventoryItemID("player", slot);
+			if (equippedID) then
+				for _, itemID in pairs(itemIDs) do
+					if (itemID == 0 or itemID == equippedID) then
+						data[slot] = equippedID;
+						break;
+					end
+				end
+			end
+		end
+		return data;
+	end
+end
+
+--fullSend isn't used here yet, it's only used in the above func instead when full raid data is sent and the raid data func creates that table.
+function NRCAH:sendEquipToShare(fullSend)
+	if (not IsInGroup()) then
+		return;
+	end
+	local equip = NRCAH:getEquipToShare(fullSend);
+	if (equip) then
+		local data = NRCAH.serializer:Serialize(equip);
+		sendGroupComm("eq " .. NRCAH.version .. " " .. data);
+	end
+end
+
+local f = CreateFrame("Frame", "NRCEquip");
+f:RegisterEvent("PLAYER_EQUIPMENT_CHANGED");
+f:SetScript('OnEvent', function(self, event, ...)
+	if (event == "PLAYER_EQUIPMENT_CHANGED") then
+		local slot = ...;
+		--Create a list of all slots that need updating and then send, so we don't spam send when a equip manager changes a bunch of slots at once.
+		slotsChangedCache[slot] = true;
+		NRCAH:throddleEventByFunc(event, 1, "sendEquipToShare", ...);
+	end
+end)
+
+
 
 --Also include the full LibDurability to operate seperately.
 local LD = LibStub:NewLibrary("LibDurability", 2)

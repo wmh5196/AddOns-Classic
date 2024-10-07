@@ -16,7 +16,7 @@ local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
 local GetTime = GetTime;
 local GetPlayerInfoByGUID = GetPlayerInfoByGUID;
 local tinsert = tinsert;
-local GetSpellInfo = GetSpellInfo;
+local GetSpellInfo = NRC.GetSpellInfo;
 local UnitName = UnitName;
 local UnitClass = UnitClass;
 
@@ -80,6 +80,8 @@ function NRC:openScrollingRaidEventsFrame()
 		scrollingRaidEventsFrame:Show();
 		--So interface options and this frame will open on top of each other.
 		if (InterfaceOptionsFrame:IsShown()) then
+			scrollingRaidEventsFrame:SetFrameStrata("DIALOG");
+		elseif (SettingsPanel and SettingsPanel:IsShown()) then
 			scrollingRaidEventsFrame:SetFrameStrata("DIALOG");
 		else
 			scrollingRaidEventsFrame:SetFrameStrata("MEDIUM");
@@ -260,6 +262,7 @@ function NRC:sreUpdateSettings()
 		scrollingRaidEventsFrame.lineFrameFontOutline = NRC.db.global.sreFontOutline;
 		scrollingRaidEventsFrame:SetHeight(NRC.config.sreScrollHeight);
 		scrollingRaidEventsFrame:SetHeight(NRC.config.sreScrollHeight);
+		scrollingRaidEventsFrame:SetAlpha(NRC.config.sreAlpha);
 		--lineFrameHeight = scrollingRaidEventsFrame.lineFrameHeight;
 		scrollingRaidEventsFrame.updateAnimationSettings();
 		NRC:sreLoadSpellList();
@@ -354,7 +357,7 @@ function NRC:srePortalEvent(spellID, spellName, icon, sourceName, sourceClass)
 	if (spellName) then
 		text = text .. " -> |cFF9CD6DE" .. spellName .. "|r";
 	else
-		text = text .. " -> |cFF9CD6DE" .. magePortals[spellID].spellName .. "|r";
+		text = text .. " -> |cFF9CD6DE" .. magePortals[spellID].name .. "|r";
 	end
 	NRC:sreSendEvent(text, nil, sourceName);
 end
@@ -817,9 +820,9 @@ local function testSre(testID)
 			type = "spell",
 		};
 		events[26] = {
-			spellID = 35717,
-			spellName = "Portal: Shattrath",
-			icon = 135745,
+			spellID = 11417,
+			spellName = "Portal: Orgimmar",
+			icon = 135744,
 			sourceName = "Player11",
 			sourceClass = "MAGE",
 			type = "portal",
@@ -834,9 +837,9 @@ local function testSre(testID)
 			type = "spell",
 		};
 		events[26] = {
-			spellID = 33691,
-			spellName = "Portal: Shattrath",
-			icon = 135745,
+			spellID = 10059,
+			spellName = "Portal: Stormwind",
+			icon = 135748,
 			sourceName = "Player11",
 			sourceClass = "MAGE",
 			type = "portal",

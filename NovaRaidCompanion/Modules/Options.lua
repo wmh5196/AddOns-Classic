@@ -7,6 +7,8 @@
 local addonName, NRC = ...;
 local L = LibStub("AceLocale-3.0"):GetLocale("NovaRaidCompanion");
 NRC.maxCooldownFrameCount = 5;
+local GetSpellTexture = GetSpellTexture or C_Spell.GetSpellTexture;
+local GetSpellInfo = NRC.GetSpellInfo;
 
 local spellWidth, mergedWidth, frameWidth = 0.8, 0.8, 0.5;
 local function setCooldownFrameOption(values)
@@ -564,6 +566,17 @@ NRC.options = {
 					get = "getRaidCooldownsBorderType",
 					set = "setRaidCooldownsBorderType",
 				},
+				--Doesn't really work with our current display, maybe in the future.
+				--[[raidCooldownsBackgroundTexture = {
+					type = "select",
+					name = L["raidCooldownsBackgroundTextureTitle"],
+					desc = L["raidCooldownsBackgroundTextureDesc"],
+					values = NRC.LSM:HashTable("statusbar"),
+					dialogControl = "LSM30_Statusbar",
+					order = 31,
+					get = "getRaidCooldownsBackgroundTexture",
+					set = "setRaidCooldownsBackgroundTexture",
+				},]]
 				raidCooldownsSortOrder = {
 					type = "select",
 					name = L["raidCooldownsSortOrderTitle"],
@@ -2731,13 +2744,26 @@ NRC.options = {
 					softMin = 1,
 					softMax = 200,
 					step = 1,
-					width = 2,
+					--width = 2,
+				},
+				sreAlpha = {
+					type = "range",
+					name = L["sreAlphaTitle"],
+					desc = L["sreAlphaDesc"],
+					order = 22,
+					get = "getSreAlpha",
+					set = "setSreAlpha",
+					min = 0.05,
+					max = 1,
+					softMin = 0.05,
+					softMax = 1,
+					step = 0.05,
 				},
 				sreLineFrameScale = {
 					type = "range",
 					name = L["sreLineFrameScaleTitle"],
 					desc = L["sreLineFrameScaleDesc"],
-					order = 22,
+					order = 23,
 					get = "getSreLineFrameScale",
 					set = "setSreLineFrameScale",
 					min = 0.3,
@@ -2751,7 +2777,7 @@ NRC.options = {
 					type = "range",
 					name = L["sreScrollHeightTitle"],
 					desc = L["sreScrollHeightDesc"],
-					order = 23,
+					order = 24,
 					get = "getSreScrollHeight",
 					set = "setSreScrollHeight",
 					min = 100,
@@ -4717,6 +4743,7 @@ NRC.optionDefaults = {
 		raidCooldownsFont = "NRC Default",
 		raidCooldownsFontNumbers = "NRC Default",
 		raidCooldownsFontSize = 12,
+		--raidCooldownsBackgroundTexture = "Solid",
 		raidCooldownsWidth = 150,
 		raidCooldownsHeight = 20,
 		raidCooldownsFontOutline = "NONE",
@@ -4900,6 +4927,7 @@ NRC.optionDefaults = {
 		sreGrowthDirection = 1,
 		sreAlignment = 1,
 		sreAnimationSpeed = 35,
+		sreAlpha = 1,
 		sreLineFrameScale = 1,
 		sreScrollHeight = 250,
 		sreCustomSpells = {},
@@ -5509,18 +5537,19 @@ local function loadNewVersionFrame()
 	frame.scrollChild.fs:SetText("|cFFFFFF00Nova Raid Companion");
 	frame.scrollChild.fs2:SetText("|cFFFFFF00New in version|r |cFFFF6900" .. string.format("%.2f", NRC.version));
 	frame:Hide();
-	linesVersion = 1.52;
+	linesVersion = 1.53;
 	local lines = {
 		--"|cFF00FF00[General Changes]|r",
-		"Added option to show protection potions in scrolling raid events (Greater Fire Protection Potion etc).",
-		"Added option to /say when other people drop a repair bot/feast/couldron etc (there was always an option to /say when it was yourself, but now you can announce others, off by default).",
-		"Added option to display shamans as blue in this addon.",
-		"Added missing textures in raid log for SoD world bosses.",
-		"Added world buffs to the buff snapshots in the raid log.",
-		"The raid status flasks column can now show up to 4 flasks/elixirs at once in classic era, all are combined since they stack there.",
-		"Fixed the talents frame not showing when you inspect people if you had certain other addons installed.",
-		"Fixed an issue with readycheck making player names keep moving left and right in the raid status frame.",
-		"Fixed a bunch of other small bugs.",
+		"Added onyxia cloak equipped tracking during BWL raids, it shows in the raid status frame talents column if cloak is equipped (left click mini map button), must have this addon or the weakaura helper (wago.io/sof4ehBA6) installed to display equipped status.",
+		"Added new alliance rend buff \"Might of Stormwind\" to raid status window and chronoboon tracking (shows as original rend buff icon).",
+		"Added Chronoboon to raid log buff snapshots.",
+		"Added lowest item durability check on top of the average durability check when entering a instance, it now also shows which item has the lowest %.",
+		"Added some missing ZG textures to raid log.",
+		"Added transparency/alpha slider option for scrolling raid events.",
+		"Added warlock SoD rune cooldowns Infernal Armor/Vengeance/Demonic Howl.",
+		"Changed the 3 day reset timer on the minimap icon to bi-weekly for sod.",
+		"Fixed a bug with rend/ony/zan world buffs not showing if they wern't the unbooned versions.",
+		"Many other small bug fixes and performance updates.",
 	};
 	local text = "";
 	--Seperator lines couldn't be used because the wow client won't render 1 pixel frames if they are in certain posotions.
@@ -5834,6 +5863,16 @@ end
 function NRC:getRaidCooldownsShowDead(info)
 	return self.config.raidCooldownsShowDead;
 end
+
+--Raid cooldowns background texture.
+--[[function NRC:setRaidCooldownsBackgroundTexture(info, value)
+	self.db.global.raidCooldownsBackgroundTexture = value;
+	NRC:updateRaidCooldownFramesLayout();
+end
+
+function NRC:getRaidCooldownsBackgroundTexture(info)
+	return self.db.global.raidCooldownsBackgroundTexture;
+end]]
 
 --Raid cooldowns font.
 function NRC:setRaidCooldownsFont(info, value)
@@ -7251,6 +7290,16 @@ end
 
 function NRC:getSreAnimationSpeed(info)
 	return self.config.sreAnimationSpeed;
+end
+
+--SRE alpha.
+function NRC:setSreAlpha(info, value)
+	self.config.sreAlpha = value;
+	NRC:sreUpdateSettings();
+end
+
+function NRC:getSreAlpha(info)
+	return self.config.sreAlpha;
 end
 
 --SRE line scale.

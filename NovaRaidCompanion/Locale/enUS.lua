@@ -123,6 +123,8 @@ L["Type"] = "Type";
 L["Raid Lockouts This Char"] = "Raid Lockouts This Char";
 L["Raid Lockouts (Including Alts)"] = "Raid Lockouts (Including Alts)";
 L["Your durability is at"] = "Your durability is at";
+L["Average durability is at"] = "Average durability is at";
+L["Lowest item"] = "Lowest item";
 L["Summoning"] = "Summoning"; --Summoning player to location, click!
 L["click!"] = "click!";	--Summoning player to location, click!
 L["Healthstones"] = "Healthstones";
@@ -1245,3 +1247,6 @@ L["raidScrollingMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33Scrolli
 
 L["blueShamansTitle"] = "Blue Shamans";
 L["blueShamansDesc"] = "Show shamans as blue on this addon in classic.";
+
+L["sreAlphaTitle"] = "Alpha";
+L["sreAlphaDesc"] = "Change the alpha/transparency of the scrolling raid events frame.";

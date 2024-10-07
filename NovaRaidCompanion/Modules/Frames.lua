@@ -1477,21 +1477,6 @@ function NRC:createSimpleInputScrollFrame(name, width, height, x, y, notSpecialF
 	frame.close:GetDisabledTexture():SetTexCoord(0.1875, 0.8125, 0.1875, 0.8125);
 	frame:Hide();
 	return frame;
-	--Changing scroll position requires a slight delay.
-	--Second delay is a backup.
-	--[[C_Timer.After(0.05, function()
-		trackedItemsFrame:SetVerticalScroll(0);
-	end)
-	C_Timer.After(0.3, function()
-		trackedItemsFrame:SetVerticalScroll(0);
-	end)
-	--So interface options and this frame will open on top of each other.
-	if (InterfaceOptionsFrame:IsShown()) then
-		trackedItemsFrame:SetFrameStrata("DIALOG");
-	else
-		trackedItemsFrame:SetFrameStrata("HIGH");
-	end
-	trackedItemsFrame.EditBox:ClearFocus();]]
 end
 
 function NRC:createMainFrame(name, width, height, x, y, tabs)
@@ -4369,7 +4354,14 @@ function NRC:createTradeExportFrame(name, width, height, x, y, notSpecialFrames)
 	end
 	
 	for i = 1, 2 do
-		local slider = CreateFrame("Slider", "$parentSlider" .. i, frame.topFrame, "OptionsSliderTemplate");
+		local slider = CreateFrame("Slider", "$parentSlider" .. i, frame.topFrame, "UISliderTemplate");
+		--Slider template currently bugged, need to create some elements ourself.
+		slider.High = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
+		slider.High:SetPoint("TOPRIGHT", slider, "BOTTOMRIGHT");
+		slider.Low = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall");
+		slider.Low:SetPoint("TOPLEFT", slider, "BOTTOMLEFT");
+		slider.Text = slider:CreateFontString(nil, "ARTWORK", "GameFontHighlight");
+		slider.Text:SetPoint("BOTTOM", slider, "TOP");
 		--slider:SetFrameStrata("HIGH");
 		slider:SetFrameLevel(5);
 		slider:SetWidth(224);

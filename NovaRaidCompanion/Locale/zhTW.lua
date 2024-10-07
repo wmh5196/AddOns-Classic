@@ -127,6 +127,8 @@ L["Type"] = "種類";
 L["Raid Lockouts This Char"] = "此角色副本進度";
 L["Raid Lockouts (Including Alts)"] = "副本進度 (包括分身)";
 L["Your durability is at"] = "你的耐久度達到";
+L["Average durability is at"] = "平均耐久度達到";
+L["Lowest item"] = "最低的物品";
 L["Summoning"] = "正在招喚"; --Summoning player to location, click!
 L["click!"] = "請點門!";	--Summoning player to location, click!
 L["Healthstones"] = "治療石";
@@ -1230,6 +1232,9 @@ L["raidScrollingMoveMeTooltip"] = "|cFFFF6900[NRC]|r |cFF9CD6DE|cFF33FF33捲動�
 
 L["blueShamansTitle"] = "藍色薩滿";
 L["blueShamansDesc"] = "在經典模式下，在此插件中將薩滿顯示為藍色。";
+
+L["sreAlphaTitle"] = "透明度";
+L["sreAlphaDesc"] = "更改捲動團隊事件框架的透明度。";
 
 --
 L["Sources"] = "施放來源"

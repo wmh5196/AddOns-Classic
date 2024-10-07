@@ -31,6 +31,8 @@ local UnitName = UnitName;
 local GetNormalizedRealmName = GetNormalizedRealmName;
 local GetPlayerInfoByGUID = GetPlayerInfoByGUID;
 local GetTalentInfo = GetTalentInfo;
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
+local GetSpellInfo = NRC.GetSpellInfo;
 local soulstoneDuration = 1800;
 local showDead;
 if (NRC.expansionNum > 2) then
@@ -281,6 +283,7 @@ function NRC:updateRaidCooldownFramesLayout()
 					v.borderFrame:Show();
 					v:SetBackdrop({
 						bgFile = "Interface\\Buttons\\WHITE8x8",
+						--bgFile = NRC.LSM:Fetch("statusbar", db.raidCooldownsBackgroundTexture),
 						insets = {top = 1, left = 1, bottom = 1, right = 1},
 					});
 				end
@@ -1142,6 +1145,11 @@ function NRC:updateRaidCooldownsVisibility()
 	end
 	NRC:updateRaidCooldowns();
 	NRC:updateSoulstoneFrame();
+	if (not NRC.config.raidCooldownsBresCount or not NRC.config.showRaidCooldowns) then
+		if (bresCountFrame) then
+			bresCountFrame:Hide();
+		end
+	end
 end
 
 local function sendClick(button, name, class, timeLeft, spell)
@@ -2819,7 +2827,10 @@ end
 --Frame position is set in RaidCooldowns, everything else is here.
 
 function NRC:startBresCountFrame(difficultyID)
-	if (not NRC.config.raidCooldownsBresCount) then
+	if (not NRC.config.raidCooldownsBresCount or not NRC.config.showRaidCooldowns) then
+		if (bresCountFrame) then
+			bresCountFrame:Hide();
+		end
 		return;
 	end
 	if (difficultyID == 3 or difficultyID == 5) then
@@ -2857,6 +2868,9 @@ end]]
 ---Move these into cooldown state funcs
 function NRC:updateBresCountFrame(lineFrame)
 	if (disabled or not bresCountFrame) then
+		if (bresCountFrame) then
+			bresCountFrame:Hide();
+		end
 		return;
 	end
 	if (NRC.config.raidCooldownsBresCount and lineFrame and IsInGroup()) then

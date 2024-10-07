@@ -14,6 +14,8 @@ local hits, lastTricks, hitsDamage = {}, {}, {};
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
 local UnitGUID = UnitGUID;
 local strfind = strfind;
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
+local GetSpellInfo = NRC.GetSpellInfo;
 
 local aoeSpells = {
 	[13241] = "Goblin Sapper Charge",

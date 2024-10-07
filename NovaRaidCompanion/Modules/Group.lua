@@ -215,6 +215,7 @@ function NRC:groupMemberLeft(name, data)
 	NRC.auraCache[data.guid] = nil;
 	NRC.chronoCache[data.guid] = nil;
 	NRC.durability[name] = nil;
+	NRC.equipCache[name] = nil;
 	NRC:removeRaidManaChar(name);
 	NRC:removeFromManaCache(name);
 	NRC:removeRaidCooldownChar(data.guid);

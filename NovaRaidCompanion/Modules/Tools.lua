@@ -847,6 +847,15 @@ function NRC:getThreeDayReset()
 	return nextReset, lastReset;
 end
 
+function NRC:getBiWeeklyReset()
+	local weeklyReset = C_DateAndTime.GetSecondsUntilWeeklyReset();
+	if (weeklyReset < 259200) then
+		return GetServerTime() + weeklyReset;
+	else
+		return GetServerTime() + (weeklyReset - 259200);
+	end
+end
+
 function NRC:printRaw(msg)
 	local msg = gsub(msg, "\124", "\124\124")
 	print(msg)

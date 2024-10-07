@@ -23,6 +23,12 @@ local GetPlayerInfoByGUID = GetPlayerInfoByGUID;
 local GetServerTime = GetServerTime;
 local CombatLogGetCurrentEventInfo = CombatLogGetCurrentEventInfo;
 local UnitName = UnitName;
+local GetItemInfo = GetItemInfo or C_Item.GetItemInfo;
+local GetItemCount = GetItemCount or C_Item.GetItemCount;
+local GetItemQualityColor = GetItemQualityColor or C_Item.GetItemQualityColor;
+local GetSpellLink = GetSpellLink or C_Spell.GetSpellLink;
+local GetSpellInfo = NRC.GetSpellInfo;
+NRC.currentInstanceID = 0;
 	
 local lastLooted = {};
 function NRC:chatMsgLoot(...)
@@ -1514,6 +1520,8 @@ function NRC:openRaidLogFrame()
 		raidLogFrame.scrollFrame:SetVerticalScroll(0);
 		--So interface options and this frame will open on top of each other.
 		if (InterfaceOptionsFrame and InterfaceOptionsFrame:IsShown()) then
+			raidLogFrame:SetFrameStrata("DIALOG");
+		elseif (SettingsPanel and SettingsPanel:IsShown()) then
 			raidLogFrame:SetFrameStrata("DIALOG");
 		else
 			raidLogFrame:SetFrameStrata("MEDIUM");
@@ -5200,10 +5208,31 @@ function NRC:recalcLockoutsFrame()
 	lockoutsFrame:SetHeight(lockoutsFrame.fs2:GetStringHeight() + 40);
 end
 
+local function getLowestDurabilityItem()
+	local lowest = 999;
+	local lowestItem, lowestItemID, lowestItemLink;
+	for i = 1, 18 do
+		local curItemDurability, maxItemDurability = GetInventoryItemDurability(i);
+		if (curItemDurability and maxItemDurability) then
+			local percent = curItemDurability / maxItemDurability * 100
+			if (percent < lowest) then
+				lowest = percent;
+				lowestItemID = GetInventoryItemID("player", i);
+				lowestItemLink = GetInventoryItemLink("player", i);
+			end
+		end
+	end
+	if (lowestItemID) then
+		lowestItem = C_Item.GetItemInfo(lowestItemID);
+	end
+	return NRC:round(lowest), lowestItem, lowestItemLink;
+end
+
 function NRC:equipDurabilityCheck()
 	if (NRC.config.duraWarning) then
 		local percent, broken = NRC.dura.GetDurability();
-		if (percent and percent < 50) then
+		local lowest, lowestItem, lowestItemLink = getLowestDurabilityItem();
+		if ((percent and percent < 50) or (lowest and lowest < 25)) then
 			local color = "|cFF00C800";
 			if (percent < 31) then
 				color = "|cFFFF2222";
@@ -5212,7 +5241,11 @@ function NRC:equipDurabilityCheck()
 			end
 			local coloredDura = color .. math.floor(percent) .. "%|r";
 			C_Timer.After(2, function()
-				NRC:print(NRC.prefixColor .. L["Warning"] .. ":|r |cFF0096FF" .. L["Your durability is at"] .. " " .. coloredDura .. ".");
+				local lowestString = "";
+				if (lowestItemLink) then
+					lowestString = " |cFF9CD6DE(" .. L["Lowest item"] .. ": " .. lowestItemLink .. " " .. lowest .. "%)|r";
+				end
+				NRC:print(NRC.prefixColor .. L["Warning"] .. ":|r |cFF0096FF" .. L["Average durability is at"] .. " " .. coloredDura .. lowestString .. ".");
 			end)
 		end
 	end
@@ -5490,6 +5523,7 @@ function NRC:enteredInstanceRD(isReload, isLogon)
 		end
 		--This is cleared on group leave.
 		NRC.lastRaidGroupInstanceID = instanceID;
+		NRC.currentInstanceID = instanceID;
 		NRC.lastRaidID = raidID;
 		NRC.raid = NRC.db.global.instances[1];
 		NRC:equipDurabilityCheck();
@@ -5526,6 +5560,7 @@ function NRC:leftInstanceRD()
 	NRC:recordLockoutData();
 	NRC.raid = nil;
 	NRC.inInstance = nil;
+	NRC.currentInstanceID = 0;
 	NRC.lastNpcID = 999999999;
 	NRC.lastInstanceName = "(Unknown Instance)";
 end

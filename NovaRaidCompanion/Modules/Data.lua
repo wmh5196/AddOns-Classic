@@ -107,7 +107,10 @@ function NRC:OnCommReceived(commPrefix, string, distribution, sender)
 		NRC:receivedGlyphs(data, sender, distribution);
 	elseif (cmd == "rd") then
 		--Raid data, dura enchants resistances.
-		NRC:receivedRaidData(data, sender, distribution)
+		NRC:receivedRaidData(data, sender, distribution);
+	elseif (cmd == "eq") then
+		--Equipment.
+		NRC:receivedEquip(data, sender, distribution);
 	elseif (cmd == "requestRaidData") then
 		--If raid status is opened by someone, throddled.
 		NRC:sendRaidData();
@@ -210,6 +213,8 @@ function NRC:OnHelperCommReceived(commPrefix, string, distribution, sender)
 		NRC:receivedGlyphs(data, sender, distribution);
 	elseif (cmd == "rd") then
 		NRC:receivedRaidData(data, sender, distribution);
+	elseif (cmd == "eq") then
+		NRC:receivedEquip(data, sender, distribution);
 	end
 end
 
@@ -275,6 +280,8 @@ function NRC:sendData(distribution, target, prio)
 	if (not distribution) then
 		if (IsInRaid()) then
 			distribution = "RAID";
+		elseif (LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+	       distribution = "INSTANCE_CHAT";
 		elseif (IsInGroup()) then
 			distribution = "PARTY";
 		end
@@ -297,6 +304,8 @@ function NRC:requestData(distribution, target, prio)
 	if (not distribution) then
 		if (IsInRaid()) then
 			distribution = "RAID";
+		elseif (LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+	       distribution = "INSTANCE_CHAT";
 		elseif (IsInGroup()) then
 			distribution = "PARTY";
 		end
@@ -324,6 +333,8 @@ function NRC:sendSettings(distribution, target, prio)
 	if (not distribution) then
 		if (IsInRaid()) then
 			distribution = "RAID";
+		elseif (LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+	       distribution = "INSTANCE_CHAT";
 		elseif (IsInGroup()) then
 			distribution = "PARTY";
 		else
@@ -347,6 +358,8 @@ function NRC:requestSettings(distribution, target, prio)
 	if (not distribution) then
 		if (IsInRaid()) then
 			distribution = "RAID";
+		elseif (LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+	       distribution = "INSTANCE_CHAT";
 		elseif (IsInGroup()) then
 			distribution = "PARTY";
 		else
@@ -387,6 +400,8 @@ function NRC:sendSpellUsed(spellID, cooldownTime, destName, destClass, distribut
 	if (not distribution) then
 		if (IsInRaid()) then
 			distribution = "RAID";
+		elseif (LE_PARTY_CATEGORY_INSTANCE and IsInGroup(LE_PARTY_CATEGORY_INSTANCE)) then
+	       distribution = "INSTANCE_CHAT";
 		elseif (IsInGroup()) then
 			distribution = "PARTY";
 		else
@@ -903,6 +918,7 @@ f:SetScript('OnEvent', function(self, event, ...)
 		NRC:checkMyEnchants(true);
 		NRC.checkMyTalents();
 		NRC.checkMyGlyphs();
+		NRC.checkMyEquip();
 		local isLogon, isReload = ...;
 		if (isReload) then
 			--If reload then group join won't fire so send it here instead.
@@ -918,6 +934,8 @@ f:SetScript('OnEvent', function(self, event, ...)
 		NRC.durability = {};
 		NRC.resistances = {};
 		NRC:checkMyRes(true);
+		NRC.equipCache = {};
+		NRC:checkMyEquip();
 		NRC.weaponEnchants = {};
 		NRC:checkMyEnchants(true);
 		--NRC.talents = {};
@@ -953,11 +971,7 @@ function NRC:sendRes()
 	NRC.resistances[me] = myRes;
 	--NRC:debug("sending res update");
 	local data = NRC.serializer:Serialize(myRes);
-	if (IsInRaid()) then
-		NRC:sendComm("RAID", "res " .. NRC.version .. " " .. data);
-	elseif (IsInGroup()) then
-		NRC:sendComm("PARTY", "res " .. NRC.version .. " " .. data);
-	end
+	NRC:sendGroupComm("res " .. NRC.version .. " " .. data);
 end
 
 function NRC:receivedRes(data, sender, distribution)
@@ -1044,11 +1058,7 @@ function NRC:sendEnchants()
 	end
 	--NRC:debug("sending weapon enchant update");
 	local data = NRC.serializer:Serialize(myEnchants);
-	if (IsInRaid()) then
-		NRC:sendComm("RAID", "ench " .. NRC.version .. " " .. data);
-	elseif (IsInGroup()) then
-		NRC:sendComm("PARTY", "ench " .. NRC.version .. " " .. data);
-	end
+	NRC:sendGroupComm("ench " .. NRC.version .. " " .. data);
 end
 
 function NRC:receivedEnchants(data, sender, distribution)
@@ -1150,11 +1160,7 @@ function NRC:sendTalents()
 	NRC.talents[me] = talents;
 	--NRC:debug("sending talents update");
 	local data = NRC.serializer:Serialize(talents);
-	if (IsInRaid()) then
-		NRC:sendComm("RAID", "tal " .. NRC.version .. " " .. data);
-	elseif (IsInGroup()) then
-		NRC:sendComm("PARTY", "tal " .. NRC.version .. " " .. data);
-	end
+	NRC:sendGroupComm("tal " .. NRC.version .. " " .. data);
 	if (myTalentsChanged and NRC.groupCache[me]) then
 		myTalentsChanged = nil;
 		NRC:loadRaidCooldownChar(me, NRC.groupCache[me]);
@@ -1197,10 +1203,8 @@ function NRC:sendGlyphs(sender)
 			sender = name;
 		end
 		NRC:sendComm("WHISPER", "glyrec " .. NRC.version .. " " .. data, sender);
-	elseif (IsInRaid()) then
-		NRC:sendComm("RAID", "gly " .. NRC.version .. " " .. data);
-	elseif (IsInGroup()) then
-		NRC:sendComm("PARTY", "gly " .. NRC.version .. " " .. data);
+	else
+		NRC:sendGroupComm("gly " .. NRC.version .. " " .. data);
 	end
 end
 
@@ -1237,6 +1241,7 @@ function NRC:createRaidData()
 	NRC:checkMyEnchants(true);
 	NRC:checkMyTalents();
 	NRC.checkMyGlyphs();
+	NRC.checkMyEquip();
 	local me = UnitName("player");
 	NRC.resistances[me] = myRes;
 	local data = {};
@@ -1262,6 +1267,10 @@ function NRC:createRaidData()
 	if (g) then
 		data.g = g;
 	end
+	local h = NRC:getEquipToShare(true);
+	if (h) then
+		data.h = h;
+	end
 	return data;
 end
 
@@ -1269,7 +1278,7 @@ function NRC:sendRaidData()
 	if (not IsInGroup()) then
 		return;
 	end
-	if (GetServerTime() - lastRaidDataSent < 30) then --Change this time to longer later (once data accuracy is observed properly).
+	if (GetServerTime() - lastRaidDataSent < 10) then --Change this time to longer later (once data accuracy is observed properly).
 		--If multiple leaders open the status frame we don't need to keep sending data.
 		--They should already have it unless they just joined group.
 		--Individual stats are sent when they change so data should always be up to date.
@@ -1278,12 +1287,7 @@ function NRC:sendRaidData()
 	lastRaidDataSent = GetServerTime();
 	local data = NRC:createRaidData();
 	data = NRC.serializer:Serialize(data);
-	if (IsInRaid()) then
-		NRC:sendComm("RAID", "rd " .. NRC.version .. " " .. data);
-		--C_ChatInfo.SendAddonMessage("NRCH", "data " .. NRC.version .. " " .. data, "RAID");
-	elseif (IsInGroup()) then
-		NRC:sendComm("PARTY", "rd " .. NRC.version .. " " .. data);
-	end
+	NRC:sendGroupComm("rd " .. NRC.version .. " " .. data);
 end
 
 --This is called when we open the raid status frame, throddled.
@@ -1293,11 +1297,7 @@ function NRC:requestRaidData()
 	end
 	--Durability is requested seperately because it's a 3rd party lib other addons use too.
 	NRC.dura:RequestDurability();
-	if (IsInRaid()) then
-		NRC:sendComm("RAID", "requestRaidData " .. NRC.version);
-	elseif (IsInGroup()) then
-		NRC:sendComm("PARTY", "requestRaidData " .. NRC.version);
-	end
+	NRC:sendGroupComm("requestRaidData " .. NRC.version);
 end
 
 --If it comes included with other data in NRC:receivedData() then it's already deserialized.
@@ -1338,10 +1338,13 @@ function NRC:receivedRaidData(data, sender, distribution, alreadyDeserialized)
 		if (raidData.g) then
 			NRC.glyphs[sender] = raidData.g;
 		end
+		if (raidData.h) then
+			NRC.equipCache[sender] = raidData.h;
+		end
 	end
 end
 
-function NRC:updateRaidCache()
+--[[function NRC:updateRaidCache()
 	for k, v in pairs(NRC.weaponEnchants) do
 		--Main hand timer.
 		if (v[2] and v[2] < GetServerTime()) then
@@ -1357,7 +1360,7 @@ function NRC:updateRaidCache()
 			NRC.weaponEnchants[k] = nil;
 		end
 	end
-end
+end]]
 
 --local ticker;
 --function NRC:startRaidCacheTicker()
