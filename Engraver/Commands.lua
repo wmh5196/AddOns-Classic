@@ -32,12 +32,12 @@ end
 SLASH_ENGRAVE1 = "/engrave"
 SlashCmdList.ENGRAVE = function(msg, editBox)
 	if msg == nil or strlen(msg) <= 0 then
-		SendSystemMessage("(Engraver) Usage: /engrave runeName or /engrave spellID")
+		SendSystemMessage("(一鍵符文) 用法: /engrave 符文名稱 or /engrave 法術ID")
 		return
 	end
 	local category, rune = FindRune(msg)
 	if rune == nil then
-		SendSystemMessage("(Engraver) Rune not found for: "..msg)
+		SendSystemMessage("(一鍵符文) 沒有找到符文: "..msg)
 		return
 	end
 	Addon:TryEngrave(Addon.CategoryToSlotId[category][1], rune.skillLineAbilityID)
@@ -45,7 +45,7 @@ end
 
 SLASH_ENGRAVESLOT1 = "/engraveslot"
 SlashCmdList.ENGRAVESLOT = function(msg, editBox)
-	local UsageMessage = "(Engraver) Usage: /engraveslot slotNumber rune"
+	local UsageMessage = "(一鍵符文) 用法: /engraveslot 部位編號 符文"
 	if msg == nil or strlen(msg) <= 0 then
 		SendSystemMessage(UsageMessage)
 		return
@@ -60,7 +60,7 @@ SlashCmdList.ENGRAVESLOT = function(msg, editBox)
 	local runeString = string.sub(msg, j+1)
 	local category, rune = FindRune(runeString)
 	if rune == nil then
-		SendSystemMessage("(Engraver) Rune not found for: "..runeString)
+		SendSystemMessage("(一鍵符文) 沒有找到符文: "..runeString)
 		return
 	end
 	Addon:TryEngrave(slot, rune.skillLineAbilityID)
@@ -70,4 +70,19 @@ SLASH_ENGRAVER_RESET_POSITION1 = "/engraver_reset_position"
 SlashCmdList.ENGRAVER_RESET_POSITION = function(msg, editBox)
 	EngraverFrame:ClearAllPoints(); 
 	EngraverFrame:SetPoint("CENTER", UIParent, "CENTER");
+end
+
+SLASH_ENGRAVER_FILTER1, SLASH_ENGRAVER_FILTER2 = "/engraver_filter", "/ef"
+SlashCmdList.ENGRAVER_FILTER = function(msg, editBox)
+	if msg == nil or strlen(msg) <= 0 then
+		Addon.Filters:SetCurrentFilter(0)
+	else
+		local filterIndex = Addon.Filters:FindFilterIndex(msg)
+		if filterIndex > 0 then
+			Addon.Filters:SetCurrentFilter(filterIndex)
+		else
+			SendSystemMessage("(一鍵符文) 沒有找到過濾方式: "..msg)
+			return
+		end
+	end
 end
