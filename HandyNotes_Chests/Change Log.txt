@@ -1,3 +1,6 @@
+== v1.14 - 8th October 2024
+* TOC updated to 1.15.4
+
 == v1.13 - 29th July 2024
 * Metamorphosis rune added + translation
 * Scaling of the "rune" style icons shrunk - now matches the Runes AddOn for consistency

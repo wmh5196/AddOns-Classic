@@ -3,7 +3,7 @@
 
                                         Chests, Gear and More
 
-                                       v1.13 - 29th July 2024
+                                      v1.14 - 8th October 2024
                                 Copyright (C) Taraezor / Chris Birch
                                          All Rights Reserved
 
