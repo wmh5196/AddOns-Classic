@@ -12,6 +12,6 @@
 ## X-Category-zhTW: 介面
 ## DefaultState: disabled
 
-
+embeds.xml
 Stuf_OptionsLocale.lua
 options.lua

@@ -1,4 +1,4 @@
-## Interface: 11504
+## Interface: 11503, 11504
 ## Title: Stuf Unit Frames
 ## Author: TotalPackage
 ## Notes: Main unitframes replacement. Assembly optional.
@@ -18,7 +18,7 @@
 ## X-Category-zhTW: 介面
 ## DefaultState: disabled
 
-
+embeds.xml
 cancelaura.xml
 StufLocale.lua
 core.lua

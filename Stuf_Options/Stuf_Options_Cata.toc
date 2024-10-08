@@ -11,6 +11,6 @@
 ## Notes-zhTW: Stuf_Options |n|nStuf頭像框架的設定選項。|n|n|cffffd200使用方法: |r輸入 /stuf ，或從 Esc>介面>插件>Stuf頭像，開啟設定。
 ## X-Category-zhTW: 介面
 
-
+embeds.xml
 Stuf_OptionsLocale.lua
 options.lua

@@ -12,5 +12,5 @@
 ## Notes-zhTW: Stuf_Range |n|n顯示目標的距離，使用 LibRangeCheck-3.0。
 ## X-Category-zhTW: 介面
 
-
+embeds.xml
 core.lua
