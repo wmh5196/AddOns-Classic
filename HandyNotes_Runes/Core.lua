@@ -313,7 +313,7 @@ function pluginHandler:OnEnter(mapFile, coord)
 				
 				if pin.guide then
 					-- Single guide for all classes is permitted. Always a table
-					GameTooltip:AddLine( "\n" ..ns.colour.highlight .."Guide\n\n" ..ns.colour.plaintext
+					GameTooltip:AddLine( "\n" ..ns.colour.highlight ..ns.L["Guide"].."\n\n" ..ns.colour.plaintext
 								..( ( pin.guide[ i ] ~= nil ) and pin.guide[ i ] or pin.guide[ 1 ] ) )
 					spaceBeforeTitle = true
 				end
