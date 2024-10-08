@@ -1,3 +1,7 @@
+== v2.22 - 8th October 2024
+* TOC updated to 1.15.4
+* Note: No actual new content
+
 == v2.21 - 6th August 2024
 * Reconfigured runes from Phase 4
 * Does not yet include back/cloaks and rings
