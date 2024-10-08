@@ -1154,7 +1154,7 @@ function NWB:createDataLayered(distribution, noLayerMap, noLogs, type, forceLaye
 				--These variable names are shortened before sendin.
 			--	data.lastAshenvaleGuildMsg = NWB.data.lastAshenvaleGuildMsg;
 			--end
-			if (NWB.stvRunning) then
+			if (NWB.stvRunning) and (NWB.buildStvData) then -- 暫時修正
 				local stvData = NWB:buildStvData();
 				if (stvData) then
 					data.stvData = stvData;
